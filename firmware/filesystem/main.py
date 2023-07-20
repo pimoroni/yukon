@@ -1,0 +1,1 @@
+# This file (and other files in this directory) get added to a LittleFS filesystem and appended to the firmware
