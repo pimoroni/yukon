@@ -1,0 +1,126 @@
+diff --git a/ports/rp2/main.c b/ports/rp2/main.c
+index ff0384b95..d76d2ef42 100644
+--- a/ports/rp2/main.c
++++ b/ports/rp2/main.c
+@@ -71,6 +71,22 @@ bi_decl(bi_program_feature_group_with_flags(BINARY_INFO_TAG_MICROPYTHON,
+     BINARY_INFO_ID_MP_FROZEN, "frozen modules",
+     BI_NAMED_GROUP_SEPARATE_COMMAS | BI_NAMED_GROUP_SORT_ALPHA));
+ 
++
++void board_init(void) {
++}
++
++// Do-nothing so not all boards need to provide this function.
++//MP_WEAK void reset_board(void) {
++void board_reset(void) {
++    for (int i = 0; i < NUM_BANK0_GPIOS; ++i) {
++        gpio_init(i);
++        hw_clear_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
++            PADS_BANK0_GPIO0_PUE_BITS |
++            PADS_BANK0_GPIO0_PDE_BITS);
++        hw_set_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
++    }
++}
++
+ int main(int argc, char **argv) {
+     #if MICROPY_HW_ENABLE_UART_REPL
+     bi_decl(bi_program_feature("UART REPL"))
+@@ -144,6 +160,7 @@ int main(int argc, char **argv) {
+     }
+     #endif
+ 
++    bool run_main = true;
+     for (;;) {
+ 
+         // Initialise MicroPython runtime.
+@@ -166,6 +183,8 @@ int main(int argc, char **argv) {
+         mod_network_lwip_init();
+         #endif
+ 
++        board_init();
++
+         // Execute _boot.py to set up the filesystem.
+         #if MICROPY_VFS_FAT && MICROPY_HW_USB_MSC
+         pyexec_frozen_module("_boot_fat.py", false);
+@@ -173,32 +192,43 @@ int main(int argc, char **argv) {
+         pyexec_frozen_module("_boot.py", false);
+         #endif
+ 
+-        // Execute user scripts.
+-        int ret = pyexec_file_if_exists("boot.py");
+-        if (ret & PYEXEC_FORCED_EXIT) {
+-            goto soft_reset_exit;
+-        }
+-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
+-            ret = pyexec_file_if_exists("main.py");
++        if (run_main) {
++            // Execute user scripts.
++            int ret = pyexec_file_if_exists("boot.py");
+             if (ret & PYEXEC_FORCED_EXIT) {
++                run_main = !(ret & PYEXEC_SKIP_USER_CODE);
+                 goto soft_reset_exit;
+             }
++            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
++                ret = pyexec_file_if_exists("main.py");
++                if (ret & PYEXEC_FORCED_EXIT) {
++                    run_main = !(ret & PYEXEC_SKIP_USER_CODE);
++                    goto soft_reset_exit;
++                }
++            }
+         }
++        run_main = true;
+ 
+         for (;;) {
+             if (pyexec_mode_kind == PYEXEC_MODE_RAW_REPL) {
+-                if (pyexec_raw_repl() != 0) {
++                int ret = pyexec_raw_repl();
++                if (ret != 0) {
++                    run_main = !(ret & PYEXEC_SKIP_USER_CODE);
+                     break;
+                 }
+             } else {
+-                if (pyexec_friendly_repl() != 0) {
++                int ret = pyexec_friendly_repl();
++                if (ret != 0) {
++                    run_main = !(ret & PYEXEC_SKIP_USER_CODE);
+                     break;
+                 }
+             }
++            //mp_printf(MP_PYTHON_PRINTER, "Yukon: repl ended\n");
+         }
+ 
+     soft_reset_exit:
+         mp_printf(MP_PYTHON_PRINTER, "MPY: soft reboot\n");
++        board_reset();
+         #if MICROPY_PY_NETWORK
+         mod_network_deinit();
+         #endif
+diff --git a/shared/runtime/pyexec.c b/shared/runtime/pyexec.c
+index e32150e5e..facd8fb98 100644
+--- a/shared/runtime/pyexec.c
++++ b/shared/runtime/pyexec.c
+@@ -146,10 +146,12 @@ STATIC int parse_compile_execute(const void *source, mp_parse_input_kind_t input
+         // check for SystemExit
+         if (mp_obj_is_subclass_fast(MP_OBJ_FROM_PTR(((mp_obj_base_t *)nlr.ret_val)->type), MP_OBJ_FROM_PTR(&mp_type_SystemExit))) {
+             // at the moment, the value of SystemExit is unused
+-            ret = pyexec_system_exit;
++            ret = pyexec_system_exit | PYEXEC_FORCED_EXIT | PYEXEC_SKIP_USER_CODE;
+         } else {
+             mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+-            ret = 0;
++            ret = 0 | PYEXEC_FORCED_EXIT | PYEXEC_SKIP_USER_CODE;
+         }
+     }
+
+diff --git a/shared/runtime/pyexec.h b/shared/runtime/pyexec.h
+index 64c5ef943..6a2cd8b8f 100644
+--- a/shared/runtime/pyexec.h
++++ b/shared/runtime/pyexec.h
+@@ -41,6 +41,7 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
+ extern int pyexec_system_exit;
+ 
+ #define PYEXEC_FORCED_EXIT (0x100)
++#define PYEXEC_SKIP_USER_CODE (0x200)
+ 
+ int pyexec_raw_repl(void);
+ int pyexec_friendly_repl(void);

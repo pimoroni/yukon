@@ -41,12 +41,9 @@ jobs:
       working-directory: micropython
       run: |
         git submodule update --init lib/pico-sdk
-        git submodule update --init lib/cyw43-driver
-        git submodule update --init lib/lwip
         git submodule update --init lib/mbedtls
         git submodule update --init lib/micropython-lib
         git submodule update --init lib/tinyusb
-        git submodule update --init lib/btstack
 
     - name: Build mpy-cross
       if: steps.cache.outputs.cache-hit != 'true'
@@ -74,7 +71,7 @@ jobs:
       BOARD_DIR: "$GITHUB_WORKSPACE/yukon/firmware/${{matrix.board}}"
       FILESYSTEM_DIR: "$GITHUB_WORKSPACE/yukon/firmware/filesystem"
       FILESYSTEM_SUFFIX: "with-filesystem"
-      BOARD: "PICO_W"
+      BOARD: "PIMORONI_YUKON"
 
     steps:
     - name: Compiler Cache
@@ -125,6 +122,11 @@ jobs:
       shell: bash
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/micropython_nano_specs.patch"
+
+    - name: "HACK: Yukon Reset Patch"
+      shell: bash
+      working-directory: micropython
+      run: git apply "${{env.FIRMWARE_DIR}}/yukon_reset.patch"
 
     # Install apt packages
     - name: Install CCache & Compiler
