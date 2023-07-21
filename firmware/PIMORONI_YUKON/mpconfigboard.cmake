@@ -1,15 +1,10 @@
-# cmake file for Pimoroni Badger 2040W
-set(MICROPY_BOARD PICO_W)
+# cmake file for Pimoroni Yukon
+set(MICROPY_BOARD "pimoroni_yukon")
 
-set(MICROPY_C_HEAP_SIZE 4096)
-
-set(MICROPY_PY_LWIP ON)
-set(MICROPY_PY_NETWORK_CYW43 ON)
-
-# Bluetooth
-set(MICROPY_PY_BLUETOOTH ON)
-set(MICROPY_BLUETOOTH_BTSTACK ON)
-set(MICROPY_PY_BLUETOOTH_CYW43 ON)
+# Allow Pico SDK to locate "pimoroni_yukon.h" in this directory.
+list(APPEND PICO_BOARD_HEADER_DIRS "${CMAKE_CURRENT_LIST_DIR}")
 
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${CMAKE_CURRENT_LIST_DIR}/manifest.py)
+
+set(MICROPY_C_HEAP_SIZE 4096)

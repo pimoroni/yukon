@@ -64,9 +64,9 @@ jobs:
           - name: Yukon
             shortname: yukon
             board: PIMORONI_YUKON
-            # 0x10000000 + (2*1024*1024) - (848*1024)
-            dir2uf2_fs_start: 269664256
-            dir2uf2_fs_size: 868352
+            # 0x10000000 + (15*1024*1024) - (1408*1024)
+            dir2uf2_fs_start: 282722304
+            dir2uf2_fs_size: 1441792
 
     env:
       RELEASE_FILE: pimoroni-${{matrix.shortname}}-${{github.event.release.tag_name || github.sha}}-micropython
