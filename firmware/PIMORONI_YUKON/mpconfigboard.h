@@ -9,6 +9,9 @@
 #define MICROPY_HW_SPI0_MOSI (0)
 #define MICROPY_HW_SPI0_MISO (0)
 
+#define MICROPY_HW_I2C0_SDA (24)
+#define MICROPY_HW_I2C0_SCL (25)
+
 // Enable networking.
 //#define MICROPY_PY_NETWORK 1
 //#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "Yukon"
@@ -23,6 +26,13 @@
 // Debug level (0-4) 1=warning, 2=info, 3=debug, 4=verbose
 // #define MODUSSL_MBEDTLS_DEBUG_LEVEL 1
 
-//#define MICROPY_HW_PIN_EXT_COUNT    CYW43_WL_GPIO_COUNT
+#define MICROPY_PY_TCA9555 (1)
+#define MICROPY_HW_PIN_EXT_COUNT    (32)
 
 //#define MICROPY_HW_PIN_RESERVED(i) ((i) == CYW43_PIN_WL_HOST_WAKE || (i) == CYW43_PIN_WL_REG_ON)
+
+#define MICROPY_BOARD_EARLY_INIT board_init
+void board_init(void);
+
+#define MICROPY_BOARD_PRE_RUNTIME_RESET board_reset
+void board_reset(void);
