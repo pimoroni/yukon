@@ -17,7 +17,6 @@ include(pimoroni_bus/micropython)
 
 # Sensors & Breakouts
 include(micropython-common-breakouts)
-include(pcf85063a/micropython)
 
 # Utility
 include(adcfft/micropython)
