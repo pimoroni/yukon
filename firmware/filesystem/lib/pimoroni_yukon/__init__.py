@@ -277,7 +277,7 @@ class Yukon:
             adc_val += self.__shared_adc_voltage()
         adc_val /= self.DETECTION_SAMPLES
 
-        logging.debug(f"ADC1 = {adc_val}, SLOW1 = {int(slow1.value)}, SLOW2 = {int(slow2.value)}, SLOW3 = {int(slow3.value)}", end=", ")
+        logging.debug(f"ADC1 = {adc_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
 
         adc_level = ADC_FLOAT
         if adc_val <= self.DETECTION_ADC_LOW:
@@ -285,12 +285,9 @@ class Yukon:
         elif adc_val >= self.DETECTION_ADC_HIGH:
             adc_level = ADC_HIGH
 
-        detected = self.__match_module(adc_level, slow1.value, slow2.value, slow3.value)
+        detected = self.__match_module(adc_level, slow1.value() == 1, slow2.value() == 1, slow3.value() == 1)
 
         self.__deselect_address()
-        slow3.deinit()
-        slow2.deinit()
-        slow1.deinit()
 
         return detected
 
@@ -394,10 +391,10 @@ class Yukon:
         elif switch < 0 or switch > 1:
             raise ValueError("switch out of range. Expected 'A' or 'B', or SWITCH_A (0) or SWITCH_B (1)")
 
-        return not self.__switches[switch].value()
+        return self.__switches[switch].value() != 1
 
     def is_boot_pressed(self):
-        return not self.__sw_boot.value()
+        return self.__sw_boot.value() != 1
 
     def set_led(self, switch, value):
         if switch is self.SWITCH_A_NAME:
@@ -413,7 +410,7 @@ class Yukon:
         if self.is_main_output() is False:
             start = time.ticks_us()
 
-            self.__select_address(board.VOLTAGE_SENSE_ADDR)
+            self.__select_address(VOLTAGE_SENSE_ADDR)
 
             old_voltage = max(((self.__shared_adc_voltage() - self.VOLTAGE_MIN_MEASURE) * self.VOLTAGE_MAX) / (self.VOLTAGE_MAX_MEASURE - self.VOLTAGE_MIN_MEASURE), 0.0)
             first_stable_time = 0
@@ -464,7 +461,7 @@ class Yukon:
         logging.info("> Output disabled")
 
     def is_main_output(self):
-        return self.__main_en.value()
+        return self.__main_en.value() == 1
 
     def __deselect_address(self):
         self.__adc_mux_ens[0].value(False)

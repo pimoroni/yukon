@@ -29,63 +29,63 @@ class DualSwitchedModule(YukonModule):
 
     def initialise(self, slot, adc1_func, adc2_func):
         # Create the switch and power control pin objects
-        self.__sw_output = (DigitalInOut(slot.FAST1),
-                            DigitalInOut(slot.FAST3))
+        self.__sw_output = (slot.FAST1,
+                            slot.FAST3)
 
-        self.__sw_enable = (DigitalInOut(slot.FAST2),
-                            DigitalInOut(slot.FAST4))
+        self.__sw_enable = (slot.FAST2,
+                            slot.FAST4)
 
-        self.__power_good = (DigitalInOut(slot.SLOW3),
-                             DigitalInOut(slot.SLOW1))
+        self.__power_good = (slot.SLOW3,
+                             slot.SLOW1)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
-        self.__sw_output[0].switch_to_output(False)
-        self.__sw_output[1].switch_to_output(False)
+        self.__sw_output[0].init(Pin.OUT, value=False)
+        self.__sw_output[1].init(Pin.OUT, value=False)
 
-        self.__sw_enable[0].switch_to_output(False)
-        self.__sw_enable[1].switch_to_output(False)
+        self.__sw_enable[0].init(Pin.OUT, value=False)
+        self.__sw_enable[1].init(Pin.OUT, value=False)
 
-        self.__power_good[0].switch_to_input()
-        self.__power_good[1].switch_to_input()
+        self.__power_good[0].init(Pin.IN)
+        self.__power_good[1].init(Pin.IN)
 
     def enable(self, switch):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        self.__sw_enable[switch - 1].value = True
+        self.__sw_enable[switch - 1].value(True)
 
     def disable(self, switch):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        self.__sw_enable[switch - 1].value = False
+        self.__sw_enable[switch - 1].value(False)
 
     def is_enabled(self, switch):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        return self.__sw_enable[switch - 1].value
+        return self.__sw_enable[switch - 1].value() == 1
 
     def output(self, switch, value):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        self.__sw_output[switch - 1].value = value
+        self.__sw_output[switch - 1].value(value)
 
     def read_output(self, switch):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        return self.__sw_output[switch - 1].value
+        return self.__sw_output[switch - 1].value() == 1
 
     def read_power_good(self, switch):
         if switch < 1 or switch > self.NUM_SWITCHES:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        return self.__power_good[switch - 1].value
+        return self.__power_good[switch - 1].value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()
