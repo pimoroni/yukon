@@ -41,7 +41,7 @@ class BenchPowerModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create the voltage pwm object
-            self.voltage_pwm = PWMOut(slot.FAST2, duty_cycle=0, frequency=250000)
+            self.voltage_pwm = PWM(slot.FAST2, freq=250000, duty_u16=0)
         except ValueError as e:
             if slot.ID <= 2 or slot.ID >= 5:
                 conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
@@ -49,29 +49,29 @@ class BenchPowerModule(YukonModule):
             raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
 
         # Create the power control pin objects
-        self.__power_en = DigitalInOut(slot.FAST1)
-        self.__power_good = DigitalInOut(slot.SLOW1)
+        self.__power_en = slot.FAST1
+        self.__power_good = slot.SLOW1
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
-        self.voltage_pwm.duty_cycle = 0
+        self.voltage_pwm.duty_u16(0)
 
-        self.__power_en.switch_to_output(False)
-        self.__power_good.switch_to_input()
+        self.__power_en.init(Pin.OUT, value=False)
+        self.__power_good.init(Pin.IN)
 
     def enable(self):
-        self.__power_en.value = True
+        self.__power_en.value(True)
 
     def disable(self):
-        self.__power_en.value = False
+        self.__power_en.value(False)
 
     def is_enabled(self):
-        return self.__motors_en.value
+        return self.__motors_en.value() == 1
 
     def __set_pwm(self, percent):
-        self.voltage_pwm.duty_cycle = int(((2 ** 16) - 1) * percent)
+        self.voltage_pwm.duty_u16(int(((2 ** 16) - 1) * percent))
 
     def set_target_voltage(self, voltage):
         if voltage >= self.VOLTAGE_MID:
@@ -95,7 +95,7 @@ class BenchPowerModule(YukonModule):
             return max(((voltage - self.VOLTAGE_MIN_MEASURE) * (self.VOLTAGE_MID - self.VOLTAGE_MIN)) / (self.VOLTAGE_MID_MEASURE - self.VOLTAGE_MIN_MEASURE) + self.VOLTAGE_MIN, 0.0)
 
     def read_power_good(self):
-        return self.__power_good.value
+        return self.__power_good.value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()
