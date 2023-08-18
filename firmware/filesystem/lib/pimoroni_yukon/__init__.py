@@ -96,7 +96,7 @@ EX_ADC_ADDR = 15         # 0b1111
 
 import time
 import math
-#import tca
+import tca
 from machine import ADC
 from pimoroni_yukon.modules import KNOWN_MODULES, ADC_FLOAT, ADC_LOW, ADC_HIGH
 import pimoroni_yukon.logging as logging
@@ -171,15 +171,14 @@ class Yukon:
         self.__adc_mux_addrs[1].init(Pin.OUT, value=False)
         self.__adc_mux_addrs[2].init(Pin.OUT, value=False)
 
-        # TODO
-        # self.__adc_io_chip = tca.get_chip(Pin.board.ADC_ADDR_1)
-        # self.__adc_io_ens_addrs = (1 << tca.get_number(Pin.board.ADC_MUX_EN_1),
-        #                            1 << tca.get_number(Pin.board.ADC_MUX_EN_2))
-        # self.__adc_io_adc_addrs = (1 << tca.get_number(Pin.board.ADC_ADDR_1),
-        #                            1 << tca.get_number(Pin.board.ADC_ADDR_2),
-        #                            1 << tca.get_number(Pin.board.ADC_ADDR_3))
-        # self.__adc_io_mask = self.__adc_io_ens_addrs[0] | self.__adc_io_ens_addrs[1] | \
-        #                      self.__adc_io_adc_addrs[0] | self.__adc_io_adc_addrs[1] | self.__adc_io_adc_addrs[2]
+        self.__adc_io_chip = tca.get_chip(Pin.board.ADC_ADDR_1)
+        self.__adc_io_ens_addrs = (1 << tca.get_number(Pin.board.ADC_MUX_EN_1),
+                                   1 << tca.get_number(Pin.board.ADC_MUX_EN_2))
+        self.__adc_io_adc_addrs = (1 << tca.get_number(Pin.board.ADC_ADDR_1),
+                                   1 << tca.get_number(Pin.board.ADC_ADDR_2),
+                                   1 << tca.get_number(Pin.board.ADC_ADDR_3))
+        self.__adc_io_mask = self.__adc_io_ens_addrs[0] | self.__adc_io_ens_addrs[1] | \
+                             self.__adc_io_adc_addrs[0] | self.__adc_io_adc_addrs[1] | self.__adc_io_adc_addrs[2]
 
         # User switches
         self.__switches = (Pin.board.SW_A,

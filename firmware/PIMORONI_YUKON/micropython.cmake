@@ -2,10 +2,12 @@ set(PIMORONI_PICO_PATH ../../../../pimoroni-pico)
 include(${CMAKE_CURRENT_LIST_DIR}/../pimoroni_pico_import.cmake)
 
 include_directories(${PIMORONI_PICO_PATH}/micropython)
+include_directories(${CMAKE_CURRENT_LIST_DIR}/../modules)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../")
 list(APPEND CMAKE_MODULE_PATH "${PIMORONI_PICO_PATH}/micropython")
 list(APPEND CMAKE_MODULE_PATH "${PIMORONI_PICO_PATH}/micropython/modules")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../modules")
 
 # Enable support for string_view (for PicoGraphics)
 set(CMAKE_C_STANDARD 11)
@@ -48,3 +50,5 @@ include(modules_py/modules_py)
 
 # Must call `enable_ulab()` to enable
 include(micropython-common-ulab)
+
+include(tca9555/micropython)
