@@ -1,4 +1,3 @@
-import time
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import DualSwitchedModule
 
