@@ -32,8 +32,8 @@ class BigMotorModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create pwm objects
-            self.__pwm_p = PWMOut(slot.FAST4, frequency=self.__frequency)
-            self.__pwm_n = PWMOut(slot.FAST3, frequency=self.__frequency)
+            self.__pwm_p = slot.FAST4
+            self.__pwm_n = slot.FAST3
         except ValueError as e:
             if slot.ID <= 2 or slot.ID >= 5:
                 conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
@@ -41,33 +41,33 @@ class BigMotorModule(YukonModule):
             raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
 
         # Create motor object
-        self.motor = DCMotor(self.__pwm_p, self.__pwm_n)
+        self.motor = Motor((self.__pwm_p, self.__pwm_n), freq=self.__frequency)
 
         # Create motor control pin objects
-        self.__motor_en = DigitalInOut(slot.SLOW3)
-        self.__motor_nfault = DigitalInOut(slot.SLOW2)
+        self.__motor_en = slot.SLOW3
+        self.__motor_nfault = slot.SLOW2
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
-        self.motor.throttle = None
-        self.motor.decay_mode = SLOW_DECAY
+        self.motor.disable()
+        self.motor.decay_mode(SLOW_DECAY)
 
-        self.__motor_nfault.switch_to_input()
-        self.__motor_en.switch_to_output(False)
+        self.__motor_nfault.init(Pin.IN)
+        self.__motor_en.init(Pin.OUT, value=False)
 
     def enable(self):
-        self.__motor_en.value = True
+        self.__motor_en.value(True)
 
     def disable(self):
-        self.__motor_en.value = False
+        self.__motor_en.value(False)
 
     def is_enabled(self):
-        return self.__motor_en.value
+        return self.__motor_en.value() == 1
 
     def read_fault(self):
-        return not self.__motor_nfault.value
+        return self.__motor_nfault.value() != 1
 
     def read_current(self):
         # This needs more validation

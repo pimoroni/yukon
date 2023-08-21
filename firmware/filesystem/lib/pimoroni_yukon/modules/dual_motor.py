@@ -36,10 +36,8 @@ class DualMotorModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create pwm objects
-            self.__pwms_p = [PWMOut(slot.FAST2, frequency=self.__frequency),
-                             PWMOut(slot.FAST4, frequency=self.__frequency)]
-            self.__pwms_n = [PWMOut(slot.FAST1, frequency=self.__frequency),
-                             PWMOut(slot.FAST3, frequency=self.__frequency)]
+            self.__pwms_p = (slot.FAST2, slot.FAST4)
+            self.__pwms_n = (slot.FAST1, slot.FAST3)
         except ValueError as e:
             if slot.ID <= 2 or slot.ID >= 5:
                 conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
@@ -47,19 +45,19 @@ class DualMotorModule(YukonModule):
             raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
 
         if self.__motor_type == self.DUAL:
-            from adafruit_motor.motor import DCMotor
+            from motor import Motor
 
             # Create motor objects
-            self.motors = [DCMotor(self.__pwms_p[i], self.__pwms_n[i]) for i in range(len(self.__pwms_p))]
+            self.motors = [Motor((self.__pwms_p[i], self.__pwms_n[i]), freq=self.__frequency) for i in range(len(self.__pwms_p))]
         else:
             from adafruit_motor.stepper import StepperMotor
 
             self.stepper = StepperMotor(self.__pwms_p[0], self.__pwms_n[0], self.__pwms_p[1], self.__pwms_n[1])
 
         # Create motor control pin objects
-        self.__motors_decay = DigitalInOut(slot.SLOW1)
-        self.__motors_toff = DigitalInOut(slot.SLOW2)
-        self.__motors_en = DigitalInOut(slot.SLOW3)
+        self.__motors_decay = slot.SLOW1
+        self.__motors_toff = slot.SLOW2
+        self.__motors_en = slot.SLOW3
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
@@ -67,34 +65,34 @@ class DualMotorModule(YukonModule):
     def configure(self):
         if self.__motor_type == self.DUAL:
             for motor in self.motors:
-                motor.throttle = None
+                motor.disable()
         else:
             self.stepper.release()
 
-        self.__motors_decay.switch_to_output(False)
-        self.__motors_toff.switch_to_output(False)
-        self.__motors_en.switch_to_output(False)
+        self.__motors_decay.init(Pin.OUT, value=False)
+        self.__motors_toff.init(Pin.OUT, value=False)
+        self.__motors_en.init(Pin.OUT, value=False)
 
     def enable(self):
-        self.__motors_en.value = True
+        self.__motors_en.value(True)
 
     def disable(self):
-        self.__motors_en.value = False
+        self.__motors_en.value(False)
 
     def is_enabled(self):
-        return self.__motors_en.value
+        return self.__motors_en.value() == 1
 
     def decay(self, value=None):
         if value is None:
-            return self.__motors_decay
+            return self.__motors_decay() == 1
         else:
-            self.__motors_decay = value
+            self.__motors_decay(value)
 
     def toff(self, value=None):
         if value is None:
-            return self.__motors_toff
+            return self.__motors_toff() == 1
         else:
-            self.__motors_toff = value
+            self.__motors_toff(value)
 
     @property
     def motor1(self):

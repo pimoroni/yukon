@@ -30,10 +30,10 @@ class QuadServoRegModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create pwm objects
-            self.__pwms = [PWMOut(slot.FAST1, frequency=50),
-                           PWMOut(slot.FAST2, frequency=50),
-                           PWMOut(slot.FAST3, frequency=50),
-                           PWMOut(slot.FAST4, frequency=50)]
+            self.__pwms = (slot.FAST1,
+                           slot.FAST2,
+                           slot.FAST3,
+                           slot.FAST4)
         except ValueError as e:
             if slot.ID <= 2 or slot.ID >= 5:
                 conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
@@ -41,30 +41,30 @@ class QuadServoRegModule(YukonModule):
             raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
 
         # Create servo objects
-        self.servos = [Servo(self.__pwms[i]) for i in range(len(self.__pwms))]
+        self.servos = [Servo(self.__pwms[i], freq=50) for i in range(len(self.__pwms))]
 
         # Create the power control pin objects
-        self.__power_en = DigitalInOut(slot.SLOW1)
-        self.__power_good = DigitalInOut(slot.SLOW2)
+        self.__power_en = slot.SLOW1
+        self.__power_good = slot.SLOW2
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
         for servo in self.servos:
-            servo.angle = None
+            servo.disable()
 
-        self.__power_en.switch_to_output(False)
-        self.__power_good.switch_to_input()
+        self.__power_en.init(Pin.OUT, value=False)
+        self.__power_good.init(Pin.IN)
 
     def enable(self):
-        self.__power_en.value = True
+        self.__power_en.value(True)
 
     def disable(self):
-        self.__power_en.value = False
+        self.__power_en.value(False)
 
     def is_enabled(self):
-        return self.__power_en.value
+        return self.__power_en.value() == 1
 
     @property
     def servo1(self):
@@ -83,7 +83,7 @@ class QuadServoRegModule(YukonModule):
         return self.servos[3]
 
     def read_power_good(self):
-        return self.__power_good.value
+        return self.__power_good.value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()
