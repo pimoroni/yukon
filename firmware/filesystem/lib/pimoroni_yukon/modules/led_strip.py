@@ -38,34 +38,39 @@ class LEDStripModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         # Create the strip driver object
         if self.__strip_type == self.NEOPIXEL:
-            from neopixel import NeoPixel
-            self.pixels = NeoPixel(slot.FAST4, self.__num_pixels, brightness=self.__brightness, auto_write=False)
+            from plasma import WS2812
+            self.pixels = WS2812(self.__num_pixels, 0, 0, slot.FAST4)
         else:
-            from adafruit_dotstar import DotStar
-            self.pixels = DotStar(slot.FAST3, slot.FAST4, self.__num_pixels, brightness=self.__brightness, auto_write=False)
+            from plasma import APA102
+            self.pixels = APA102(self.__num_pixels, 0, 0, slot.FAST4, slot.FAST3)
+            self.pixels.set_brightness(int(self.__brightness * 31))
+        # self.pixels.start()
 
         # Create the power control pin objects
-        self.__power_good = DigitalInOut(slot.FAST1)
-        self.__power_en = DigitalInOut(slot.FAST2)
+        self.__power_good = slot.FAST1
+        self.__power_en = slot.FAST2
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
-        self.__power_en.switch_to_output(False)
-        self.__power_good.switch_to_input(Pull.UP)
+        self.__power_en.init(Pin.OUT, value=False)
+        self.__power_good.init(Pin.IN, Pin.PULL_UP)
+
+    def count(self):
+        return self.__num_pixels
 
     def enable(self):
-        self.__power_en.value = True
+        self.__power_en.value(True)
 
     def disable(self):
-        self.__power_en.value = False
+        self.__power_en.value(False)
 
     def is_enabled(self):
-        return self.__power_en.value
+        return self.__power_en.value() == 1
 
     def read_power_good(self):
-        return self.__power_good.value
+        return self.__power_good.value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()
