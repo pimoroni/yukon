@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from .common import YukonModule, ADC_FLOAT, HIGH
-#import tca
+import tca
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import OverTemperatureError
@@ -140,11 +140,11 @@ class AudioAmpModule(YukonModule):
 
     def initialise(self, slot, adc1_func, adc2_func):
         # Create the "I2C" pin objects
-        self.__slow_sda = DigitalInOut(slot.SLOW1)
-        self.__slow_scl = DigitalInOut(slot.SLOW2)
+        self.__slow_sda = slot.SLOW1
+        self.__slow_scl = slot.SLOW2
 
         # Create the enable pin object
-        self.__amp_en = DigitalInOut(slot.SLOW3)
+        self.__amp_en = slot.SLOW3
 
         self.__chip = tca.get_chip(slot.SLOW1)
         self.__sda_bit = 1 << tca.get_number(slot.SLOW1)
@@ -158,12 +158,12 @@ class AudioAmpModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def configure(self):
-        self.__slow_sda.switch_to_output(True)
-        self.__slow_scl.switch_to_output(True)
-        self.__amp_en.switch_to_output(False)
+        self.__slow_sda.init(Pin.OUT, value=True)
+        self.__slow_scl.init(Pin.OUT, value=True)
+        self.__amp_en.init(Pin.OUT, value=False)
 
     def enable(self):
-        self.__amp_en.value = True
+        self.__amp_en.value(True)
 
         # Pre-Reset Configuration
         self.write_i2c_reg(PAGE, 0x01)  # Page 1
@@ -228,10 +228,10 @@ class AudioAmpModule(YukonModule):
         # Temp commented out self.write_i2c_reg(MODE_CTRL, 0x80) # Play audio, power up with playback, IV enabled
 
     def disable(self):
-        self.__amp_en.value = False
+        self.__amp_en.value(False)
 
     def is_enabled(self):
-        return self.__amp_en.value
+        return self.__amp_en.value() == 1
 
     def exit_soft_shutdown(self):
         self.write_i2c_reg(MODE_CTRL, 0x80)  # Calling this after a play seems to wake the amp up, but adds around 16ms
@@ -309,10 +309,10 @@ class AudioAmpModule(YukonModule):
         """
 
         # Do real ACK, with checking ACK
-        self.__slow_sda.switch_to_input()
+        self.__slow_sda.init(Pin.IN)
         tca.change_output_mask(self.__chip, self.__scl_bit, self.__scl_bit)  # Clock to high
         tca.change_output_mask(self.__chip, self.__scl_bit, 0)        # Clock to low
-        self.__slow_sda.switch_to_output()
+        self.__slow_sda.init(Pin.OUT)
 
         """
         # Do fake ACK
@@ -321,7 +321,7 @@ class AudioAmpModule(YukonModule):
         """
 
     def __read_i2c_byte(self):
-        self.__slow_sda.switch_to_input()
+        self.__slow_sda.init(Pin.IN)
         number = 0
         bit = 128
         while bit > 0:
@@ -335,7 +335,7 @@ class AudioAmpModule(YukonModule):
         # Do fake ACK
         tca.change_output_mask(self.__chip, self.__scl_bit, self.__scl_bit)  # Clock to high
         tca.change_output_mask(self.__chip, self.__scl_bit, 0)  # Clock to low
-        self.__slow_sda.switch_to_output()
+        self.__slow_sda.init(Pin.OUT)
 
         return number
 
