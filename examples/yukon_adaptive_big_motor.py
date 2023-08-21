@@ -1,7 +1,7 @@
-import time
 import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import BigMotorModule
+import tca
 
 SPEED = 5             # The speed that the motors will cycle at
 UPDATES = 50          # How many times to update LEDs and Servos per second
@@ -13,7 +13,6 @@ yukon = Yukon(logging_level=6)
 # List to store the modules
 motor_modules = []
 
-import tca
 
 def print_tca(message=""):
     print(f"---- {message} -----")

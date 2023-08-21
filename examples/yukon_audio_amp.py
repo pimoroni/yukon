@@ -1,9 +1,5 @@
-import time
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import AudioAmpModule
-
-import array
-import time
 import math
 from machine import I2S
 import struct
@@ -32,7 +28,6 @@ def make_tone(rate, bits, frequency):
     samples_per_cycle = rate // frequency
     sample_size_in_bytes = bits // 8
     samples = bytearray(4 * samples_per_cycle * sample_size_in_bytes)
-    volume_reduction_factor = 64
     range = pow(2, bits) // 2
     
     if bits == 16:

@@ -1,4 +1,3 @@
-import time
 import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import QuadServoDirectModule, QuadServoRegModule

@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 from .common import YukonModule, ADC_FLOAT, LOW, HIGH
-from machine import Pin, PWM
+from machine import Pin
 from servo import Servo
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
