@@ -2,7 +2,7 @@
 #include "py/runtime.h"
 
 #include "machine_pin.h"
-#include "drivers/tca9555/tca9555.h"
+#include "tca9555.h"
 
 STATIC mp_obj_t tca_pin_get_number(mp_obj_t pin_obj) {
     if (!mp_obj_is_type(pin_obj, &machine_pin_type)) {

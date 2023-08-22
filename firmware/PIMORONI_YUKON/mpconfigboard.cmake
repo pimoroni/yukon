@@ -8,6 +8,10 @@ set(MICROPY_SOURCE_BOARD
     ${CMAKE_CURRENT_LIST_DIR}/board.c
 )
 
+set(MICROPY_TCA9555_DIR
+    ${CMAKE_CURRENT_LIST_DIR}/../drivers/tca9555/
+)
+
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${CMAKE_CURRENT_LIST_DIR}/manifest.py)
 
