@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import ADC_LOW, ADC_HIGH, ADC_FLOAT, ADC_ANY, LOW, HIGH
 from .led_strip import LEDStripModule
 from .quad_servo_direct import QuadServoDirectModule
 from .quad_servo_reg import QuadServoRegModule

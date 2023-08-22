@@ -1,6 +1,18 @@
-# The entire lib dir gets added to a LittleFS filesystem and appended to the firmware
-from machine import Pin
-from ucollections import namedtuple
+# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
+#
+# SPDX-License-Identifier: MIT
+
+import time
+import math
+import tca
+from machine import ADC, Pin
+from pimoroni_yukon.modules import KNOWN_MODULES
+from pimoroni_yukon.modules.common import ADC_FLOAT, ADC_LOW, ADC_HIGH
+import pimoroni_yukon.logging as logging
+from pimoroni_yukon.errors import OverVoltageError, UnderVoltageError, OverCurrentError, OverTemperatureError, FaultError, VerificationError
+from pimoroni_yukon.timing import ticks_ms, ticks_add, ticks_diff
+from ucollections import OrderedDict, namedtuple
+
 
 Slot = namedtuple("Slot", ("ID",
                            "FAST1",
@@ -89,20 +101,6 @@ CURRENT_SENSE_ADDR = 12  # 0b1100
 TEMP_SENSE_ADDR = 13     # 0b1101
 VOLTAGE_SENSE_ADDR = 14  # 0b1110
 EX_ADC_ADDR = 15         # 0b1111
-
-# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
-#
-# SPDX-License-Identifier: MIT
-
-import time
-import math
-import tca
-from machine import ADC
-from pimoroni_yukon.modules import KNOWN_MODULES, ADC_FLOAT, ADC_LOW, ADC_HIGH
-import pimoroni_yukon.logging as logging
-from pimoroni_yukon.errors import OverVoltageError, UnderVoltageError, OverCurrentError, OverTemperatureError, FaultError, VerificationError
-from pimoroni_yukon.timing import ticks_ms, ticks_add, ticks_diff
-from ucollections import OrderedDict
 
 
 class Yukon:
@@ -203,7 +201,7 @@ class Yukon:
         logging.level = logging_level
 
     def __check_slot(self, slot):
-        if type(slot) is int:
+        if isinstance(slot, int):
             if slot < 1 or slot > self.NUM_SLOTS:
                 raise ValueError("slot index out of range. Expected 1 to 6, or a slot object")
 
@@ -300,13 +298,13 @@ class Yukon:
         return self.__detect_module(slot)
 
     def __expand_slot_list(self, slot_list):
-        if type(slot_list) is bool:
+        if isinstance(slot_list, bool):
             if slot_list:
                 return list(self.__slot_assignments.keys())
             else:
                 return []
 
-        if type(slot_list) in (list, tuple):
+        if isinstance(slot_list, (list, tuple)):
             exp_list = []
             for slot in slot_list:
                 exp_list.append(self.__check_slot(slot))
@@ -684,7 +682,7 @@ class Yukon:
             print(section_name, end=" ")
             for name, value in readings.items():
                 if ((allowed is None) or (allowed is not None and name in allowed)) and ((excluded is None) or (excluded is not None and name not in excluded)):
-                    if type(value) is bool:
+                    if isinstance(value, bool):
                         print(f"{name} = {int(value)},", end=" ")  # Output 0 or 1 rather than True of False, so bools can appear on plotter charts
                     else:
                         print(f"{name} = {value},", end=" ")
