@@ -1,1 +1,0 @@
-# This file (and other files in this directory) gets baked into the firmware via manifest.py
