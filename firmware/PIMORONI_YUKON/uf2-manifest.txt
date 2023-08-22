@@ -1,4 +1,4 @@
-*.py
-lib/*.py
-lib/pimoroni_yukon/*.py
-lib/pimoroni_yukon/modules/*.py
+../*.py
+../lib/*.py
+../lib/pimoroni_yukon/*.py
+../lib/pimoroni_yukon/modules/*.py
