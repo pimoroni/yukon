@@ -18,6 +18,7 @@ class QuadServoRegModule(YukonModule):
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | FLOAT | 0     | 1     | 0     | Quad Servo Regulated |                             |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_FLOAT and slow1 is LOW and slow2 is HIGH and slow3 is LOW
 

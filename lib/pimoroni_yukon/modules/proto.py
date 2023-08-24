@@ -13,6 +13,7 @@ class ProtoPotModule(YukonModule):
     # | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
     # | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
     # | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return slow1 is HIGH and slow2 is HIGH and slow3 is LOW
 
@@ -33,6 +34,7 @@ class ProtoPotModule2(YukonModule):
     # | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
     # | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
     # | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return slow1 is HIGH and slow2 is HIGH and slow3 is LOW
 

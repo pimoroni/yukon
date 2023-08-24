@@ -17,6 +17,7 @@ class DualSwitchedModule(YukonModule):
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | FLOAT | 1     | 0     | 1     | Dual Switched Output |                             |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_FLOAT and slow1 is HIGH and slow2 is LOW and slow3 is HIGH
 

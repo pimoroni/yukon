@@ -22,6 +22,7 @@ class DualMotorModule(YukonModule):
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | HIGH  | 1     | 1     | 1     | Dual Motor           |                             |
     # | HIGH  | 0     | 1     | 1     | Dual Motor           |                             |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_HIGH and slow2 is HIGH and slow3 is HIGH
 

@@ -18,6 +18,7 @@ class LEDStripModule(YukonModule):
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | 1     | 1     | 1     | LED Strip            |                             |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_LOW and slow1 is HIGH and slow2 is HIGH and slow3 is HIGH
 

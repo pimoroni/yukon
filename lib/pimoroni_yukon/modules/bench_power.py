@@ -28,6 +28,7 @@ class BenchPowerModule(YukonModule):
     # | LOW   | 1     | 0     | 0     | Bench Power          |                             |
     # | FLOAT | 1     | 0     | 0     | Bench Power          | When V+ is discharging      |
     # FLOAT address included as may not be able to rely on the ADC level being low
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return slow1 is HIGH and slow2 is LOW and slow3 is LOW
 

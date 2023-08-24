@@ -20,6 +20,7 @@ class YukonModule:
     RESISTOR_AT_ROOM_TEMP = 10000.0
     BETA = 3435
 
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return False
 

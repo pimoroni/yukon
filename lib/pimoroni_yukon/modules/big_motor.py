@@ -22,6 +22,7 @@ class BigMotorModule(YukonModule):
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | 0     | 0     | 1     | Big Motor            | Not in fault                |
     # | LOW   | 0     | 1     | 1     | Big Motor            | In fault                    |
+    @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_LOW and slow1 is LOW and slow3 is HIGH
 
