@@ -226,6 +226,7 @@ DETECTION_ADC_HIGH = 3.2
 #### Methods
 Here is the complete list of methods available on the `Yukon` class:
 ```python
+## Initialisation ##
 Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
       current_limit=DEFAULT_CURRENT_LIMIT : float,
       temperature_limit=DEFAULT_TEMPERATURE_LIMIT : float
@@ -233,7 +234,7 @@ Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
 reset() -> None
 
 ## Misc ##
-change_logging(logging_level : int)
+change_logging(logging_level : int) -> None
 
 ## Slot ##
 find_slots_with_module(module_type : type[YukonModule]) -> list[SLOT]
