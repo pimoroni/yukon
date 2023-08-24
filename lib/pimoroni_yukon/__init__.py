@@ -197,6 +197,26 @@ class Yukon:
 
         self.__monitor_action_callback = None
 
+    def reset(self) -> None:
+        # Only disable the output if enabled (avoids duplicate messages)
+        if self.is_main_output_enabled() is True:
+            self.disable_main_output()
+
+        self.__adc_mux_ens[0].value(False)
+        self.__adc_mux_ens[1].value(False)
+
+        self.__adc_mux_addrs[0].value(False)
+        self.__adc_mux_addrs[1].value(False)
+        self.__adc_mux_addrs[2].value(False)
+
+        self.__leds[0].value(False)
+        self.__leds[1].value(False)
+
+        # Configure each module so they go back to their default states
+        for module in self.__slot_assignments.values():
+            if module is not None and module.is_initialised():
+                module.configure()
+
     def change_logging(self, logging_level):
         logging.level = logging_level
 
@@ -213,7 +233,7 @@ class Yukon:
         return slot
 
     def find_slots_with_module(self, module_type):
-        if self.is_main_output():
+        if self.is_main_output_enabled():
             raise RuntimeError("Cannot find slots with modules whilst the main output is active")
 
         logging.info(f"> Finding slots with '{module_type.NAME}' module")
@@ -232,7 +252,7 @@ class Yukon:
         return slots
 
     def register_with_slot(self, module, slot):
-        if self.is_main_output():
+        if self.is_main_output_enabled():
             raise RuntimeError("Cannot register modules with slots whilst the main output is active")
 
         slot = self.__check_slot(slot)
@@ -243,7 +263,7 @@ class Yukon:
             raise ValueError("The selected slot is already populated")
 
     def deregister_slot(self, slot):
-        if self.is_main_output():
+        if self.is_main_output_enabled():
             raise RuntimeError("Cannot deregister module slots whilst the main output is active")
 
         slot = self.__check_slot(slot)
@@ -290,7 +310,7 @@ class Yukon:
         return detected
 
     def detect_module(self, slot):
-        if self.is_main_output():
+        if self.is_main_output_enabled():
             raise RuntimeError("Cannot detect modules whilst the main output is active")
 
         slot = self.__check_slot(slot)
@@ -364,7 +384,7 @@ class Yukon:
         logging.info()  # New line
 
     def initialise_modules(self, allow_unregistered=False, allow_undetected=False, allow_discrepencies=False, allow_no_modules=False):
-        if self.is_main_output():
+        if self.is_main_output_enabled():
             raise RuntimeError("Cannot verify modules whilst the main output is active")
 
         logging.info("> Verifying modules")
@@ -405,7 +425,7 @@ class Yukon:
         self.__leds[switch].value(value)
 
     def enable_main_output(self):
-        if self.is_main_output() is False:
+        if self.is_main_output_enabled() is False:
             start = time.ticks_us()
 
             self.__select_address(VOLTAGE_SENSE_ADDR)
@@ -458,7 +478,7 @@ class Yukon:
         self.__main_en.value(False)
         logging.info("> Output disabled")
 
-    def is_main_output(self):
+    def is_main_output_enabled(self):
         return self.__main_en.value() == 1
 
     def __deselect_address(self):
@@ -686,23 +706,3 @@ class Yukon:
                         print(f"{name} = {int(value)},", end=" ")  # Output 0 or 1 rather than True of False, so bools can appear on plotter charts
                     else:
                         print(f"{name} = {value},", end=" ")
-
-    def reset(self):
-        # Only disable the output if enabled (avoids duplicate messages)
-        if self.is_main_output() is True:
-            self.disable_main_output()
-
-        self.__adc_mux_ens[0].value(False)
-        self.__adc_mux_ens[1].value(False)
-
-        self.__adc_mux_addrs[0].value(False)
-        self.__adc_mux_addrs[1].value(False)
-        self.__adc_mux_addrs[2].value(False)
-
-        self.__leds[0].value(False)
-        self.__leds[1].value(False)
-
-        # Configure each module so they go back to their default states
-        for module in self.__slot_assignments.values():
-            if module is not None and module.is_initialised():
-                module.configure()
