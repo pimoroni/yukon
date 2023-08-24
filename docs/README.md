@@ -659,8 +659,8 @@ disable() : None
 is_enabled() : bool
 
 ## Sensing ##
-read_power_good() : None
-read_temperature() : None
+read_power_good() : bool
+read_temperature() : float
 
 ## Monitoring ##
 monitor() : None
@@ -680,81 +680,95 @@ Here is the complete list of constants on the `yukon` module:
 These constants represent each of the 6 slots on Yukon. They are a namedtuple containing the ID of the slot and which pins that slot is associated with.
 
 **`SLOT1`**
-* `ID` = `1`
-* `FAST1` = `Pin.board.SLOT1_FAST1`
-* `FAST2` = `Pin.board.SLOT1_FAST2`
-* `FAST3` = `Pin.board.SLOT1_FAST3`
-* `FAST4` = `Pin.board.SLOT1_FAST4`
-* `SLOW1` = `Pin.board.SLOT1_SLOW1`
-* `SLOW2` = `Pin.board.SLOT1_SLOW2`
-* `SLOW3` = `Pin.board.SLOT1_SLOW3`
-* `ADC1_ADDR` = `0`  # 0b0000
-* `ADC2_TEMP_ADDR` = `3`  # 0b0011
+```python
+ID = 1
+FAST1 = Pin.board.SLOT1_FAST1
+FAST2 = Pin.board.SLOT1_FAST2
+FAST3 = Pin.board.SLOT1_FAST3
+FAST4 = Pin.board.SLOT1_FAST4
+SLOW1 = Pin.board.SLOT1_SLOW1
+SLOW2 = Pin.board.SLOT1_SLOW2
+SLOW3 = Pin.board.SLOT1_SLOW3
+ADC1_ADDR = 0       # 0b0000
+ADC2_TEMP_ADDR = 3  # 0b0011
+```
 
 **`SLOT2`**
-* `ID` = `2`
-* `FAST1` = `Pin.board.SLOT2_FAST1`
-* `FAST2` = `Pin.board.SLOT2_FAST2`
-* `FAST3` = `Pin.board.SLOT2_FAST3`
-* `FAST4` = `Pin.board.SLOT2_FAST4`
-* `SLOW1` = `Pin.board.SLOT2_SLOW1`
-* `SLOW2` = `Pin.board.SLOT2_SLOW2`
-* `SLOW3` = `Pin.board.SLOT2_SLOW3`
-* `ADC1_ADDR` = `1`  # 0b0001
-* `ADC2_TEMP_ADDR` = `6`  # 0b0110
+```python
+ID = 2
+FAST1 = Pin.board.SLOT2_FAST1
+FAST2 = Pin.board.SLOT2_FAST2
+FAST3 = Pin.board.SLOT2_FAST3
+FAST4 = Pin.board.SLOT2_FAST4
+SLOW1 = Pin.board.SLOT2_SLOW1
+SLOW2 = Pin.board.SLOT2_SLOW2
+SLOW3 = Pin.board.SLOT2_SLOW3
+ADC1_ADDR = 1       # 0b0001
+ADC2_TEMP_ADDR = 6  # 0b0110
+```
 
 **`SLOT3`**
-* `ID` = `3`
-* `FAST1` = `Pin.board.SLOT3_FAST1`
-* `FAST2` = `Pin.board.SLOT3_FAST2`
-* `FAST3` = `Pin.board.SLOT3_FAST3`
-* `FAST4` = `Pin.board.SLOT3_FAST4`
-* `SLOW1` = `Pin.board.SLOT3_SLOW1`
-* `SLOW2` = `Pin.board.SLOT3_SLOW2`
-* `SLOW3` = `Pin.board.SLOT3_SLOW3`
-* `ADC1_ADDR` = `4`  # 0b0100
-* `ADC2_TEMP_ADDR` = `2`  # 0b0010
+```python
+ID = 3
+FAST1 = Pin.board.SLOT3_FAST1
+FAST2 = Pin.board.SLOT3_FAST2
+FAST3 = Pin.board.SLOT3_FAST3
+FAST4 = Pin.board.SLOT3_FAST4
+SLOW1 = Pin.board.SLOT3_SLOW1
+SLOW2 = Pin.board.SLOT3_SLOW2
+SLOW3 = Pin.board.SLOT3_SLOW3
+ADC1_ADDR = 4       # 0b0100
+ADC2_TEMP_ADDR = 2  # 0b0010
+```
 
 **`SLOT4`**
-* `ID` = `4`
-* `FAST1` = `Pin.board.SLOT4_FAST1`
-* `FAST2` = `Pin.board.SLOT4_FAST2`
-* `FAST3` = `Pin.board.SLOT4_FAST3`
-* `FAST4` = `Pin.board.SLOT4_FAST4`
-* `SLOW1` = `Pin.board.SLOT4_SLOW1`
-* `SLOW2` = `Pin.board.SLOT4_SLOW2`
-* `SLOW3` = `Pin.board.SLOT4_SLOW3`
-* `ADC1_ADDR` = `5`  # 0b0101
-* `ADC2_TEMP_ADDR` = `7`  # 0b0111
+```python
+ID = 4
+FAST1 = Pin.board.SLOT4_FAST1
+FAST2 = Pin.board.SLOT4_FAST2
+FAST3 = Pin.board.SLOT4_FAST3
+FAST4 = Pin.board.SLOT4_FAST4
+SLOW1 = Pin.board.SLOT4_SLOW1
+SLOW2 = Pin.board.SLOT4_SLOW2
+SLOW3 = Pin.board.SLOT4_SLOW3
+ADC1_ADDR = 5       # 0b0101
+ADC2_TEMP_ADDR = 7  # 0b0111
+```
 
 **`SLOT5`**
-* `ID` = `5`
-* `FAST1` = `Pin.board.SLOT5_FAST1`
-* `FAST2` = `Pin.board.SLOT5_FAST2`
-* `FAST3` = `Pin.board.SLOT5_FAST3`
-* `FAST4` = `Pin.board.SLOT5_FAST4`
-* `SLOW1` = `Pin.board.SLOT5_SLOW1`
-* `SLOW2` = `Pin.board.SLOT5_SLOW2`
-* `SLOW3` = `Pin.board.SLOT5_SLOW3`
-* `ADC1_ADDR` = `8`  # 0b1000
-* `ADC2_TEMP_ADDR` = `11` # 0b1011
+```python
+ID = 5
+FAST1 = Pin.board.SLOT5_FAST1
+FAST2 = Pin.board.SLOT5_FAST2
+FAST3 = Pin.board.SLOT5_FAST3
+FAST4 = Pin.board.SLOT5_FAST4
+SLOW1 = Pin.board.SLOT5_SLOW1
+SLOW2 = Pin.board.SLOT5_SLOW2
+SLOW3 = Pin.board.SLOT5_SLOW3
+ADC1_ADDR = 8       # 0b1000
+ADC2_TEMP_ADDR = 11 # 0b1011
+```
 
 **`SLOT6`**
-* `ID` = `6`
-* `FAST1` = `Pin.board.SLOT6_FAST1`
-* `FAST2` = `Pin.board.SLOT6_FAST2`
-* `FAST3` = `Pin.board.SLOT6_FAST3`
-* `FAST4` = `Pin.board.SLOT6_FAST4`
-* `SLOW1` = `Pin.board.SLOT6_SLOW1`
-* `SLOW2` = `Pin.board.SLOT6_SLOW2`
-* `SLOW3` = `Pin.board.SLOT6_SLOW3`
-* `ADC1_ADDR` = `9`  # 0b1001
-* `ADC2_TEMP_ADDR` = `10` # 0b1010
+```python
+ID = 6
+FAST1 = Pin.board.SLOT6_FAST1
+FAST2 = Pin.board.SLOT6_FAST2
+FAST3 = Pin.board.SLOT6_FAST3
+FAST4 = Pin.board.SLOT6_FAST4
+SLOW1 = Pin.board.SLOT6_SLOW1
+SLOW2 = Pin.board.SLOT6_SLOW2
+SLOW3 = Pin.board.SLOT6_SLOW3
+ADC1_ADDR = 9       # 0b1001
+ADC2_TEMP_ADDR = 10 # 0b1010
+```
 
 
 ### Sensor Addresses
 
-* `CURRENT_SENSE_ADDR` = `12` # 0b1100
-* `TEMP_SENSE_ADDR` = `13`    # 0b1101
-* `VOLTAGE_SENSE_ADDR` = `14` # 0b1110
-* `EX_ADC_ADDR` = `15`        # 0b1111
+```python
+CURRENT_SENSE_ADDR = 12 # 0b1100
+TEMP_SENSE_ADDR = 13    # 0b1101
+VOLTAGE_SENSE_ADDR = 14 # 0b1110
+EX_ADC_ADDR = 15        # 0b1111
+```
