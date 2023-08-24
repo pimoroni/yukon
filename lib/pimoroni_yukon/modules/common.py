@@ -39,8 +39,8 @@ class YukonModule:
         self.__adc1_func = adc1_func
         self.__adc2_func = adc2_func
 
-        # Configure any objects created during initialisation
-        self.configure()
+        # Put any objects created during initialisation into a known state
+        self.reset()
 
     def is_initialised(self):
         return self.slot is not None
@@ -50,8 +50,8 @@ class YukonModule:
         self.__adc1_func = None
         self.__adc2_func = None
 
-    def configure(self):
-        # Function for (re)configuring pins etc to their default states needed by the module
+    def reset(self):
+        # Override this to reset the module back into a default state post-initialisation
         pass
 
     def __read_adc1(self):
@@ -75,13 +75,15 @@ class YukonModule:
         self.__monitor_action_callback = callback_function
 
     def monitor(self):
+        # Override this to perform any module specific monitoring
         pass
 
     def get_readings(self):
+        # Override this to return any readings obtained during monitoring
         return OrderedDict()
 
     def process_readings(self):
-        # Use this to calculate averages, or do other post-processing on readings after monitor
+        # Override this to calculate averages, or do other post-processing on readings after monitor
         pass
 
     def clear_readings(self):

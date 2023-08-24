@@ -56,7 +56,7 @@ class BenchPowerModule(YukonModule):
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
-    def configure(self):
+    def reset(self):
         self.voltage_pwm.duty_u16(0)
 
         self.__power_en.init(Pin.OUT, value=False)

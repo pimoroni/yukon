@@ -63,7 +63,7 @@ class DualMotorModule(YukonModule):
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
-    def configure(self):
+    def reset(self):
         if self.__motor_type == self.DUAL:
             for motor in self.motors:
                 motor.disable()

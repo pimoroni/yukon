@@ -230,6 +230,9 @@ Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
       current_limit=DEFAULT_CURRENT_LIMIT : float,
       temperature_limit=DEFAULT_TEMPERATURE_LIMIT : float
       logging_level=logging.LOG_INFO : int)
+reset() -> None
+
+## Misc ##
 change_logging(logging_level : int)
 
 ## Slot ##
@@ -250,7 +253,7 @@ set_led(switch : int | string, value : bool) -> None
 ## Power Control ##
 enable_main_output() -> None
 disable_main_output() -> None
-is_main_output() -> bool
+is_main_output_enabled() -> bool
 
 ## Sensing ##
 read_voltage() -> float
@@ -270,9 +273,6 @@ monitor_once(allowed : list | None, excluded : list | None) -> None
 get_readings() -> OrderedDict
 process_readings() -> None
 clear_readings() -> None
-
-## Other ##
-reset() -> None
 ```
 
 ### Yukon Module
@@ -287,7 +287,7 @@ YukonModule()
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
 is_initialised() -> bool
 deregister() -> None
-configure() -> None
+reset() -> None
 
 ## Monitoring ##
 assign_monitor_action(callback_function : Any) -> None
@@ -322,7 +322,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 AudioAmpModule()
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control ##
 enable() -> None
@@ -380,7 +380,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 BenchPowerModule(halt_on_not_pgood=False : bool)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control
 enable() -> None
@@ -430,7 +430,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 BigMotorModule(frequency=DEFAULT_FREQUENCY : float)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control ##
 enable() -> None
@@ -481,7 +481,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 DualMotorModule(motor_type=DUAL : int,
                 frequency=DEFAULT_FREQUENCY : float)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control ##
 enable() -> None
@@ -524,7 +524,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 DualSwitchedModule(halt_on_not_pgood=False : bool)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control ##
 enable() -> None
@@ -570,7 +570,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 LEDStripModule(strip_type : int, num_pixels : int, brightness=1.0 : float, halt_on_not_pgood=False : bool)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Misc ##
 count() -> int
@@ -617,7 +617,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 QuadServoDirect()
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Sensing ##
 read_adc1() -> float
@@ -651,7 +651,7 @@ is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 ## Initialisation ##
 QuadServoRegModule(halt_on_not_pgood=False : bool)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
-configure() -> None
+reset() -> None
 
 ## Power Control ##
 enable() -> None

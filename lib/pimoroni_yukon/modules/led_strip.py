@@ -54,7 +54,7 @@ class LEDStripModule(YukonModule):
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
-    def configure(self):
+    def reset(self):
         self.__power_en.init(Pin.OUT, value=False)
         self.__power_good.init(Pin.IN, Pin.PULL_UP)
 
