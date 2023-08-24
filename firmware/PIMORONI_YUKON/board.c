@@ -1,7 +1,7 @@
 #include "mpconfigboard.h"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
-#include "drivers/tca9555/tca9555.h"
+#include "tca9555.h"
 
 void board_init() {
     gpio_init(8);
