@@ -233,46 +233,46 @@ Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
 change_logging(logging_level : int)
 
 ## Slot ##
-find_slots_with_module(module_type : type[YukonModule])
-register_with_slot(module : YukonModule, slot : int | SLOT)
-deregister_slot(slot : int | SLOT)
-detect_module(slot : int | SLOT)
+find_slots_with_module(module_type : type[YukonModule]) -> list[SLOT]
+register_with_slot(module : YukonModule, slot : int | SLOT) -> None
+deregister_slot(slot : int | SLOT) -> None
+detect_module(slot : int | SLOT) -> type[YukonModule]
 initialise_modules(allow_unregistered : bool | int | SLOT | list | tuple,
                    allow_undetected : bool | int | SLOT | list | tuple
                    allow_discrepencies : bool | int | SLOT | list | tuple,
-                   allow_no_modules : bool)
+                   allow_no_modules : bool) -> None
 
 ## Interaction ##
-is_pressed(switch : int | string) : bool
-is_boot_pressed() : bool
-set_led(switch : int | string, value : bool) : None
+is_pressed(switch : int | string) -> bool
+is_boot_pressed() -> bool
+set_led(switch : int | string, value : bool) -> None
 
 ## Power Control ##
-enable_main_output() : None
-disable_main_output() : None
-is_main_output() : bool
+enable_main_output() -> None
+disable_main_output() -> None
+is_main_output() -> bool
 
 ## Sensing ##
-read_voltage() : float
-read_current() : float
-read_temperature() : float
-read_expansion() : float
-read_slot_adc1(slot : int | SLOT) : float
-read_slot_adc2(slot : int | SLOT) : float
+read_voltage() -> float
+read_current() -> float
+read_temperature() -> float
+read_expansion() -> float
+read_slot_adc1(slot : int | SLOT) -> float
+read_slot_adc2(slot : int | SLOT) -> float
 
 ## Monitoring ##
-assign_monitor_action(callback_function : Any) : None
-monitor() : None
-monitored_sleep(seconds : float, allowed : list | None, excluded : list | None) : None
-monitored_sleep_ms(ms : int, allowed : list | None, excluded : list | None) : None
-monitor_until_ms(end_ms : int, allowed : list | None, excluded : list | None) : None
-monitor_once(allowed : list | None, excluded : list | None) : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+assign_monitor_action(callback_function : Any) -> None
+monitor() -> None
+monitored_sleep(seconds : float, allowed : list | None, excluded : list | None) -> None
+monitored_sleep_ms(ms : int, allowed : list | None, excluded : list | None) -> None
+monitor_until_ms(end_ms : int, allowed : list | None, excluded : list | None) -> None
+monitor_once(allowed : list | None, excluded : list | None) -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 
 ## Other ##
-reset() : None
+reset() -> None
 ```
 
 ### Yukon Module
@@ -280,21 +280,21 @@ reset() : None
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 YukonModule()
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-is_initialised() : bool
-deregister() : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+is_initialised() -> bool
+deregister() -> None
+configure() -> None
 
 ## Monitoring ##
-assign_monitor_action(callback_function : Any) : None
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+assign_monitor_action(callback_function : Any) -> None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### Audio Amp Module
@@ -317,35 +317,35 @@ I2S_FS : SLOT
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 AudioAmpModule()
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control ##
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Output Control ##
-exit_soft_shutdown() : None
-set_volume(volume : float) : None
+exit_soft_shutdown() -> None
+set_volume(volume : float) -> None
 
 ## Sensing ##
-read_temperature() : float
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 
 ## Soft I2C ##
-write_i2c_reg(register : int, data : int) : None
-read_i2c_reg(register : int) : int
-detect_i2c() : int
+write_i2c_reg(register : int, data : int) -> None
+read_i2c_reg(register : int) -> int
+detect_i2c() -> int
 ```
 
 ### Bench Power Module
@@ -375,32 +375,32 @@ halt_on_not_pgood : bool
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 BenchPowerModule(halt_on_not_pgood=False : bool)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Output Control ##
-set_target_voltage(voltage : float) : None
-set_target(percent : float) : None
+set_target_voltage(voltage : float) -> None
+set_target(percent : float) -> None
 
 ## Sensing ##
-read_voltage(): float
-read_power_good() : bool
-read_temperature() : float
+read_voltage() -> float
+read_power_good() -> bool
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### Big Motor Module
@@ -425,28 +425,28 @@ motor : Motor
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 BigMotorModule(frequency=DEFAULT_FREQUENCY : float)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control ##
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Sensing ##
-read_fault() : bool
-read_current() : float
-read_temperature() : float
+read_fault() -> bool
+read_current() -> float
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### Dual Motor Module
@@ -465,9 +465,9 @@ TEMPERATURE_THRESHOLD = 50.0
 
 #### Variables & Properties
 ```python
-motors : list(Motor)
-motor1 : Motor
-motor2 : Motor
+motors : list[Motor]
+motor1 -> Motor
+motor2 -> Motor
 stepper : Stepper
 ```
 
@@ -475,31 +475,31 @@ stepper : Stepper
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 DualMotorModule(motor_type=DUAL : int,
                 frequency=DEFAULT_FREQUENCY : float)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control ##
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Output Control ##
 ...
 
 ## Sensing
-read_fault() : bool
-read_temperature() : float
+read_fault() -> bool
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### Dual Switched Module
@@ -519,31 +519,31 @@ halt_on_not_pgood : bool
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 DualSwitchedModule(halt_on_not_pgood=False : bool)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control ##
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Output Control
-output(switch : int, value : bool) : None
-read_output(switch : int) : bool
+output(switch : int, value : bool) -> None
+read_output(switch : int) -> bool
 
 ## Sensing ##
-read_power_good(switch : int) : bool
-read_temperature() : float
+read_power_good(switch : int) -> bool
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### LED Strip Module
@@ -558,37 +558,37 @@ TEMPERATURE_THRESHOLD = 50.0
 
 #### Variables & Properties
 ```python
-halt_on_not_pgood : bool
+halt_on_not_pgood -> bool
 ```
 
 #### Methods
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 LEDStripModule(strip_type : int, num_pixels : int, brightness=1.0 : float, halt_on_not_pgood=False : bool)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Misc ##
-count() : int
+count() -> int
 
 ## Power Control
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Sensing ##
-read_power_good() : bool
-read_temperature() : float
+read_power_good() -> bool
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 ### Quad Servo Direct Module
@@ -601,27 +601,27 @@ NUM_SERVOS = 4
 
 #### Variables & Properties
 ```python
-servos : list(Servo)
-servo1 : Servo
-servo2 : Servo
-servo3 : Servo
-servo4 : Servo
+servos : list[Servo]
+servo1 -> Servo
+servo2 -> Servo
+servo3 -> Servo
+servo4 -> Servo
 ```
 
 #### Methods
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 QuadServoDirect()
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Sensing ##
-read_adc1() : float
-read_adc2() : float
+read_adc1() -> float
+read_adc2() -> float
 ```
 
 ### Quad Servo Reg Module
@@ -635,38 +635,38 @@ NUM_SERVOS = 4
 #### Variables & Properties
 ```python
 halt_on_not_pgood : bool
-servos : list(Servo)
-servo1 : Servo
-servo2 : Servo
-servo3 : Servo
-servo4 : Servo
+servos : list[Servo]
+servo1 -> Servo
+servo2 -> Servo
+servo3 -> Servo
+servo4 -> Servo
 ```
 
 #### Methods
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 QuadServoRegModule(halt_on_not_pgood=False : bool)
-initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
-configure() : None
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
+configure() -> None
 
 ## Power Control ##
-enable() : None
-disable() : None
-is_enabled() : bool
+enable() -> None
+disable() -> None
+is_enabled() -> bool
 
 ## Sensing ##
-read_power_good() : bool
-read_temperature() : float
+read_power_good() -> bool
+read_temperature() -> float
 
 ## Monitoring ##
-monitor() : None
-get_readings() : OrderedDict
-process_readings() : None
-clear_readings() : None
+monitor() -> None
+get_readings() -> OrderedDict
+process_readings() -> None
+clear_readings() -> None
 ```
 
 
