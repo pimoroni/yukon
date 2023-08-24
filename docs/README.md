@@ -1,4 +1,4 @@
-# Inventor HAT Mini - Library Reference <!-- omit in toc -->
+# Yukon - Library Reference <!-- omit in toc -->
 
 This is the library reference for the [Pimoroni Yukon](https://pimoroni.com/yukon), a high-powered modular robotics / engineering platform, powered by the Raspberry Pi RP2040.
 
@@ -9,17 +9,43 @@ This is the library reference for the [Pimoroni Yukon](https://pimoroni.com/yuko
 - [Setting the User LEDs](#setting-the-user-leds)
 - [Time Delays and Sleeping](#time-delays-and-sleeping)
 - [Reading Sensors Directly](#reading-sensors-directly)
+- [Program Lifecycle](#program-lifecycle)
 - [Function Reference](#function-reference)
   - [Yukon](#yukon)
+    - [Constants](#constants)
+    - [Methods](#methods)
   - [Yukon Module](#yukon-module)
   - [Audio Amp Module](#audio-amp-module)
+    - [Constants](#constants-1)
+    - [Variables \& Properties](#variables--properties)
+    - [Methods](#methods-1)
   - [Bench Power Module](#bench-power-module)
+    - [Constants](#constants-2)
+    - [Variables \& Properties](#variables--properties-1)
+    - [Methods](#methods-2)
   - [Big Motor Module](#big-motor-module)
+    - [Constants](#constants-3)
+    - [Variables \& Properties](#variables--properties-2)
+    - [Methods](#methods-3)
   - [Dual Motor Module](#dual-motor-module)
+    - [Constants](#constants-4)
+    - [Variables \& Properties](#variables--properties-3)
+    - [Method](#method)
   - [Dual Switched Module](#dual-switched-module)
+    - [Constants](#constants-5)
+    - [Variables \& Properties](#variables--properties-4)
   - [LED Strip Module](#led-strip-module)
+    - [Constants](#constants-6)
+    - [Variables \& Properties](#variables--properties-5)
+    - [Methods](#methods-4)
   - [Quad Servo Direct Module](#quad-servo-direct-module)
+    - [Constants](#constants-7)
+    - [Variables \& Properties](#variables--properties-6)
+    - [Methods](#methods-5)
   - [Quad Servo Reg Module](#quad-servo-reg-module)
+    - [Constants](#constants-8)
+    - [Variables \& Properties](#variables--properties-7)
+    - [Methods](#methods-6)
 - [Constants Reference](#constants-reference)
   - [Slot Constants](#slot-constants)
   - [Sensor Addresses](#sensor-addresses)
@@ -44,7 +70,7 @@ Yukon has three user buttons along its bottom edge, labelled **A**, **B** and **
 ```python
 state_a = yukon.is_pressed('A')
 state_b = yukon.is_pressed('B')
-state_boot = yukon.is_bool_pressed()
+state_boot = yukon.is_boot_pressed()
 ```
 
 In addition to the onboard buttons, it is possible to wire up external **A**, **B** and **Boot/User** buttons, letting you interact with Yukon when inside of an enclosure. These are exposed on the **Expansion** and **CTRL** headers along the top edge of the board, either side of the USB and power inputs.
@@ -116,219 +142,531 @@ In addition, each module will have functions for reading its various sensors:
 `read_adc2()` | - | - | - | - | - | - | Yes | - |
 
 
+## Program Lifecycle
+
+When writing a program for Yukon, there are a number of steps that should be included to make best use of the board's capabilities.
+
+
+```python
+# Start with any imports needed for your pram
+from pimoroni_yukon import Yukon
+
+# Import the classes for the modules you intend to use
+from pimoroni_yukon.modules import <ModuleClass>  # e.g. LEDStripModule
+
+# Import the logging levels to use (if you wish to change from the default)
+from pimoroni_yukon.logging import LOG_NONE, LOG_WARN, LOG_INFO, LOG_DEBUG
+
+# Create an instance of the Yukon class, configuring any software limits for voltage, current, and temperature. The logging level can also be set here.
+yukon = Yukon(voltage_limit=<?>, current_limit=<?>, temperature_limit=<?>, logging_level=<?>)
+
+# Immediately start a try block, to catch any exceptions and put the board back into a safe state
+try:
+  # Create instances of your modules here
+  module1 = <ModuleClass>
+
+  # Register modules with the Yukon class
+  yukon.register_with_slot(module1, 1)
+
+  # Initialise Yukon's registered modules
+  yukon.initialise_modules()
+
+  # Turn on the module power
+  yukon.enable_main_output()
+
+  # Enable the module
+  module1.enable()
+
+  # Loop forever
+  while True:
+    <User Code Goes Here>
+
+    # Perform a monitored sleep
+    yukon.monitored_sleep(0.1)
+
+# Reset the yukon instance if the program completes successfully or an exception occurs
+finally:
+    yukon.reset()
+```
+
+
 ## Function Reference
 
 ### Yukon
 
-Here is the complete list of functions available on the `Yukon` class:
-
+#### Constants
 ```python
-Yukon(voltage_limit=17.2, current_limit=20, temperature_limit=90, logging_level=2)
-change_logging(logging_level)
-find_slots_with_module(module_type)
-register_with_slot(module, slot)
-deregister_slot(slot)
-detect_module(slot)
-initialise_modules(allow_unregistered=False, allow_undetected=False, allow_discrepencies=False, allow_no_modules=False)
-is_pressed(switch)
-is_boot_pressed()
-set_led(switch, value)
-enable_main_output()
-disable_main_output()
-is_main_output()
-read_voltage()
-read_current()
-read_temperature()
-read_expansion()
-read_slot_adc1(slot)
-read_slot_adc2(slot)
-assign_monitor_action(callback_function)
-monitor()
-monitored_sleep()
-monitored_sleep_ms()
-monitor_until_ms()
-monitor_once()
-get_readings()
-process_readings()
-clear_readings()
-reset()
+VOLTAGE_MAX = 17.0
+VOLTAGE_MIN_MEASURE = 0.030
+VOLTAGE_MAX_MEASURE = 2.294
+
+CURRENT_MAX = 10.0
+CURRENT_MIN_MEASURE = 0.0147
+CURRENT_MAX_MEASURE = 0.9307
+
+SWITCH_A = 0
+SWITCH_B = 1
+SWITCH_A_NAME = 'A'
+SWITCH_B_NAME = 'B'
+SWITCH_USER = 2
+NUM_SLOTS = 6
+
+DEFAULT_VOLTAGE_LIMIT = 17.2
+VOLTAGE_LOWER_LIMIT = 4.8
+VOLTAGE_ZERO_LEVEL = 0.05
+DEFAULT_CURRENT_LIMIT = 20
+DEFAULT_TEMPERATURE_LIMIT = 90
+ABSOLUTE_MAX_VOLTAGE_LIMIT = 18
+
+DETECTION_SAMPLES = 64
+DETECTION_ADC_LOW = 0.1
+DETECTION_ADC_HIGH = 3.2
+```
+
+#### Methods
+Here is the complete list of methods available on the `Yukon` class:
+```python
+Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
+      current_limit=DEFAULT_CURRENT_LIMIT : float,
+      temperature_limit=DEFAULT_TEMPERATURE_LIMIT : float
+      logging_level=logging.LOG_INFO : int)
+change_logging(logging_level : int)
+
+## Slot ##
+find_slots_with_module(module_type : type[YukonModule])
+register_with_slot(module : YukonModule, slot : int | SLOT)
+deregister_slot(slot : int | SLOT)
+detect_module(slot : int | SLOT)
+initialise_modules(allow_unregistered : bool | int | SLOT | list | tuple,
+                   allow_undetected : bool | int | SLOT | list | tuple
+                   allow_discrepencies : bool | int | SLOT | list | tuple,
+                   allow_no_modules : bool)
+
+## Interaction ##
+is_pressed(switch : int | string) : bool
+is_boot_pressed() : bool
+set_led(switch : int | string, value : bool) : None
+
+## Power Control ##
+enable_main_output() : None
+disable_main_output() : None
+is_main_output() : bool
+
+## Sensing ##
+read_voltage() : float
+read_current() : float
+read_temperature() : float
+read_expansion() : float
+read_slot_adc1(slot : int | SLOT) : float
+read_slot_adc2(slot : int | SLOT) : float
+
+## Monitoring ##
+assign_monitor_action(callback_function : Any) : None
+monitor() : None
+monitored_sleep(seconds : float, allowed : list | None, excluded : list | None) : None
+monitored_sleep_ms(ms : int, allowed : list | None, excluded : list | None) : None
+monitor_until_ms(end_ms : int, allowed : list | None, excluded : list | None) : None
+monitor_once(allowed : list | None, excluded : list | None) : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
+
+## Other ##
+reset() : None
 ```
 
 ### Yukon Module
 
 ```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
 YukonModule()
-initialise(slot, adc1_func, adc2_func)
-is_initialised()
-deregister()
-configure()
-assign_monitor_action(callback_function)
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+is_initialised() : bool
+deregister() : None
+configure() : None
+
+## Monitoring ##
+assign_monitor_action(callback_function : Any) : None
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### Audio Amp Module
 
+#### Constants
 ```python
+NAME = "Audio Amp"
+AMP_I2C_ADDRESS = 0x38
+TEMPERATURE_THRESHOLD = 50.0
+```
+
+#### Variables & Properties
+```python
+I2S_DATA : SLOT
+I2S_CLK : SLOT
+I2S_FS : SLOT
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
 AudioAmpModule()
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-exit_soft_shutdown()
-set_volume(volume)
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
-write_i2c_reg(register, data)
-read_i2c_reg(register)
-detect_i2c()
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control ##
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Output Control ##
+exit_soft_shutdown() : None
+set_volume(volume : float) : None
+
+## Sensing ##
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
+
+## Soft I2C ##
+write_i2c_reg(register : int, data : int) : None
+read_i2c_reg(register : int) : int
+detect_i2c() : int
 ```
 
 ### Bench Power Module
 
+#### Constants
 ```python
-BenchPowerModule(halt_on_not_pgood=False)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-set_target_voltage(voltage)
-set_target(percent)
-read_voltage()
-read_power_good()
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "Bench Power"
+
+VOLTAGE_MAX = 12.3953
+VOLTAGE_MID = 6.5052
+VOLTAGE_MIN = 0.6713
+VOLTAGE_MIN_MEASURE = 0.1477
+VOLTAGE_MID_MEASURE = 1.1706
+VOLTAGE_MAX_MEASURE = 2.2007
+PWM_MIN = 0.3
+PWM_MAX = 0.0
+
+TEMPERATURE_THRESHOLD = 50.0
+```
+
+#### Variables & Properties
+```python
+halt_on_not_pgood : bool
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+BenchPowerModule(halt_on_not_pgood=False : bool)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Output Control ##
+set_target_voltage(voltage : float) : None
+set_target(percent : float) : None
+
+## Sensing ##
+read_voltage(): float
+read_power_good() : bool
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### Big Motor Module
 
+#### Constants
 ```python
-BigMotorModule(frequency)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-read_fault()
-read_current()
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "Big Motor + Encoder"
+NUM_MOTORS = 1
+DEFAULT_FREQUENCY = 25000
+TEMPERATURE_THRESHOLD = 50.0
+CURRENT_THRESHOLD = 25.0
+SHUNT_RESISTOR = 0.001
+GAIN = 80
+```
+
+#### Variables & Properties
+```python
+motor : Motor
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+BigMotorModule(frequency=DEFAULT_FREQUENCY : float)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control ##
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Sensing ##
+read_fault() : bool
+read_current() : float
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### Dual Motor Module
 
+#### Constants
 ```python
-DualMotorModule(motor_type, frequency)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-decay()
-decay(value)
-toff()
-toff(value)
-motor1
-motor2
-read_fault()
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "Dual Motor"
+DUAL = 0
+STEPPER = 1
+NUM_MOTORS = 2
+NUM_STEPPERS = 1
+FAULT_THRESHOLD = 0.1
+DEFAULT_FREQUENCY = 25000
+TEMPERATURE_THRESHOLD = 50.0
+```
+
+#### Variables & Properties
+```python
+motors : list(Motor)
+motor1 : Motor
+motor2 : Motor
+stepper : Stepper
+```
+
+#### Method
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+DualMotorModule(motor_type=DUAL : int,
+                frequency=DEFAULT_FREQUENCY : float)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control ##
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Output Control ##
+...
+
+## Sensing
+read_fault() : bool
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### Dual Switched Module
 
+#### Constants
 ```python
-DualSwitchedModule(halt_on_not_pgood=False)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-output(switch, value)
-read_output(switch)
-read_power_good(switch)
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "Dual Switched Output"
+NUM_SWITCHES = 2
+TEMPERATURE_THRESHOLD = 50.0
+```
+
+#### Variables & Properties
+```python
+halt_on_not_pgood : bool
+```
+
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+DualSwitchedModule(halt_on_not_pgood=False : bool)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control ##
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Output Control
+output(switch : int, value : bool) : None
+read_output(switch : int) : bool
+
+## Sensing ##
+read_power_good(switch : int) : bool
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### LED Strip Module
 
+#### Constants
 ```python
-LEDStripModule(strip_type, num_pixels, brightness=1.0, halt_on_not_pgood=False)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-count()
-enable()
-disable()
-is_enabled()
-read_power_good()
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "LED Strip"
+NEOPIXEL = 0
+DOTSTAR = 1
+TEMPERATURE_THRESHOLD = 50.0
+```
+
+#### Variables & Properties
+```python
+halt_on_not_pgood : bool
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+LEDStripModule(strip_type : int, num_pixels : int, brightness=1.0 : float, halt_on_not_pgood=False : bool)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Misc ##
+count() : int
+
+## Power Control
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Sensing ##
+read_power_good() : bool
+read_temperature() : float
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 ### Quad Servo Direct Module
 
+#### Constants
 ```python
+NAME = "Quad Servo Direct"
+NUM_SERVOS = 4
+```
+
+#### Variables & Properties
+```python
+servos : list(Servo)
+servo1 : Servo
+servo2 : Servo
+servo3 : Servo
+servo4 : Servo
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
 QuadServoDirect()
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-servo1
-servo2
-servo3
-servo4
-read_adc1()
-read-adc2()
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Sensing ##
+read_adc1() : float
+read_adc2() : float
 ```
 
 ### Quad Servo Reg Module
 
+#### Constants
 ```python
-QuadServoRegModule(halt_on_not_pgood=False)
-is_module(adc_level, slow1, slow2, slow3)
-initialise(slot, adc1_func, adc2_func)
-configure()
-enable()
-disable()
-is_enabled()
-servo1
-servo2
-servo3
-servo4
-read_power_good()
-read_temperature()
-monitor()
-get_readings()
-process_readings()
-clear_readings()
+NAME = "Quad Servo Direct"
+NUM_SERVOS = 4
+```
+
+#### Variables & Properties
+```python
+halt_on_not_pgood : bool
+servos : list(Servo)
+servo1 : Servo
+servo2 : Servo
+servo3 : Servo
+servo4 : Servo
+```
+
+#### Methods
+```python
+## Address Checking ##
+@staticmethod
+is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) : bool
+
+## Initialisation ##
+QuadServoRegModule(halt_on_not_pgood=False : bool)
+initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) : None
+configure() : None
+
+## Power Control ##
+enable() : None
+disable() : None
+is_enabled() : bool
+
+## Sensing ##
+read_power_good() : None
+read_temperature() : None
+
+## Monitoring ##
+monitor() : None
+get_readings() : OrderedDict
+process_readings() : None
+clear_readings() : None
 ```
 
 
@@ -350,7 +688,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT1_SLOW1`
 * `SLOW2` = `Pin.board.SLOT1_SLOW2`
 * `SLOW3` = `Pin.board.SLOT1_SLOW3`
-* `ADC1-ADDR` = `0`  # 0b0000
+* `ADC1_ADDR` = `0`  # 0b0000
 * `ADC2_TEMP_ADDR` = `3`  # 0b0011
 
 **`SLOT2`**
@@ -362,7 +700,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT2_SLOW1`
 * `SLOW2` = `Pin.board.SLOT2_SLOW2`
 * `SLOW3` = `Pin.board.SLOT2_SLOW3`
-* `ADC1-ADDR` = `1`  # 0b0001
+* `ADC1_ADDR` = `1`  # 0b0001
 * `ADC2_TEMP_ADDR` = `6`  # 0b0110
 
 **`SLOT3`**
@@ -374,7 +712,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT3_SLOW1`
 * `SLOW2` = `Pin.board.SLOT3_SLOW2`
 * `SLOW3` = `Pin.board.SLOT3_SLOW3`
-* `ADC1-ADDR` = `4`  # 0b0100
+* `ADC1_ADDR` = `4`  # 0b0100
 * `ADC2_TEMP_ADDR` = `2`  # 0b0010
 
 **`SLOT4`**
@@ -386,7 +724,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT4_SLOW1`
 * `SLOW2` = `Pin.board.SLOT4_SLOW2`
 * `SLOW3` = `Pin.board.SLOT4_SLOW3`
-* `ADC1-ADDR` = `5`  # 0b0101
+* `ADC1_ADDR` = `5`  # 0b0101
 * `ADC2_TEMP_ADDR` = `7`  # 0b0111
 
 **`SLOT5`**
@@ -398,7 +736,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT5_SLOW1`
 * `SLOW2` = `Pin.board.SLOT5_SLOW2`
 * `SLOW3` = `Pin.board.SLOT5_SLOW3`
-* `ADC1-ADDR` = `8`  # 0b1000
+* `ADC1_ADDR` = `8`  # 0b1000
 * `ADC2_TEMP_ADDR` = `11` # 0b1011
 
 **`SLOT6`**
@@ -410,7 +748,7 @@ These constants represent each of the 6 slots on Yukon. They are a namedtuple co
 * `SLOW1` = `Pin.board.SLOT6_SLOW1`
 * `SLOW2` = `Pin.board.SLOT6_SLOW2`
 * `SLOW3` = `Pin.board.SLOT6_SLOW3`
-* `ADC1-ADDR` = `9`  # 0b1001
+* `ADC1_ADDR` = `9`  # 0b1001
 * `ADC2_TEMP_ADDR` = `10` # 0b1010
 
 
