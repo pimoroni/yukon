@@ -4,6 +4,7 @@
 
 import math
 from ucollections import OrderedDict
+from pimoroni_yukon.conversion import analog_to_temp
 
 ADC_LOW = 0
 ADC_HIGH = 1
@@ -15,10 +16,6 @@ HIGH = True
 
 class YukonModule:
     NAME = "Unnamed"
-
-    ROOM_TEMP = 273.15 + 25
-    RESISTOR_AT_ROOM_TEMP = 10000.0
-    BETA = 3435
 
     @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
@@ -61,12 +58,7 @@ class YukonModule:
         return self.__adc2_func(self.slot)
 
     def __read_adc2_as_temp(self):
-        sense = self.__adc2_func(self.slot)
-        r_thermistor = sense / ((3.3 - sense) / 5100)
-        t_kelvin = (self.BETA * self.ROOM_TEMP) / (self.BETA + (self.ROOM_TEMP * math.log(r_thermistor / self.RESISTOR_AT_ROOM_TEMP)))
-        t_celsius = t_kelvin - 273.15
-        # https://www.allaboutcircuits.com/projects/measuring-temperature-with-an-ntc-thermistor/
-        return t_celsius
+        return analog_to_temp(self.__adc2_func(self.slot))
 
     def assign_monitor_action(self, callback_function):
         if not None and not callable(callback_function):

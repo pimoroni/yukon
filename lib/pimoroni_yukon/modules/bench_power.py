@@ -138,9 +138,9 @@ class BenchPowerModule(YukonModule):
     def get_readings(self):
         return OrderedDict({
             "PGood": self.__power_good_throughout,
-            "VO_max": self.__max_voltage_out,
-            "VO_min": self.__min_voltage_out,
-            "VO_avg": self.__avg_voltage_out,
+            "Vo_max": self.__max_voltage_out,
+            "Vo_min": self.__min_voltage_out,
+            "Vo_avg": self.__avg_voltage_out,
             "T_max": self.__max_temperature,
             "T_min": self.__min_temperature,
             "T_avg": self.__avg_temperature
