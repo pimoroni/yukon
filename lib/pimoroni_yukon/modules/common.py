@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-import math
 from ucollections import OrderedDict
 from pimoroni_yukon.conversion import analog_to_temp
 

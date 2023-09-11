@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: MIT
 
 import time
-import math
 import tca
 from machine import ADC, Pin
 from pimoroni_yukon.modules import KNOWN_MODULES
