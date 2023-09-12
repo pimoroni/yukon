@@ -103,7 +103,7 @@ class DualSwitchedModule(YukonModule):
 
         temperature = self.read_temperature()
         if temperature > self.TEMPERATURE_THRESHOLD:
-            raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the user set level of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
+            raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the limit of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
 
         if self.__last_pgood1 is True and pgood1 is not True:
             logging.warn(self.__message_header() + "Power1 is not good")

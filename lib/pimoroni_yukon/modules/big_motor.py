@@ -84,11 +84,11 @@ class BigMotorModule(YukonModule):
 
         current = self.read_current()
         if current > self.CURRENT_THRESHOLD:
-            raise OverCurrentError(self.__message_header() + f"Current of {current}A exceeded the user set level of {self.CURRENT_THRESHOLD}A! Turning off output")
+            raise OverCurrentError(self.__message_header() + f"Current of {current}A exceeded the limit of {self.CURRENT_THRESHOLD}A! Turning off output")
 
         temperature = self.read_temperature()
         if temperature > self.TEMPERATURE_THRESHOLD:
-            raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the user set level of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
+            raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the limit of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
 
         # Run some user action based on the latest readings
         if self.__monitor_action_callback is not None:

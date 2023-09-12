@@ -110,6 +110,7 @@ class Yukon:
     DEFAULT_VOLTAGE_LIMIT = 17.2
     VOLTAGE_LOWER_LIMIT = 4.8
     VOLTAGE_ZERO_LEVEL = 0.05
+    VOLTAGE_SHORT_LEVEL = 0.5
     DEFAULT_CURRENT_LIMIT = 20
     DEFAULT_TEMPERATURE_LIMIT = 90
     ABSOLUTE_MAX_VOLTAGE_LIMIT = 18
@@ -422,14 +423,17 @@ class Yukon:
         if self.is_main_output_enabled() is False:
             logging.info("> Checking input voltage ...")
             voltage_in = self.read_input_voltage()
+            if voltage_in > self.ABSOLUTE_MAX_VOLTAGE_LIMIT:
+                raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeds the maximum of {self.ABSOLUTE_MAX_VOLTAGE_LIMIT}V! Aborting enable output")
+
             if voltage_in > self.__voltage_limit:
-                raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeds the user set level of {self.__voltage_limit}V")
+                raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeds the user set limit of {self.__voltage_limit}V! Aborting enable output")
 
             if voltage_in < self.VOLTAGE_ZERO_LEVEL:
                 raise UnderVoltageError("[Yukon] No input voltage detected! Make sure power is being provided to the XT-30 (yellow) connector")
 
             if voltage_in < self.VOLTAGE_LOWER_LIMIT:
-                raise UnderVoltageError("[Yukon] Input voltage below minimum operating level")
+                raise UnderVoltageError(f"[Yukon] Input voltage below minimum operating level of {self.VOLTAGE_LOWER_LIMIT}V! Aborting enable output")
 
             start = time.ticks_us()
 
@@ -441,9 +445,12 @@ class Yukon:
             self.__enable_main_output()
             while True:
                 new_voltage = self.read_output_voltage()
-                if new_voltage > self.ABSOLUTE_MAX_VOLTAGE_LIMIT:
+                if new_voltage > self.__voltage_limit:  # User limit cannot be beyond the absolute max, so this check is fine
                     self.disable_main_output()
-                    raise OverVoltageError("[Yukon] Output voltage exceeded a safe level! Turning off output")
+                    if new_voltage > self.ABSOLUTE_MAX_VOLTAGE_LIMIT:
+                        raise OverVoltageError(f"[Yukon] Output voltage of {new_voltage}V exceeded the maximum of {self.ABSOLUTE_MAX_VOLTAGE_LIMIT}V! Turning off output")
+                    else:
+                        raise OverVoltageError(f"[Yukon] Output voltage of {new_voltage}V exceeded the user set limit of {self.__voltage_limit}V! Turning off output")
 
                 new_time = time.ticks_us()
                 if abs(new_voltage - old_voltage) < 0.05:
@@ -460,13 +467,15 @@ class Yukon:
 
                 old_voltage = new_voltage
 
-            if new_voltage < self.VOLTAGE_ZERO_LEVEL:
+            # Short Circuit
+            if new_voltage < self.VOLTAGE_SHORT_LEVEL:
                 self.disable_main_output()
-                raise UnderVoltageError("[Yukon] No output voltage detected! Make sure power is being provided to the XT-30 (yellow) connector")
+                raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {new_voltage}V whilst the input voltage was {voltage_in}V. Turning off output")
 
+            # Under Voltage
             if new_voltage < self.VOLTAGE_LOWER_LIMIT:
                 self.disable_main_output()
-                raise UnderVoltageError("[Yukon] Output voltage below minimum operating level. Turning off output")
+                raise UnderVoltageError(f"[Yukon] Output voltage of {new_voltage}V below minimum operating level. Turning off output")
 
             self.clear_readings()
 
@@ -545,32 +554,42 @@ class Yukon:
 
     def monitor(self):
         voltage_in = self.read_input_voltage()
-        if voltage_in > self.__voltage_limit:
-            self.disable_main_output()
-            raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeded the user set level of {self.__voltage_limit}V! Turning off output")
 
+        # Over Voltage
+        if voltage_in > self.__voltage_limit:  # User limit cannot be beyond the absolute max, so this check is fine
+            self.disable_main_output()
+            if voltage_in > self.ABSOLUTE_MAX_VOLTAGE_LIMIT:
+                raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeded the maximum of {self.ABSOLUTE_MAX_VOLTAGE_LIMIT}V! Turning off output")
+            else:
+                raise OverVoltageError(f"[Yukon] Input voltage of {voltage_in}V exceeded the user set limit of {self.__voltage_limit}V! Turning off output")
+
+        # Under Voltage
         if voltage_in < self.VOLTAGE_LOWER_LIMIT:
             self.disable_main_output()
             raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level. Turning off output")
 
+        # Short Circuit
         voltage_out = self.read_output_voltage()
-        if voltage_out > self.__voltage_limit:
+        if voltage_out < self.VOLTAGE_SHORT_LEVEL:
             self.disable_main_output()
-            raise OverVoltageError(f"[Yukon] Output voltage of {voltage_out}V exceeded the user set level of {self.__voltage_limit}V! Turning off output")
+            raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {voltage_out}V whilst the input voltage was {voltage_in}V. Turning off output")
 
+        # Under Voltage
         if voltage_out < self.VOLTAGE_LOWER_LIMIT:
             self.disable_main_output()
             raise UnderVoltageError(f"[Yukon] Output voltage of {voltage_out}V below minimum operating level. Turning off output")
-        
+
+        # Over Current
         current = self.read_current()
         if current > self.__current_limit:
             self.disable_main_output()
-            raise OverCurrentError(f"[Yukon] Current of {current}A exceeded the user set level of {self.__current_limit}A! Turning off output")
+            raise OverCurrentError(f"[Yukon] Current of {current}A exceeded the user set limit of {self.__current_limit}A! Turning off output")
 
+        # Over Temperature
         temperature = self.read_temperature()
         if temperature > self.__temperature_limit:
             self.disable_main_output()
-            raise OverTemperatureError(f"[Yukon] Temperature of {temperature}°C exceeded the user set level of {self.__temperature_limit}°C! Turning off output")
+            raise OverTemperatureError(f"[Yukon] Temperature of {temperature}°C exceeded the user set limit of {self.__temperature_limit}°C! Turning off output")
 
         # Run some user action based on the latest readings
         if self.__monitor_action_callback is not None:
