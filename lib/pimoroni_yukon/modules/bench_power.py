@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, LOW, HIGH
+from .common import YukonModule, ADC_LOW, LOW, HIGH
 from machine import Pin, PWM
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -26,11 +26,9 @@ class BenchPowerModule(YukonModule):
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | 1     | 0     | 0     | Bench Power          |                             |
-    # | FLOAT | 1     | 0     | 0     | Bench Power          | When V+ is discharging      |
-    # FLOAT address included as may not be able to rely on the ADC level being low
     @staticmethod
     def is_module(adc_level, slow1, slow2, slow3):
-        return slow1 is HIGH and slow2 is LOW and slow3 is LOW
+        return adc_level is ADC_LOW and slow1 is HIGH and slow2 is LOW and slow3 is LOW
 
     def __init__(self, halt_on_not_pgood=False):
         super().__init__()
@@ -42,7 +40,7 @@ class BenchPowerModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create the voltage pwm object
-            self.voltage_pwm = PWM(slot.FAST2, freq=250000, duty_u16=0)
+            self.__voltage_pwm = PWM(slot.FAST2, freq=250000, duty_u16=0)
         except ValueError as e:
             if slot.ID <= 2 or slot.ID >= 5:
                 conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
@@ -57,7 +55,7 @@ class BenchPowerModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        self.voltage_pwm.duty_u16(0)
+        self.__voltage_pwm.duty_u16(0)
 
         self.__power_en.init(Pin.OUT, value=False)
         self.__power_good.init(Pin.IN)
@@ -72,7 +70,7 @@ class BenchPowerModule(YukonModule):
         return self.__motors_en.value() == 1
 
     def __set_pwm(self, percent):
-        self.voltage_pwm.duty_u16(int(((2 ** 16) - 1) * percent))
+        self.__voltage_pwm.duty_u16(int(((2 ** 16) - 1) * percent))
 
     def set_target_voltage(self, voltage):
         if voltage >= self.VOLTAGE_MID:

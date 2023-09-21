@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
+#
+# SPDX-License-Identifier: MIT
+
 LOG_NONE = 0
 LOG_WARN = 1
 LOG_INFO = 2

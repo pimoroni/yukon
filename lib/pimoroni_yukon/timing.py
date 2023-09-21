@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
+#
+# SPDX-License-Identifier: MIT
+
 from time import ticks_ms, ticks_add, ticks_diff
 
 

@@ -6,7 +6,7 @@ import time
 import tca
 from machine import ADC, Pin
 from pimoroni_yukon.modules import KNOWN_MODULES
-from pimoroni_yukon.modules.common import ADC_FLOAT, ADC_LOW, ADC_HIGH
+from pimoroni_yukon.modules.common import ADC_FLOAT, ADC_LOW, ADC_HIGH, YukonModule
 import pimoroni_yukon.logging as logging
 from pimoroni_yukon.errors import OverVoltageError, UnderVoltageError, OverCurrentError, OverTemperatureError, FaultError, VerificationError
 from pimoroni_yukon.timing import ticks_ms, ticks_add, ticks_diff
@@ -116,7 +116,7 @@ class Yukon:
     ABSOLUTE_MAX_VOLTAGE_LIMIT = 18
 
     DETECTION_SAMPLES = 64
-    DETECTION_ADC_LOW = 0.1
+    DETECTION_ADC_LOW = 0.2
     DETECTION_ADC_HIGH = 3.2
 
     CURRENT_SENSE_ADDR = 12      # 0b1100
@@ -124,8 +124,13 @@ class Yukon:
     VOLTAGE_OUT_SENSE_ADDR = 14  # 0b1110
     VOLTAGE_IN_SENSE_ADDR = 15   # 0b1111
 
-    OUTPUT_STABLISE_TIMEOUT_US = 100 * 1000
-    OUTPUT_STABLISE_TIME_US = 5 * 1000
+    OUTPUT_STABLISE_TIMEOUT_US = 200 * 1000
+    OUTPUT_STABLISE_TIME_US = 10 * 1000
+    OUTPUT_STABLISE_V_DIFF = 0.1
+
+    OUTPUT_DISSIPATE_TIMEOUT_S = 15  # When a bench power module is attached and there is no additional output load, it can take a while for it to return to an idle state
+    OUTPUT_DISSIPATE_TIMEOUT_US = OUTPUT_DISSIPATE_TIMEOUT_S * 1000 * 1000
+    OUTPUT_DISSIPATE_LEVEL = 0.4  # The voltage below which we can reliably obtain the address of attached modules
 
     def __init__(self, voltage_limit=DEFAULT_VOLTAGE_LIMIT, current_limit=DEFAULT_CURRENT_LIMIT, temperature_limit=DEFAULT_TEMPERATURE_LIMIT, logging_level=logging.LOG_INFO):
         self.__voltage_limit = min(voltage_limit, self.ABSOLUTE_MAX_VOLTAGE_LIMIT)
@@ -153,8 +158,8 @@ class Yukon:
         # ADC mux enable pins
         self.__adc_mux_ens = (Pin.board.ADC_MUX_EN_1,
                               Pin.board.ADC_MUX_EN_2)
-        self.__adc_mux_ens[0].init(Pin.OUT, value=False)
-        self.__adc_mux_ens[1].init(Pin.OUT, value=False)
+        self.__adc_mux_ens[0].init(Pin.OUT, value=True)  # Active low
+        self.__adc_mux_ens[1].init(Pin.OUT, value=True)  # Active low
 
         # ADC mux address pins
         self.__adc_mux_addrs = (Pin.board.ADC_ADDR_1,
@@ -192,17 +197,12 @@ class Yukon:
 
         self.__monitor_action_callback = None
 
-    def reset(self) -> None:
+    def reset(self):
         # Only disable the output if enabled (avoids duplicate messages)
         if self.is_main_output_enabled() is True:
             self.disable_main_output()
 
-        self.__adc_mux_ens[0].value(False)
-        self.__adc_mux_ens[1].value(False)
-
-        self.__adc_mux_addrs[0].value(False)
-        self.__adc_mux_addrs[1].value(False)
-        self.__adc_mux_addrs[2].value(False)
+        self.__deselect_address()
 
         self.__leds[0].value(False)
         self.__leds[1].value(False)
@@ -210,7 +210,7 @@ class Yukon:
         # Configure each module so they go back to their default states
         for module in self.__slot_assignments.values():
             if module is not None and module.is_initialised():
-                module.configure()
+                module.reset()
 
     def change_logging(self, logging_level):
         logging.level = logging_level
@@ -244,6 +244,8 @@ class Yukon:
             else:
                 logging.info(f"No '{module_type.NAME}` module")
 
+        logging.info()  # New line
+
         return slots
 
     def register_with_slot(self, module, slot):
@@ -251,6 +253,13 @@ class Yukon:
             raise RuntimeError("Cannot register modules with slots whilst the main output is active")
 
         slot = self.__check_slot(slot)
+
+        module_type = type(module)
+        if module_type is YukonModule:
+            raise ValueError("Cannot register YukonModule")
+
+        if module_type not in KNOWN_MODULES:
+            raise ValueError(f"{module_type} is not a known module. If this is custom module, be sure to include it in the KNOWN_MODULES list.")
 
         if self.__slot_assignments[slot] is None:
             self.__slot_assignments[slot] = module
@@ -272,6 +281,8 @@ class Yukon:
         for m in KNOWN_MODULES:
             if m.is_module(adc_level, slow1, slow2, slow3):
                 return m
+        if YukonModule.is_module(adc_level, slow1, slow2, slow3):
+            return YukonModule
         return None
 
     def __detect_module(self, slot):
@@ -382,6 +393,21 @@ class Yukon:
         if self.is_main_output_enabled():
             raise RuntimeError("Cannot verify modules whilst the main output is active")
 
+        logging.info("> Checking output voltage ...")
+        if self.read_output_voltage() >= self.OUTPUT_DISSIPATE_LEVEL:
+            logging.info("> Waiting for output voltage to dissipate ...")
+
+            start = time.ticks_us()
+            while True:
+                new_voltage = self.read_output_voltage()
+                if new_voltage < self.OUTPUT_DISSIPATE_LEVEL:
+                    break
+
+                new_time = time.ticks_us()
+                if new_time - start > self.OUTPUT_DISSIPATE_TIMEOUT_US:
+                    raise FaultError("[Yukon] Output voltage did not dissipate in an acceptable time. Aborting module initialisation")
+
+
         logging.info("> Verifying modules")
 
         self.__verify_modules(allow_unregistered, allow_undetected, allow_discrepencies, allow_no_modules)
@@ -453,7 +479,7 @@ class Yukon:
                         raise OverVoltageError(f"[Yukon] Output voltage of {new_voltage}V exceeded the user set limit of {self.__voltage_limit}V! Turning off output")
 
                 new_time = time.ticks_us()
-                if abs(new_voltage - old_voltage) < 0.05:
+                if abs(new_voltage - old_voltage) < self.OUTPUT_STABLISE_V_DIFF:
                     if first_stable_time == 0:
                         first_stable_time = new_time
                     elif new_time - first_stable_time > self.OUTPUT_STABLISE_TIME_US:
@@ -492,8 +518,9 @@ class Yukon:
         return self.__main_en.value() == 1
 
     def __deselect_address(self):
-        self.__adc_mux_ens[0].value(False)
-        self.__adc_mux_ens[1].value(False)
+        # Deselect the muxes and reset the address to zero
+        state = self.__adc_io_ens_addrs[0] | self.__adc_io_ens_addrs[1]
+        tca.change_output_mask(self.__adc_io_chip, self.__adc_io_mask, state)
 
     def __select_address(self, address):
         if address < 0:
@@ -593,7 +620,7 @@ class Yukon:
 
         # Run some user action based on the latest readings
         if self.__monitor_action_callback is not None:
-            self.__monitor_action_callback(voltage_out, current, temperature)
+            self.__monitor_action_callback(voltage_in, voltage_out, current, temperature)
 
         for module in self.__slot_assignments.values():
             if module is not None:
@@ -606,7 +633,7 @@ class Yukon:
         self.__max_voltage_in = max(voltage_in, self.__max_voltage_in)
         self.__min_voltage_in = min(voltage_in, self.__min_voltage_in)
         self.__avg_voltage_in += voltage_in
-        
+
         self.__max_voltage_out = max(voltage_out, self.__max_voltage_out)
         self.__min_voltage_out = min(voltage_out, self.__min_voltage_out)
         self.__avg_voltage_out += voltage_out

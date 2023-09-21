@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
+#
+# SPDX-License-Identifier: MIT
+
 class OverVoltageError(Exception):
     """Exception to be used when a voltage value exceeds safe levels"""
     pass

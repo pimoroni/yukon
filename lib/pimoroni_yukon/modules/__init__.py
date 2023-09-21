@@ -2,23 +2,25 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .led_strip import LEDStripModule
-from .quad_servo_direct import QuadServoDirectModule
-from .quad_servo_reg import QuadServoRegModule
+from .audio_amp import AudioAmpModule
+from .bench_power import BenchPowerModule
 from .big_motor import BigMotorModule
 from .dual_motor import DualMotorModule
 from .dual_switched import DualSwitchedModule
-from .bench_power import BenchPowerModule
-from .audio_amp import AudioAmpModule
+from .led_strip import LEDStripModule
 from .proto import ProtoPotModule
+from .quad_servo_direct import QuadServoDirectModule
+from .quad_servo_reg import QuadServoRegModule
+
 
 KNOWN_MODULES = (
-    LEDStripModule,
-    QuadServoDirectModule,
-    QuadServoRegModule,
+    AudioAmpModule,
+    BenchPowerModule,
     BigMotorModule,
     DualMotorModule,
     DualSwitchedModule,
-    BenchPowerModule,
-    AudioAmpModule,
-    ProtoPotModule)
+    LEDStripModule,
+    ProtoPotModule,
+    QuadServoDirectModule,
+    QuadServoRegModule
+    )
