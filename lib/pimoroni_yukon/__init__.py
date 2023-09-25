@@ -23,7 +23,7 @@ Slot = namedtuple("Slot", ("ID",
                            "SLOW2",
                            "SLOW3",
                            "ADC1_ADDR",
-                           "ADC2_TEMP_ADDR"))
+                           "ADC2_THERM_ADDR"))
 
 SLOT1 = Slot(1,
              Pin.board.SLOT1_FAST1,
@@ -570,7 +570,7 @@ class Yukon:
         return self.__shared_adc_voltage()
 
     def read_slot_adc2(self, slot):
-        self.__select_address(slot.ADC2_TEMP_ADDR)
+        self.__select_address(slot.ADC2_THERM_ADDR)
         return self.__shared_adc_voltage()
 
     def assign_monitor_action(self, callback_function):
