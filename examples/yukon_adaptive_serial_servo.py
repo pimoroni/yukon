@@ -1,8 +1,7 @@
 import time
-import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import SerialServoModule
-from pimoroni_yukon.protocols.lx_servos import *
+from pimoroni_yukon.protocols.lx_servos import SerialServoReadPosition, SerialServoReadVin, SerialServoReadTemperature, SerialServoMove, SerialServoActivateLED, SerialServoDeactivateLED
 
 SPEED = 5             # The speed that the servos will cycle at
 UPDATES = 5          # How many times to update LEDs and Servos per second
