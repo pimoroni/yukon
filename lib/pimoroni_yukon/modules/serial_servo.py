@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 
 from .common import YukonModule, ADC_FLOAT, LOW, HIGH
-from busio import UART
-from digitalio import DigitalInOut
-from collections import OrderedDict
+from machine import Pin, UART
+from ucollections import OrderedDict
 from pimoroni_yukon.errors import OverTemperatureError
 
 
@@ -29,30 +28,33 @@ class SerialServoModule(YukonModule):
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create the serial object
-            self.uart = UART(slot.FAST1, slot.FAST2, baudrate=self.__baudrate)
+            uart_id = ((slot.ID * 4) // 8) % 2
+            print(f"Slot {slot.ID}, {uart_id}")
+            self.uart = UART(uart_id, tx=slot.FAST1, rx=slot.FAST2, baudrate=self.__baudrate)
         except ValueError as e:
             raise type(e)("UART perhiperal already in use. Check that a module in another slot does not share the same UART perhiperal") from None
 
         # Create the direction pin objects
-        self.__tx_to_data_en = DigitalInOut(slot.FAST3)
-        self.__data_to_rx_en = DigitalInOut(slot.FAST4)
+        self.__tx_to_data_en = slot.FAST3
+        self.__data_to_rx_en = slot.FAST4
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        self.uart.reset_input_buffer()
+        while self.uart.any():
+            self.uart.read()
 
-        self.__tx_to_data_en.switch_to_output(True)  # Active low
-        self.__data_to_rx_en.switch_to_output(True)  # Active low
+        self.__tx_to_data_en.init(Pin.OUT, True)  # Active low
+        self.__data_to_rx_en.init(Pin.OUT, True)  # Active low
         
     def send_on_data(self):
-        self.__data_to_rx_en.value = True
-        self.__tx_to_data_en.value = False
+        self.__data_to_rx_en.value(True)
+        self.__tx_to_data_en.value(False)
         
     def receive_on_data(self):
-        self.__tx_to_data_en.value = True
-        self.__data_to_rx_en.value = False
+        self.__tx_to_data_en.value(True)
+        self.__data_to_rx_en.value(False)
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()

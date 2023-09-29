@@ -5,6 +5,7 @@
 import struct
 import time
 from pimoroni_yukon.timing import ticks_add, ticks_diff, ticks_ms
+from pimoroni_yukon.errors import TimeoutError
 from ucollections import namedtuple
 
 Command = namedtuple("Command", ("value", "length"))
@@ -175,8 +176,9 @@ def SerialServoReceiveHandle(uart):
     rxBuf = 0
     recvBuf = bytearray(32)
 
-    while uart.in_waiting > 0:
+    while uart.any() > 0:
         rxBuf = uart.read(1)[0]
+        # print(hex(rxBuf), end=", ")
         time.sleep_us(100)
         if not frameStarted:
             if rxBuf == FRAME_HEADER:
@@ -200,17 +202,18 @@ def SerialServoReceiveHandle(uart):
             dataCount += 1
             if dataCount == dataLength + 3:
                 if CheckSum(recvBuf) == recvBuf[dataCount - 1]:
-                    #print("Check SUM OK!!", end="\n\n")
+                    # print("Check SUM OK!!", end="\n\n")
                     frameStarted = False
                     return recvBuf[5:5 + dataLength - 3]
 
+    # print()
     return None
 
 def WaitForReceive(uart, id, timeout):
     ms = 1000.0 * timeout + 0.5
     end_ms = ticks_add(ticks_ms(), int(ms))
 
-    while uart.in_waiting == 0:
+    while uart.any() == 0:
         remaining_ms = ticks_diff(end_ms, ticks_ms())
         if remaining_ms <= 0:
             raise TimeoutError(f"Serial servo #{id} did not reply within the set time")
@@ -229,16 +232,18 @@ def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
         SERVO_TEMP_READ.value)
     AppendCheckSum(buffer)
 
-    uart.reset_input_buffer()
+    while uart.any():
+        uart.read()
 
     uart.write(buffer)
-        time.sleep_us(100)
+    time.sleep_us(500)
 
     try:
         rec_func()
         WaitForReceive(uart, id, timeout)
 
         returned_buffer = SerialServoReceiveHandle(uart)
+        send_func()
         if returned_buffer is not None:
             ret = struct.unpack("<B", returned_buffer)[0]
         else:
@@ -263,7 +268,8 @@ def SerialServoReadID(uart, send_func, rec_func, id, timeout=1.0):
         SERVO_ID_READ.value)
     AppendCheckSum(buffer)
 
-    uart.reset_input_buffer()
+    while uart.any():
+        uart.read()
 
     uart.write(buffer)
     time.sleep_us(500)
@@ -296,7 +302,8 @@ def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
         SERVO_POS_READ.value)
     AppendCheckSum(buffer)
 
-    uart.reset_input_buffer()
+    while uart.any():
+        uart.read()
 
     uart.write(buffer)
     time.sleep_us(500)
@@ -329,7 +336,8 @@ def SerialServoReadVin(uart, send_func, rec_func, id, timeout=1.0):
         SERVO_VIN_READ.value)
     AppendCheckSum(buffer)
 
-    uart.reset_input_buffer()
+    while uart.any():
+        uart.read()
 
     uart.write(buffer)
     time.sleep_us(500)
