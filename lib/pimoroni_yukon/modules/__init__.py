@@ -11,6 +11,7 @@ from .led_strip import LEDStripModule
 from .proto import ProtoPotModule
 from .quad_servo_direct import QuadServoDirectModule
 from .quad_servo_reg import QuadServoRegModule
+from .serial_servo import SerialServoModule
 
 
 KNOWN_MODULES = (
@@ -22,5 +23,6 @@ KNOWN_MODULES = (
     LEDStripModule,
     ProtoPotModule,
     QuadServoDirectModule,
-    QuadServoRegModule
+    QuadServoRegModule,
+    SerialServoModule
     )
