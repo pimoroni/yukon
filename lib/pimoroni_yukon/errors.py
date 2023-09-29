@@ -30,3 +30,8 @@ class FaultError(Exception):
 class VerificationError(Exception):
     """Exception to be used when there is an issue verifying the installed hardware modules"""
     pass
+
+
+class TimeoutError(Exception):
+    """Exception to be used when an operation takes too long to complete"""
+    pass
