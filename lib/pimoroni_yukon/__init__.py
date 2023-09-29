@@ -404,7 +404,7 @@ class Yukon:
                     break
 
                 new_time = time.ticks_us()
-                if new_time - start > self.OUTPUT_DISSIPATE_TIMEOUT_US:
+                if ticks_diff(new_time, start) > self.OUTPUT_DISSIPATE_TIMEOUT_US:
                     raise FaultError("[Yukon] Output voltage did not dissipate in an acceptable time. Aborting module initialisation")
 
 
@@ -482,12 +482,12 @@ class Yukon:
                 if abs(new_voltage - old_voltage) < self.OUTPUT_STABLISE_V_DIFF:
                     if first_stable_time == 0:
                         first_stable_time = new_time
-                    elif new_time - first_stable_time > self.OUTPUT_STABLISE_TIME_US:
+                    elif ticks_diff(new_time, first_stable_time) > self.OUTPUT_STABLISE_TIME_US:
                         break
                 else:
                     first_stable_time = 0
 
-                if new_time - start > self.OUTPUT_STABLISE_TIMEOUT_US:
+                if ticks_diff(new_time, start) > self.OUTPUT_STABLISE_TIMEOUT_US:
                     self.disable_main_output()
                     raise FaultError("[Yukon] Output voltage did not stablise in an acceptable time. Turning off output")
 
