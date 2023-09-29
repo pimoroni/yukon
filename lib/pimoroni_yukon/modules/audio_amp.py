@@ -299,16 +299,16 @@ class AudioAmpModule(YukonModule):
         tca.change_output_mask(self.__chip, self.__scl_bit, 0)
 
         """
-        # Do real ACK
-        self.__slow_sda.switch_to_input()
+        # Do real ACK, with checking ACK value
+        self.__slow_sda.init(Pin.IN)
         tca.change_output_mask(self.__chip, self.__scl_bit, self.__scl_bit)  # Clock to high
-        ack = self.__slow_sda.value
+        ack = self.__slow_sda.value()
         tca.change_output_mask(self.__chip, self.__scl_bit, 0)        # Clock to low
-        self.__slow_sda.switch_to_output()
+        self.__slow_sda.init(Pin.OUT)
         return ack
         """
 
-        # Do real ACK, with checking ACK
+        # Do real ACK, without checking value
         self.__slow_sda.init(Pin.IN)
         tca.change_output_mask(self.__chip, self.__scl_bit, self.__scl_bit)  # Clock to high
         tca.change_output_mask(self.__chip, self.__scl_bit, 0)        # Clock to low

@@ -5,6 +5,7 @@
 from .common import YukonModule, ADC_LOW, LOW, HIGH
 from machine import Pin
 from motor import Motor, SLOW_DECAY
+from encoder import Encoder, MMME_CPR
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverCurrentError, OverTemperatureError
 
@@ -13,6 +14,7 @@ class BigMotorModule(YukonModule):
     NAME = "Big Motor + Encoder"
     NUM_MOTORS = 1
     DEFAULT_FREQUENCY = 25000
+    DEFAULT_COUNTS_PER_REV = MMME_CPR
     TEMPERATURE_THRESHOLD = 50.0
     CURRENT_THRESHOLD = 25.0
     SHUNT_RESISTOR = 0.001
@@ -26,9 +28,10 @@ class BigMotorModule(YukonModule):
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_LOW and slow1 is LOW and slow3 is HIGH
 
-    def __init__(self, frequency=DEFAULT_FREQUENCY):
+    def __init__(self, frequency=DEFAULT_FREQUENCY, counts_per_rev=None):
         super().__init__()
         self.__frequency = frequency
+        self.__counts_per_rev = counts_per_rev
 
     def initialise(self, slot, adc1_func, adc2_func):
         try:
@@ -47,6 +50,10 @@ class BigMotorModule(YukonModule):
         # Create motor control pin objects
         self.__motor_en = slot.SLOW3
         self.__motor_nfault = slot.SLOW2
+
+        if self.__counts_per_rev is not None:
+            # Create rotary encoder object
+            self.encoder = Encoder(0, 2, (slot.FAST1, slot.FAST2), counts_per_rev=self.__counts_per_rev, count_microsteps=True)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)

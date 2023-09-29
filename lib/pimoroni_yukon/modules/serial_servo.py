@@ -29,7 +29,6 @@ class SerialServoModule(YukonModule):
         try:
             # Create the serial object
             uart_id = ((slot.ID * 4) // 8) % 2
-            print(f"Slot {slot.ID}, {uart_id}")
             self.uart = UART(uart_id, tx=slot.FAST1, rx=slot.FAST2, baudrate=self.__baudrate)
         except ValueError as e:
             raise type(e)("UART perhiperal already in use. Check that a module in another slot does not share the same UART perhiperal") from None
@@ -45,13 +44,13 @@ class SerialServoModule(YukonModule):
         while self.uart.any():
             self.uart.read()
 
-        self.__tx_to_data_en.init(Pin.OUT, True)  # Active low
-        self.__data_to_rx_en.init(Pin.OUT, True)  # Active low
-        
+        self.__tx_to_data_en.init(Pin.OUT, value=True)  # Active low
+        self.__data_to_rx_en.init(Pin.OUT, value=True)  # Active low
+
     def send_on_data(self):
         self.__data_to_rx_en.value(True)
         self.__tx_to_data_en.value(False)
-        
+
     def receive_on_data(self):
         self.__tx_to_data_en.value(True)
         self.__data_to_rx_en.value(False)

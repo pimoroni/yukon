@@ -13,7 +13,7 @@ import pimoroni_yukon.logging as logging
 class QuadServoRegModule(YukonModule):
     NAME = "Quad Servo Regulated"
     NUM_SERVOS = 4
-    TEMPERATURE_THRESHOLD = 50.0
+    TEMPERATURE_THRESHOLD = 70.0
 
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|

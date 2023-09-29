@@ -2,8 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-import struct
 import time
+import struct
 from pimoroni_yukon.timing import ticks_add, ticks_diff, ticks_ms
 from pimoroni_yukon.errors import TimeoutError
 from ucollections import namedtuple
@@ -243,7 +243,6 @@ def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
         WaitForReceive(uart, id, timeout)
 
         returned_buffer = SerialServoReceiveHandle(uart)
-        send_func()
         if returned_buffer is not None:
             ret = struct.unpack("<B", returned_buffer)[0]
         else:

@@ -12,8 +12,9 @@ import pimoroni_yukon.logging as logging
 class LEDStripModule(YukonModule):
     NAME = "LED Strip"
     NEOPIXEL = 0
-    DOTSTAR = 1
-    TEMPERATURE_THRESHOLD = 50.0
+    DUAL_NEOPIXEL = 1
+    DOTSTAR = 2
+    TEMPERATURE_THRESHOLD = 70.0
 
     # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|----------------------|-----------------------------|
@@ -22,15 +23,17 @@ class LEDStripModule(YukonModule):
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_LOW and slow1 is HIGH and slow2 is HIGH and slow3 is HIGH
 
-    def __init__(self, strip_type, num_pixels, brightness=1.0, halt_on_not_pgood=False):
+    def __init__(self, strip_type, num_leds, brightness=1.0, halt_on_not_pgood=False):
         super().__init__()
         self.__strip_type = strip_type
         if self.__strip_type == self.NEOPIXEL:
             self.NAME += " (NeoPixel)"
+        elif self.__strip_type == self.DUAL_NEOPIXEL:
+            self.NAME += " (Dual NeoPixel)"
         else:
             self.NAME += " (DotStar)"
 
-        self.__num_pixels = num_pixels
+        self.__num_leds = num_leds
         self.__brightness = brightness
         self.halt_on_not_pgood = halt_on_not_pgood
 
@@ -38,14 +41,21 @@ class LEDStripModule(YukonModule):
 
     def initialise(self, slot, adc1_func, adc2_func):
         # Create the strip driver object
-        if self.__strip_type == self.NEOPIXEL:
+        if self.__strip_type == self.NEOPIXEL or self.__strip_type == self.DUAL_NEOPIXEL:
             from plasma import WS2812
-            self.pixels = WS2812(self.__num_pixels, 0, 0, slot.FAST4)
+            if self.__strip_type == self.DUAL_NEOPIXEL:
+                num_leds = self.__num_leds
+                if not isinstance(num_leds, (list, tuple)):
+                    num_leds = (num_leds, num_leds)
+
+                self.strips = [WS2812(num_leds[0], 0, 0, slot.FAST4),
+                               WS2812(num_leds[1], 0, 1, slot.FAST3)]
+            else:
+                self.strip = WS2812(self.__num_leds, 0, 0, slot.FAST4)
         else:
             from plasma import APA102
-            self.pixels = APA102(self.__num_pixels, 0, 0, slot.FAST4, slot.FAST3)
-            self.pixels.set_brightness(int(self.__brightness * 31))
-        # self.pixels.start()
+            self.strip = APA102(self.__num_leds, 0, 0, slot.FAST4, slot.FAST3)
+            self.strip.set_brightness(int(self.__brightness * 31))
 
         # Create the power control pin objects
         self.__power_good = slot.FAST1
@@ -58,9 +68,6 @@ class LEDStripModule(YukonModule):
         self.__power_en.init(Pin.OUT, value=False)
         self.__power_good.init(Pin.IN, Pin.PULL_UP)
 
-    def count(self):
-        return self.__num_pixels
-
     def enable(self):
         self.__power_en.value(True)
 
@@ -69,6 +76,14 @@ class LEDStripModule(YukonModule):
 
     def is_enabled(self):
         return self.__power_en.value() == 1
+
+    @property
+    def strip1(self):
+        return self.strips[0]
+
+    @property
+    def strip2(self):
+        return self.strips[1]
 
     def read_power_good(self):
         return self.__power_good.value() == 1

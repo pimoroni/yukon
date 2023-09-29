@@ -77,9 +77,6 @@ class DualMotorModule(YukonModule):
             # Create motor objects
             self.motors = [Motor((self.__pwms_p[i], self.__pwms_n[i]), freq=self.__frequency) for i in range(len(self.__pwms_p))]
         else:
-            # from adafruit_motor.stepper import StepperMotor
-
-            # self.stepper = StepperMotor(self.__pwms_p[0], self.__pwms_n[0], self.__pwms_p[1], self.__pwms_n[1])
             raise NotImplementedError("Stepper Motor support for the Dual Motor Module is currently not implemented")
 
         # Create motor control pin objects
@@ -94,8 +91,6 @@ class DualMotorModule(YukonModule):
         if self.__motor_type == self.DUAL:
             for motor in self.motors:
                 motor.disable()
-        else:
-            self.stepper.release()
 
         self.__motors_en.init(Pin.OUT, value=False)
         self.current_limit(self.__current_limit)
