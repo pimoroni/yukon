@@ -15,7 +15,7 @@ STATIC mp_obj_t tca_pin_get_number(mp_obj_t pin_obj) {
     }
 
     uint8_t tca_gpio = pin->id;
-    return mp_obj_new_int(tca_gpio % TCA9555R_GPIO_COUNT);
+    return mp_obj_new_int(tca_gpio % TCA9555_GPIO_COUNT);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_pin_get_number_obj, tca_pin_get_number);
 
@@ -38,8 +38,8 @@ STATIC mp_obj_t tca_pin_change_output_mask(mp_obj_t chip_obj, mp_obj_t mask_obj,
     int chip = mp_obj_get_int(chip_obj);
     int mask = mp_obj_get_int(mask_obj);
     int state = mp_obj_get_int(state_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
     if (mask < 0 || mask > UINT16_MAX) {
         mp_raise_ValueError(MP_ERROR_TEXT("mask only supports 16 bits"));
@@ -54,11 +54,51 @@ STATIC mp_obj_t tca_pin_change_output_mask(mp_obj_t chip_obj, mp_obj_t mask_obj,
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(tca_pin_change_output_mask_obj, tca_pin_change_output_mask);
 
-#if TCA9555R_READ_INTERNALS
+STATIC mp_obj_t tca_pin_change_config_mask(mp_obj_t chip_obj, mp_obj_t mask_obj, mp_obj_t state_obj) {
+    int chip = mp_obj_get_int(chip_obj);
+    int mask = mp_obj_get_int(mask_obj);
+    int state = mp_obj_get_int(state_obj);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
+    }
+    if (mask < 0 || mask > UINT16_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("mask only supports 16 bits"));
+    }
+    if (state < 0 || state > UINT16_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("state only supports 16 bits"));
+    }
+
+    tca_change_config_mask(chip, mask, state);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(tca_pin_change_config_mask_obj, tca_pin_change_config_mask);
+
+STATIC mp_obj_t tca_pin_change_polarity_mask(mp_obj_t chip_obj, mp_obj_t mask_obj, mp_obj_t state_obj) {
+    int chip = mp_obj_get_int(chip_obj);
+    int mask = mp_obj_get_int(mask_obj);
+    int state = mp_obj_get_int(state_obj);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
+    }
+    if (mask < 0 || mask > UINT16_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("mask only supports 16 bits"));
+    }
+    if (state < 0 || state > UINT16_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("state only supports 16 bits"));
+    }
+
+    tca_change_polarity_mask(chip, mask, state);
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_3(tca_pin_change_polarity_mask_obj, tca_pin_change_polarity_mask);
+
+#if TCA9555_READ_INTERNALS
 STATIC mp_obj_t tca_port_read_input_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
     return mp_obj_new_int(tca_get_input_port(chip));
@@ -67,8 +107,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_input_state_obj, tca_port_read_in
 
 STATIC mp_obj_t tca_port_read_output_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
     return mp_obj_new_int(tca_get_output_port(chip));
@@ -77,8 +117,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_output_state_obj, tca_port_read_o
 
 STATIC mp_obj_t tca_port_read_config_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
     return mp_obj_new_int(tca_get_config_port(chip));
@@ -87,42 +127,42 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_config_state_obj, tca_port_read_c
 
 STATIC mp_obj_t tca_port_read_polarity_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
     return mp_obj_new_int(tca_get_polarity_port(chip));
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_polarity_state_obj, tca_port_read_polarity_state);
 
-#if TCA9555R_LOCAL_MEMORY
+#if TCA9555_LOCAL_MEMORY
 STATIC mp_obj_t tca_port_stored_output_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
-    return mp_obj_new_int((tca9555r_output_state[HIGH_BYTE(chip)] << 8) | tca9555r_output_state[LOW_BYTE(chip)]);
+    return mp_obj_new_int((tca9555_output_state[HIGH_BYTE(chip)] << 8) | tca9555_output_state[LOW_BYTE(chip)]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_output_state_obj, tca_port_stored_output_state);
 
 STATIC mp_obj_t tca_port_stored_config_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
-    return mp_obj_new_int((tca9555r_config_state[HIGH_BYTE(chip)] << 8) | tca9555r_config_state[LOW_BYTE(chip)]);
+    return mp_obj_new_int((tca9555_config_state[HIGH_BYTE(chip)] << 8) | tca9555_config_state[LOW_BYTE(chip)]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_config_state_obj, tca_port_stored_config_state);
 
 STATIC mp_obj_t tca_port_stored_polarity_state(mp_obj_t chip_obj) {
     int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555R_CHIP_COUNT - 1);
+    if (chip < 0 || chip >= TCA9555_CHIP_COUNT) {
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("chip can only be 0 to %d"), TCA9555_CHIP_COUNT - 1);
     }
 
-    return mp_obj_new_int((tca9555r_polarity_state[HIGH_BYTE(chip)] << 8) | tca9555r_polarity_state[LOW_BYTE(chip)]);
+    return mp_obj_new_int((tca9555_polarity_state[HIGH_BYTE(chip)] << 8) | tca9555_polarity_state[LOW_BYTE(chip)]);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_polarity_state_obj, tca_port_stored_polarity_state);
 #endif
@@ -138,12 +178,14 @@ STATIC const mp_rom_map_elem_t tca_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_get_number), &tca_pin_get_number_obj },
     { MP_ROM_QSTR(MP_QSTR_get_chip), &tca_pin_get_chip_obj },
     { MP_ROM_QSTR(MP_QSTR_change_output_mask), &tca_pin_change_output_mask_obj },
-    #if TCA9555R_READ_INTERNALS
+    { MP_ROM_QSTR(MP_QSTR_change_config_mask), &tca_pin_change_config_mask_obj },
+    { MP_ROM_QSTR(MP_QSTR_change_polarity_mask), &tca_pin_change_polarity_mask_obj },
+    #if TCA9555_READ_INTERNALS
     { MP_ROM_QSTR(MP_QSTR_read_input), &tca_port_read_input_state_obj },
     { MP_ROM_QSTR(MP_QSTR_read_output), &tca_port_read_output_state_obj },
     { MP_ROM_QSTR(MP_QSTR_read_config), &tca_port_read_config_state_obj },
     { MP_ROM_QSTR(MP_QSTR_read_polarity), &tca_port_read_polarity_state_obj },
-    #if TCA9555R_LOCAL_MEMORY
+    #if TCA9555_LOCAL_MEMORY
     { MP_ROM_QSTR(MP_QSTR_stored_output), &tca_port_stored_output_state_obj },
     { MP_ROM_QSTR(MP_QSTR_stored_config), &tca_port_stored_config_state_obj },
     { MP_ROM_QSTR(MP_QSTR_stored_polarity), &tca_port_stored_polarity_state_obj },

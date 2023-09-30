@@ -40,24 +40,22 @@
 #define CONFIGURATION_PORT0  0x06
 #define CONFIGURATION_PORT1  0x07
 
-#define TCA9555R_CHIP_COUNT     2
-#define TCA9555R_GPIO_COUNT     16
-#define TCA9555R_VIRTUAL_GPIO_COUNT     (TCA9555R_GPIO_COUNT * TCA9555R_CHIP_COUNT)
-#define TCA9555R_CHIP_ADDRESSES { 0x20, 0x26 }
-#ifndef TCA9555R_LOCAL_MEMORY
-#define TCA9555R_LOCAL_MEMORY (0)
+#define TCA9555_GPIO_COUNT     16
+#define TCA9555_VIRTUAL_GPIO_COUNT     (TCA9555_GPIO_COUNT * TCA9555_CHIP_COUNT)
+#ifndef TCA9555_LOCAL_MEMORY
+#define TCA9555_LOCAL_MEMORY (0)
 #endif
 
-#ifndef TCA9555R_READ_INTERNALS
-#define TCA9555R_READ_INTERNALS (0)
+#ifndef TCA9555_READ_INTERNALS
+#define TCA9555_READ_INTERNALS (0)
 #endif
 
-#define PARAM_ASSERTIONS_ENABLED_TCA9555R (0)
+#define PARAM_ASSERTIONS_ENABLED_TCA9555 (0)
 
-#if TCA9555R_LOCAL_MEMORY
-extern uint8_t tca9555r_output_state[TCA9555R_CHIP_COUNT * 2];
-extern uint8_t tca9555r_config_state[TCA9555R_CHIP_COUNT * 2];
-extern uint8_t tca9555r_polarity_state[TCA9555R_CHIP_COUNT * 2];
+#if TCA9555_LOCAL_MEMORY
+extern uint8_t tca9555_output_state[TCA9555_CHIP_COUNT * 2];
+extern uint8_t tca9555_config_state[TCA9555_CHIP_COUNT * 2];
+extern uint8_t tca9555_polarity_state[TCA9555_CHIP_COUNT * 2];
 #endif
 extern bool i2c_created;
 
@@ -65,11 +63,11 @@ void configure_i2c();
 
 #define HIGH_BYTE(index) (((index) * 2u) + 1u)
 #define LOW_BYTE(index) (((index) * 2u))
-#define IS_PORT1(gpio) (((gpio) % TCA9555R_GPIO_COUNT) >= 8u)
+#define IS_PORT1(gpio) (((gpio) % TCA9555_GPIO_COUNT) >= 8u)
 #define GPIO_BYTE(gpio) ((gpio) >> 3u)
 #define GPIO_BIT_MASK(gpio) (1u << ((gpio) % 8u))
-#define CHIP_FROM_GPIO(gpio) ((gpio) / TCA9555R_GPIO_COUNT)
-#define ADDRESS_FROM_GPIO(gpio) (tca9555r_addresses[CHIP_FROM_GPIO(gpio)])
+#define CHIP_FROM_GPIO(gpio) ((gpio) / TCA9555_GPIO_COUNT)
+#define ADDRESS_FROM_GPIO(gpio) (tca9555_addresses[CHIP_FROM_GPIO(gpio)])
 
 bool tca_gpio_get_input(uint tca_gpio);
 bool tca_gpio_get_output(uint tca_gpio);
@@ -109,5 +107,6 @@ void tca_set_polarity_port_low(uint tca_index, uint8_t polarity_state);
 void tca_set_polarity_port_high(uint tca_index, uint8_t polarity_state);
 
 void tca_change_output_mask(uint8_t chip, uint16_t mask, uint16_t state);
-
+void tca_change_config_mask(uint8_t chip, uint16_t mask, uint16_t state);
+void tca_change_polarity_mask(uint8_t chip, uint16_t mask, uint16_t state);
 #endif

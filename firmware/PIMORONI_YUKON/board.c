@@ -4,21 +4,8 @@
 #include "tca9555.h"
 
 void board_init() {
-    gpio_init(8);
-    gpio_set_dir(8, GPIO_OUT);
-    gpio_put(8, true);
-    configure_i2c();
-    gpio_put(8, false);
-
-    gpio_init(9);
-    gpio_set_dir(9, GPIO_OUT);
-    gpio_put(9, true);
-    sleep_us(100);
-    gpio_put(9, false);
-    sleep_us(10);
-    gpio_put(9, true);
     // Set the first IO expander's initial state
-    tca_set_output_port(0, 0x0000);
+    tca_set_output_port(0, 0x8800);  // Disable the two ADC Muxes
     tca_set_polarity_port(0, 0x0000);
     tca_set_config_port(0, 0x07BF);
 
@@ -26,8 +13,6 @@ void board_init() {
     tca_set_output_port(1, 0x0000);
     tca_set_polarity_port(1, 0x0000);
     tca_set_config_port(1, 0xFCE6);
-    sleep_us(100);
-    gpio_put(9, false);
 }
 
 void board_reset(void) {
@@ -39,13 +24,5 @@ void board_reset(void) {
         hw_set_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
     }
 
-    // Set the first IO expander's initial state
-    tca_set_output_port(0, 0x0000);
-    tca_set_polarity_port(0, 0x0000);
-    tca_set_config_port(0, 0x07BF);
-
-    // Set the second IO expander's initial state
-    tca_set_output_port(1, 0x0000);
-    tca_set_polarity_port(1, 0x0000);
-    tca_set_config_port(1, 0xFCE6);
+    board_init();
 }

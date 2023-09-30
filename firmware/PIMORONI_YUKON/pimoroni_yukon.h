@@ -15,11 +15,6 @@
 // For board detection
 #define PIMORONI_YUKON
 
-// --- BOARD SPECIFIC ---
-//#define PICOLIPO_USER_SW_PIN 23
-//#define PICOLIPO_VBUS_DETECT_PIN 24
-//#define PICOLIPO_BAT_SENSE_PIN 29
-
 // --- UART ---
 //#ifndef PICO_DEFAULT_UART
 //#define PICO_DEFAULT_UART 0
@@ -42,10 +37,10 @@
 #define PICO_DEFAULT_I2C 0
 #endif
 #ifndef PICO_DEFAULT_I2C_SDA_PIN
-#define PICO_DEFAULT_I2C_SDA_PIN 4
+#define PICO_DEFAULT_I2C_SDA_PIN 24
 #endif
 #ifndef PICO_DEFAULT_I2C_SCL_PIN
-#define PICO_DEFAULT_I2C_SCL_PIN 5
+#define PICO_DEFAULT_I2C_SCL_PIN 25
 #endif
 
 // --- SPI ---

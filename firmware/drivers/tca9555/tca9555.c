@@ -34,11 +34,11 @@
 
 #if defined(MICROPY_PY_TCA9555) && defined(MICROPY_HW_PIN_EXT_COUNT)
 
-static const uint8_t tca9555r_addresses[TCA9555R_CHIP_COUNT] = TCA9555R_CHIP_ADDRESSES;
-#if TCA9555R_LOCAL_MEMORY
-uint8_t tca9555r_output_state[TCA9555R_CHIP_COUNT * 2] = {0};
-uint8_t tca9555r_config_state[TCA9555R_CHIP_COUNT * 2] = {0};
-uint8_t tca9555r_polarity_state[TCA9555R_CHIP_COUNT * 2] = {0};
+static const uint8_t tca9555_addresses[TCA9555_CHIP_COUNT] = TCA9555_CHIP_ADDRESSES;
+#if TCA9555_LOCAL_MEMORY
+uint8_t tca9555_output_state[TCA9555_CHIP_COUNT * 2] = {0};
+uint8_t tca9555_config_state[TCA9555_CHIP_COUNT * 2] = {0};
+uint8_t tca9555_polarity_state[TCA9555_CHIP_COUNT * 2] = {0};
 #endif
 bool i2c_created = false;
 
@@ -81,7 +81,7 @@ static uint16_t reg_read_uint16(uint8_t address, uint8_t reg) {
 }
 
 bool tca_gpio_get_input(uint tca_gpio) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
@@ -91,52 +91,52 @@ bool tca_gpio_get_input(uint tca_gpio) {
 }
 
 bool tca_gpio_get_output(uint tca_gpio) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? OUTPUT_PORT1 : OUTPUT_PORT0;
     uint8_t output_state = reg_read_uint8(address, reg);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[GPIO_BYTE(tca_gpio)] = output_state;
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[GPIO_BYTE(tca_gpio)] = output_state;
     #endif
     return (output_state & GPIO_BIT_MASK(tca_gpio)) != 0;
 }
 
 bool tca_gpio_get_config(uint tca_gpio) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? CONFIGURATION_PORT1 : CONFIGURATION_PORT0;
     uint8_t config_state = reg_read_uint8(address, reg);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[GPIO_BYTE(tca_gpio)] = config_state;
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[GPIO_BYTE(tca_gpio)] = config_state;
     #endif
     return (config_state & GPIO_BIT_MASK(tca_gpio)) == 0;
 }
 
 bool tca_gpio_get_polarity(uint tca_gpio) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? POLARITY_PORT1 : POLARITY_PORT0;
     uint8_t polarity_state = reg_read_uint8(address, reg);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[GPIO_BYTE(tca_gpio)] = polarity_state;
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[GPIO_BYTE(tca_gpio)] = polarity_state;
     #endif
     return (polarity_state & GPIO_BIT_MASK(tca_gpio)) != 0;
 }
 
 void tca_gpio_set_output(uint tca_gpio, bool value) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? OUTPUT_PORT1 : OUTPUT_PORT0;
-    #if TCA9555R_LOCAL_MEMORY
-    uint8_t output_state = tca9555r_output_state[GPIO_BYTE(tca_gpio)];
+    #if TCA9555_LOCAL_MEMORY
+    uint8_t output_state = tca9555_output_state[GPIO_BYTE(tca_gpio)];
     #else
     uint8_t output_state = reg_read_uint8(address, reg);
     #endif
@@ -149,20 +149,20 @@ void tca_gpio_set_output(uint tca_gpio, bool value) {
 
     if (new_output_state != output_state) {
         reg_write_uint8(address, reg, new_output_state);
-        #if TCA9555R_LOCAL_MEMORY
-        tca9555r_output_state[GPIO_BYTE(tca_gpio)] = new_output_state;
+        #if TCA9555_LOCAL_MEMORY
+        tca9555_output_state[GPIO_BYTE(tca_gpio)] = new_output_state;
         #endif
     }
 }
 
 void tca_gpio_set_config(uint tca_gpio, bool output) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? CONFIGURATION_PORT1 : CONFIGURATION_PORT0;
-    #if TCA9555R_LOCAL_MEMORY
-    uint8_t config_state = tca9555r_config_state[GPIO_BYTE(tca_gpio)];
+    #if TCA9555_LOCAL_MEMORY
+    uint8_t config_state = tca9555_config_state[GPIO_BYTE(tca_gpio)];
     #else
     uint8_t config_state = reg_read_uint8(address, reg);
     #endif
@@ -175,20 +175,20 @@ void tca_gpio_set_config(uint tca_gpio, bool output) {
 
     if (new_config_state != config_state) {
         reg_write_uint8(address, reg, new_config_state);
-        #if TCA9555R_LOCAL_MEMORY
-        tca9555r_config_state[GPIO_BYTE(tca_gpio)] = new_config_state;
+        #if TCA9555_LOCAL_MEMORY
+        tca9555_config_state[GPIO_BYTE(tca_gpio)] = new_config_state;
         #endif
     }
 }
 
 void tca_gpio_set_polarity(uint tca_gpio, bool polarity) {
-    invalid_params_if(TCA9555R, tca_gpio >= TCA9555R_VIRTUAL_GPIO_COUNT);
+    invalid_params_if(TCA9555, tca_gpio >= TCA9555_VIRTUAL_GPIO_COUNT);
     configure_i2c();
     uint8_t address = ADDRESS_FROM_GPIO(tca_gpio);
 
     uint8_t reg = IS_PORT1(tca_gpio) ? POLARITY_PORT1 : POLARITY_PORT0;
-    #if TCA9555R_LOCAL_MEMORY
-    uint8_t polarity_state = tca9555r_polarity_state[GPIO_BYTE(tca_gpio)];
+    #if TCA9555_LOCAL_MEMORY
+    uint8_t polarity_state = tca9555_polarity_state[GPIO_BYTE(tca_gpio)];
     #else
     uint8_t polarity_state = reg_read_uint8(address, reg);
     #endif
@@ -201,204 +201,204 @@ void tca_gpio_set_polarity(uint tca_gpio, bool polarity) {
 
     if (new_polarity_state != polarity_state) {
         reg_write_uint8(address, reg, new_polarity_state);
-        #if TCA9555R_LOCAL_MEMORY
-        tca9555r_output_state[GPIO_BYTE(tca_gpio)] = new_polarity_state;
+        #if TCA9555_LOCAL_MEMORY
+        tca9555_output_state[GPIO_BYTE(tca_gpio)] = new_polarity_state;
         #endif
     }
 }
 
 uint16_t tca_get_input_port(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    return reg_read_uint16(tca9555r_addresses[tca_index], INPUT_PORT0);
+    return reg_read_uint16(tca9555_addresses[tca_index], INPUT_PORT0);
 }
 
 uint8_t tca_get_input_port_low(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    return reg_read_uint8(tca9555r_addresses[tca_index], INPUT_PORT0);
+    return reg_read_uint8(tca9555_addresses[tca_index], INPUT_PORT0);
 }
 
 uint8_t tca_get_input_port_high(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    return reg_read_uint8(tca9555r_addresses[tca_index], INPUT_PORT1);
+    return reg_read_uint8(tca9555_addresses[tca_index], INPUT_PORT1);
 }
 
 uint16_t tca_get_output_port(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint16_t output_state = reg_read_uint16(tca9555r_addresses[tca_index], OUTPUT_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[HIGH_BYTE(tca_index)] = (output_state >> 8);
-    tca9555r_output_state[LOW_BYTE(tca_index)] = (output_state & 0xFF);
+    uint16_t output_state = reg_read_uint16(tca9555_addresses[tca_index], OUTPUT_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[HIGH_BYTE(tca_index)] = (output_state >> 8);
+    tca9555_output_state[LOW_BYTE(tca_index)] = (output_state & 0xFF);
     #endif
     return output_state;
 }
 
 uint8_t tca_get_output_port_low(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t output_state = reg_read_uint8(tca9555r_addresses[tca_index], OUTPUT_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[LOW_BYTE(tca_index)] = output_state;
+    uint8_t output_state = reg_read_uint8(tca9555_addresses[tca_index], OUTPUT_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[LOW_BYTE(tca_index)] = output_state;
     #endif
     return output_state;
 }
 
 uint8_t tca_get_output_port_high(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t output_state = reg_read_uint8(tca9555r_addresses[tca_index], OUTPUT_PORT1);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[HIGH_BYTE(tca_index)] = output_state;
+    uint8_t output_state = reg_read_uint8(tca9555_addresses[tca_index], OUTPUT_PORT1);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[HIGH_BYTE(tca_index)] = output_state;
     #endif
     return output_state;
 }
 
 uint16_t tca_get_config_port(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint16_t config_state = reg_read_uint16(tca9555r_addresses[tca_index], CONFIGURATION_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[HIGH_BYTE(tca_index)] = (config_state >> 8);
-    tca9555r_config_state[LOW_BYTE(tca_index)] = (config_state & 0xFF);
+    uint16_t config_state = reg_read_uint16(tca9555_addresses[tca_index], CONFIGURATION_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[HIGH_BYTE(tca_index)] = (config_state >> 8);
+    tca9555_config_state[LOW_BYTE(tca_index)] = (config_state & 0xFF);
     #endif
     return config_state;
 }
 
 uint8_t tca_get_config_port_low(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t config_state = reg_read_uint8(tca9555r_addresses[tca_index], CONFIGURATION_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[LOW_BYTE(tca_index)] = config_state;
+    uint8_t config_state = reg_read_uint8(tca9555_addresses[tca_index], CONFIGURATION_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[LOW_BYTE(tca_index)] = config_state;
     #endif
     return config_state;
 }
 
 uint8_t tca_get_config_port_high(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t config_state = reg_read_uint8(tca9555r_addresses[tca_index], CONFIGURATION_PORT1);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[HIGH_BYTE(tca_index)] = config_state;
+    uint8_t config_state = reg_read_uint8(tca9555_addresses[tca_index], CONFIGURATION_PORT1);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[HIGH_BYTE(tca_index)] = config_state;
     #endif
     return config_state;
 }
 
 uint16_t tca_get_polarity_port(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint16_t polarity_state = reg_read_uint16(tca9555r_addresses[tca_index], POLARITY_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[HIGH_BYTE(tca_index)] = (polarity_state >> 8);
-    tca9555r_polarity_state[LOW_BYTE(tca_index)] = (polarity_state & 0xFF);
+    uint16_t polarity_state = reg_read_uint16(tca9555_addresses[tca_index], POLARITY_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[HIGH_BYTE(tca_index)] = (polarity_state >> 8);
+    tca9555_polarity_state[LOW_BYTE(tca_index)] = (polarity_state & 0xFF);
     #endif
     return polarity_state;
 }
 
 uint8_t tca_get_polarity_port_low(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t polarity_state = reg_read_uint8(tca9555r_addresses[tca_index], POLARITY_PORT0);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[LOW_BYTE(tca_index)] = polarity_state;
+    uint8_t polarity_state = reg_read_uint8(tca9555_addresses[tca_index], POLARITY_PORT0);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[LOW_BYTE(tca_index)] = polarity_state;
     #endif
     return polarity_state;
 }
 
 uint8_t tca_get_polarity_port_high(uint tca_index) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    uint8_t polarity_state = reg_read_uint8(tca9555r_addresses[tca_index], POLARITY_PORT1);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[HIGH_BYTE(tca_index)] = polarity_state;
+    uint8_t polarity_state = reg_read_uint8(tca9555_addresses[tca_index], POLARITY_PORT1);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[HIGH_BYTE(tca_index)] = polarity_state;
     #endif
     return polarity_state;
 }
 
 void tca_set_output_port(uint tca_index, uint16_t output_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint16(tca9555r_addresses[tca_index], OUTPUT_PORT0, output_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[HIGH_BYTE(tca_index)] = (output_state >> 8);
-    tca9555r_output_state[LOW_BYTE(tca_index)] = (output_state & 0xFF);
+    reg_write_uint16(tca9555_addresses[tca_index], OUTPUT_PORT0, output_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[HIGH_BYTE(tca_index)] = (output_state >> 8);
+    tca9555_output_state[LOW_BYTE(tca_index)] = (output_state & 0xFF);
     #endif
 }
 
 void tca_set_output_port_low(uint tca_index, uint8_t output_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], OUTPUT_PORT0, output_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[LOW_BYTE(tca_index)] = output_state;
+    reg_write_uint8(tca9555_addresses[tca_index], OUTPUT_PORT0, output_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[LOW_BYTE(tca_index)] = output_state;
     #endif
 }
 
 void tca_set_output_port_high(uint tca_index, uint8_t output_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], OUTPUT_PORT1, output_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_output_state[HIGH_BYTE(tca_index)] = output_state;
+    reg_write_uint8(tca9555_addresses[tca_index], OUTPUT_PORT1, output_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_output_state[HIGH_BYTE(tca_index)] = output_state;
     #endif
 }
 
 void tca_set_config_port(uint tca_index, uint16_t config_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint16(tca9555r_addresses[tca_index], CONFIGURATION_PORT0, config_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[HIGH_BYTE(tca_index)] = (config_state >> 8);
-    tca9555r_config_state[LOW_BYTE(tca_index)] = (config_state & 0xFF);
+    reg_write_uint16(tca9555_addresses[tca_index], CONFIGURATION_PORT0, config_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[HIGH_BYTE(tca_index)] = (config_state >> 8);
+    tca9555_config_state[LOW_BYTE(tca_index)] = (config_state & 0xFF);
     #endif
 }
 
 void tca_set_config_port_low(uint tca_index, uint8_t config_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], CONFIGURATION_PORT0, config_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[LOW_BYTE(tca_index)] = config_state;
+    reg_write_uint8(tca9555_addresses[tca_index], CONFIGURATION_PORT0, config_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[LOW_BYTE(tca_index)] = config_state;
     #endif
 }
 
 void tca_set_config_port_high(uint tca_index, uint8_t config_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], CONFIGURATION_PORT1, config_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_config_state[HIGH_BYTE(tca_index)] = config_state;
+    reg_write_uint8(tca9555_addresses[tca_index], CONFIGURATION_PORT1, config_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_config_state[HIGH_BYTE(tca_index)] = config_state;
     #endif
 }
 
 void tca_set_polarity_port(uint tca_index, uint16_t polarity_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint16(tca9555r_addresses[tca_index], POLARITY_PORT0, polarity_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[HIGH_BYTE(tca_index)] = (polarity_state >> 8);
-    tca9555r_polarity_state[LOW_BYTE(tca_index)] = (polarity_state & 0xFF);
+    reg_write_uint16(tca9555_addresses[tca_index], POLARITY_PORT0, polarity_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[HIGH_BYTE(tca_index)] = (polarity_state >> 8);
+    tca9555_polarity_state[LOW_BYTE(tca_index)] = (polarity_state & 0xFF);
     #endif
 }
 
 void tca_set_polarity_port_low(uint tca_index, uint8_t polarity_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], POLARITY_PORT0, polarity_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[LOW_BYTE(tca_index)] = polarity_state;
+    reg_write_uint8(tca9555_addresses[tca_index], POLARITY_PORT0, polarity_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[LOW_BYTE(tca_index)] = polarity_state;
     #endif
 }
 
 void tca_set_polarity_port_high(uint tca_index, uint8_t polarity_state) {
-    invalid_params_if(TCA9555R, tca_index >= TCA9555R_CHIP_COUNT);
+    invalid_params_if(TCA9555, tca_index >= TCA9555_CHIP_COUNT);
     configure_i2c();
-    reg_write_uint8(tca9555r_addresses[tca_index], POLARITY_PORT1, polarity_state);
-    #if TCA9555R_LOCAL_MEMORY
-    tca9555r_polarity_state[HIGH_BYTE(tca_index)] = polarity_state;
+    reg_write_uint8(tca9555_addresses[tca_index], POLARITY_PORT1, polarity_state);
+    #if TCA9555_LOCAL_MEMORY
+    tca9555_polarity_state[HIGH_BYTE(tca_index)] = polarity_state;
     #endif
 }
 
@@ -410,8 +410,8 @@ void tca_change_output_mask(uint8_t chip, uint16_t mask, uint16_t state) {
     bool low_changed = low_mask > 0;
     bool high_changed = high_mask > 0;
     if (low_changed && high_changed) {
-        #if TCA9555R_LOCAL_MEMORY
-        uint16_t output_state = (tca9555r_output_state[HIGH_BYTE(chip)] << 8) | tca9555r_output_state[LOW_BYTE(chip)];
+        #if TCA9555_LOCAL_MEMORY
+        uint16_t output_state = (tca9555_output_state[HIGH_BYTE(chip)] << 8) | tca9555_output_state[LOW_BYTE(chip)];
         #else
         uint16_t output_state = tca_get_output_port(chip);
         #endif
@@ -422,8 +422,8 @@ void tca_change_output_mask(uint8_t chip, uint16_t mask, uint16_t state) {
             tca_set_output_port(chip, new_output_state);
         }
     } else if (low_changed) {
-        #if TCA9555R_LOCAL_MEMORY
-        uint8_t output_state = tca9555r_output_state[LOW_BYTE(chip)];
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t output_state = tca9555_output_state[LOW_BYTE(chip)];
         #else
         uint8_t output_state = tca_get_output_port_low(chip);
         #endif
@@ -432,8 +432,8 @@ void tca_change_output_mask(uint8_t chip, uint16_t mask, uint16_t state) {
             tca_set_output_port_low(chip, new_output_state);
         }
     } else if (high_changed) {
-        #if TCA9555R_LOCAL_MEMORY
-        uint8_t output_state = tca9555r_output_state[HIGH_BYTE(chip)];
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t output_state = tca9555_output_state[HIGH_BYTE(chip)];
         #else
         uint8_t output_state = tca_get_output_port_high(chip);
         #endif
@@ -444,78 +444,87 @@ void tca_change_output_mask(uint8_t chip, uint16_t mask, uint16_t state) {
     }
 }
 
-#if TCA9555R_READ_INTERNALS
-STATIC mp_obj_t tca_port_read_input_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
+void tca_change_config_mask(uint8_t chip, uint16_t mask, uint16_t state) {
+    uint8_t low_mask = (uint8_t)(mask & 0xFF);
+    uint8_t low_state = (uint8_t)(state & 0xFF);
+    uint8_t high_mask = (uint8_t)(mask >> 8);
+    uint8_t high_state = (uint8_t)(state >> 8);
+    bool low_changed = low_mask > 0;
+    bool high_changed = high_mask > 0;
+    if (low_changed && high_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint16_t config_state = (tca9555_config_state[HIGH_BYTE(chip)] << 8) | tca9555_config_state[LOW_BYTE(chip)];
+        #else
+        uint16_t config_state = tca_get_config_port(chip);
+        #endif
+        uint16_t new_config_state = config_state;
+        new_config_state &= ~mask; // Clear the mask bits
+        new_config_state |= state; // Set the state bits
+        if (new_config_state != config_state) {
+            tca_set_config_port(chip, new_config_state);
+        }
+    } else if (low_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t config_state = tca9555_config_state[LOW_BYTE(chip)];
+        #else
+        uint8_t config_state = tca_get_config_port_low(chip);
+        #endif
+        uint8_t new_config_state = (config_state & ~low_mask) | low_state;
+        if (new_config_state != config_state) {
+            tca_set_config_port_low(chip, new_config_state);
+        }
+    } else if (high_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t config_state = tca9555_config_state[HIGH_BYTE(chip)];
+        #else
+        uint8_t config_state = tca_get_config_port_high(chip);
+        #endif
+        uint8_t new_config_state = (config_state & ~high_mask) | high_state;
+        if (new_config_state != config_state) {
+            tca_set_config_port_high(chip, new_config_state);
+        }
     }
-
-    return mp_obj_new_int(tca_get_input_port(chip));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_input_state_obj, tca_port_read_input_state);
 
-STATIC mp_obj_t tca_port_read_output_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
+void tca_change_polarity_mask(uint8_t chip, uint16_t mask, uint16_t state) {
+    uint8_t low_mask = (uint8_t)(mask & 0xFF);
+    uint8_t low_state = (uint8_t)(state & 0xFF);
+    uint8_t high_mask = (uint8_t)(mask >> 8);
+    uint8_t high_state = (uint8_t)(state >> 8);
+    bool low_changed = low_mask > 0;
+    bool high_changed = high_mask > 0;
+    if (low_changed && high_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint16_t polarity_state = (tca9555_polarity_state[HIGH_BYTE(chip)] << 8) | tca9555_polarity_state[LOW_BYTE(chip)];
+        #else
+        uint16_t polarity_state = tca_get_polarity_port(chip);
+        #endif
+        uint16_t new_polarity_state = polarity_state;
+        new_polarity_state &= ~mask; // Clear the mask bits
+        new_polarity_state |= state; // Set the state bits
+        if (new_polarity_state != polarity_state) {
+            tca_set_polarity_port(chip, new_polarity_state);
+        }
+    } else if (low_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t polarity_state = tca9555_polarity_state[LOW_BYTE(chip)];
+        #else
+        uint8_t polarity_state = tca_get_polarity_port_low(chip);
+        #endif
+        uint8_t new_polarity_state = (polarity_state & ~low_mask) | low_state;
+        if (new_polarity_state != polarity_state) {
+            tca_set_polarity_port_low(chip, new_polarity_state);
+        }
+    } else if (high_changed) {
+        #if TCA9555_LOCAL_MEMORY
+        uint8_t polarity_state = tca9555_polarity_state[HIGH_BYTE(chip)];
+        #else
+        uint8_t polarity_state = tca_get_polarity_port_high(chip);
+        #endif
+        uint8_t new_polarity_state = (polarity_state & ~high_mask) | high_state;
+        if (new_polarity_state != polarity_state) {
+            tca_set_polarity_port_high(chip, new_polarity_state);
+        }
     }
-
-    return mp_obj_new_int(tca_get_output_port(chip));
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_output_state_obj, tca_port_read_output_state);
-
-STATIC mp_obj_t tca_port_read_config_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
-    }
-
-    return mp_obj_new_int(tca_get_config_port(chip));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_config_state_obj, tca_port_read_config_state);
-
-STATIC mp_obj_t tca_port_read_polarity_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
-    }
-
-    return mp_obj_new_int(tca_get_polarity_port(chip));
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_read_polarity_state_obj, tca_port_read_polarity_state);
-
-#if TCA9555R_LOCAL_MEMORY
-STATIC mp_obj_t tca_port_stored_output_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
-    }
-
-    return mp_obj_new_int((tca9555r_output_state[HIGH_BYTE(chip)] << 8) | tca9555r_output_state[LOW_BYTE(chip)]);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_output_state_obj, tca_port_stored_output_state);
-
-STATIC mp_obj_t tca_port_stored_config_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
-    }
-
-    return mp_obj_new_int((tca9555r_config_state[HIGH_BYTE(chip)] << 8) | tca9555r_config_state[LOW_BYTE(chip)]);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_config_state_obj, tca_port_stored_config_state);
-
-STATIC mp_obj_t tca_port_stored_polarity_state(mp_obj_t chip_obj) {
-    int chip = mp_obj_get_int(chip_obj);
-    if (chip < 0 || chip >= TCA9555R_CHIP_COUNT) {
-        mp_raise_TypeError_varg(translate("chip can only be 0 to %q"), TCA9555R_CHIP_COUNT - 1);
-    }
-
-    return mp_obj_new_int((tca9555r_polarity_state[HIGH_BYTE(chip)] << 8) | tca9555r_polarity_state[LOW_BYTE(chip)]);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(tca_port_stored_polarity_state_obj, tca_port_stored_polarity_state);
-#endif
-#endif
-
 #endif // defined(MICROPY_PY_TCA9555) && defined(MICROPY_HW_PIN_EXT_COUNT)
