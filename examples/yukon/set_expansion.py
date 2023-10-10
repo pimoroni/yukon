@@ -3,7 +3,7 @@ from machine import Pin
 from pimoroni_yukon import Yukon, GP26, GP27, LCD_CS, LCD_DC, LCD_BL
 
 """
-Read the IO pins on Yukon's expansion header.
+Initialise the IO pins on Yukon's expansion header as outputs and set them.
 """
 
 # Constants
