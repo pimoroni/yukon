@@ -604,16 +604,19 @@ class Yukon:
             self.disable_main_output()
             raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level. Turning off output")
 
-        # Short Circuit
         voltage_out = self.read_output_voltage()
-        if voltage_out < self.VOLTAGE_SHORT_LEVEL:
-            self.disable_main_output()
-            raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {voltage_out}V whilst the input voltage was {voltage_in}V. Turning off output")
 
-        # Under Voltage
-        if voltage_out < self.VOLTAGE_LOWER_LIMIT:
-            self.disable_main_output()
-            raise UnderVoltageError(f"[Yukon] Output voltage of {voltage_out}V below minimum operating level. Turning off output")
+        # Only check the output voltage if the main output is enabled
+        if self.is_main_output_enabled():
+            # Short Circuit
+            if voltage_out < self.VOLTAGE_SHORT_LEVEL:
+                self.disable_main_output()
+                raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {voltage_out}V whilst the input voltage was {voltage_in}V. Turning off output")
+
+            # Under Voltage
+            if voltage_out < self.VOLTAGE_LOWER_LIMIT:
+                self.disable_main_output()
+                raise UnderVoltageError(f"[Yukon] Output voltage of {voltage_out}V below minimum operating level. Turning off output")
 
         # Over Current
         current = self.read_current()

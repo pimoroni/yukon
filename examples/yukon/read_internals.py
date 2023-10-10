@@ -2,7 +2,7 @@ import time
 from pimoroni_yukon import Yukon
 
 """
-read the internal sensors of Yukon.
+Read the internal sensors of Yukon.
 """
 
 # Constants
@@ -19,11 +19,11 @@ try:
         # Read Yukon's voltage sensors
         voltage_in = yukon.read_input_voltage()
         voltage_out = yukon.read_output_voltage()
-                
+
         # Read Yukon's current sensor, but only if the input voltage
         # is high enough to turn it on, otherwise set the value to zero
         current = yukon.read_current() if voltage_in > 2.5 else 0.0
-            
+
         # Read Yukon's temperature sensor
         temperature = yukon.read_temperature()
 
