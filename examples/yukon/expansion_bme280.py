@@ -1,9 +1,10 @@
 import time
-from pimoroni_yukon import Yukon
+from machine import I2C
+from pimoroni_yukon import Yukon, GP26, GP27
 from breakout_bme280 import BreakoutBME280
 
 """
-Read a BME280 sensor attached to the QwST connectors or Breakout Garden header.
+Read a BME280 sensor attached to the Expansion header.
 """
 
 # Constants
@@ -11,8 +12,9 @@ ADDRESS = 0x76     # Or 0x77 if trace on rear of breakout has been cut
 SLEEP = 1.0        # The time to sleep between each reading
 
 # Variables
-yukon = Yukon()                             # A new Yukon object
-bme = BreakoutBME280(yukon.i2c, ADDRESS)    # A new BME280 sensor with Yukon's I2C
+yukon = Yukon()                                 # A new Yukon object
+i2c = I2C(1, sda=GP26, scl=GP27, freq=100000)   # An I2C object using the expansion pins
+bme = BreakoutBME280(i2c, ADDRESS)              # A new BME280 sensor with the I2C object
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
@@ -30,4 +32,5 @@ try:
 
 finally:
     # Put the board back into a safe state, regardless of how the program may have ended
+    i2c.deinit()
     yukon.reset()

@@ -52,4 +52,6 @@ try:
 
 finally:
     # Put the board back into a safe state, regardless of how the program may have ended
+    GP26.init(Pin.IN)
+    GP27.init(Pin.IN)
     yukon.reset()
