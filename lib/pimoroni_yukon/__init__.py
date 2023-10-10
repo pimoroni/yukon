@@ -4,7 +4,7 @@
 
 import time
 import tca
-from machine import ADC, Pin
+from machine import ADC, Pin, I2C
 from pimoroni_yukon.modules import KNOWN_MODULES
 from pimoroni_yukon.modules.common import ADC_FLOAT, ADC_LOW, ADC_HIGH, YukonModule
 import pimoroni_yukon.logging as logging
@@ -35,7 +35,7 @@ SLOT1 = Slot(1,
              Pin.board.SLOT1_SLOW3,
              0,  # 0b0000
              3   # 0b0011
-             ) 
+             )
 
 SLOT2 = Slot(2,
              Pin.board.SLOT2_FAST1,
@@ -97,6 +97,13 @@ SLOT6 = Slot(6,
              10  # 0b1010
              )
 
+GP26 = Pin.board.GP26
+GP27 = Pin.board.GP27
+
+LCD_CS = Pin.board.LCD_CS
+LCD_DC = Pin.board.LCD_DC
+LCD_BL = Pin.board.LCD_BL
+
 
 class Yukon:
     """Yukon class."""
@@ -147,6 +154,9 @@ class Yukon:
             SLOT6: None
         })
 
+        # Set up the i2c for Qw/st and Breakout Garden
+        self.i2c = I2C(0, sda=Pin.board.SDA, scl=Pin.board.SCL, freq=400000)
+
         # Main output enable
         self.__main_en = Pin.board.MAIN_EN
         self.__main_en.init(Pin.OUT, value=False)
@@ -176,7 +186,7 @@ class Yukon:
                                    1 << tca.get_number(Pin.board.ADC_ADDR_2),
                                    1 << tca.get_number(Pin.board.ADC_ADDR_3))
         self.__adc_io_mask = self.__adc_io_ens_addrs[0] | self.__adc_io_ens_addrs[1] | \
-                             self.__adc_io_adc_addrs[0] | self.__adc_io_adc_addrs[1] | self.__adc_io_adc_addrs[2]
+            self.__adc_io_adc_addrs[0] | self.__adc_io_adc_addrs[1] | self.__adc_io_adc_addrs[2]
 
         # User switches
         self.__switches = (Pin.board.SW_A,
@@ -406,7 +416,6 @@ class Yukon:
                 new_time = time.ticks_us()
                 if ticks_diff(new_time, start) > self.OUTPUT_DISSIPATE_TIMEOUT_US:
                     raise FaultError("[Yukon] Output voltage did not dissipate in an acceptable time. Aborting module initialisation")
-
 
         logging.info("> Verifying modules")
 
@@ -733,7 +742,7 @@ class Yukon:
         self.__max_voltage_in = float('-inf')
         self.__min_voltage_in = float('inf')
         self.__avg_voltage_in = 0
-        
+
         self.__max_voltage_out = float('-inf')
         self.__min_voltage_out = float('inf')
         self.__avg_voltage_out = 0

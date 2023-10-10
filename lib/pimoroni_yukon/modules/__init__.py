@@ -24,5 +24,4 @@ KNOWN_MODULES = (
     ProtoPotModule,
     QuadServoDirectModule,
     QuadServoRegModule,
-    SerialServoModule
-    )
+    SerialServoModule)

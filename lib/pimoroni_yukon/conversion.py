@@ -18,6 +18,7 @@ MEASURED_AT_VOLTAGE_IN_MAX = 45874  # (46159, 45798, 45906, 45767, 45688, 46068,
 MEASURED_TO_VOLTAGE_IN_MAX_MIN = (VOLTAGE_IN_MAX - VOLTAGE_IN_MIN) / (MEASURED_AT_VOLTAGE_IN_MAX - MEASURED_AT_VOLTAGE_IN_MIN)
 MEASURED_TO_VOLTAGE_IN_MIN_ZERO = VOLTAGE_IN_MIN / (MEASURED_AT_VOLTAGE_IN_MIN - MEASURED_AT_VOLTAGE_IN_ZERO)
 
+
 def u16_to_voltage_in(u16):
     # return (((u16 * 3.3) / 65535) * (100 + 16)) / 16  # Ideal equation, kept for reference
     if u16 >= MEASURED_AT_VOLTAGE_IN_MIN:
@@ -39,6 +40,7 @@ MEASURED_AT_VOLTAGE_OUT_MAX = 45636  # (45888, 45575, 45627, 45809, 45651, 45577
 
 MEASURED_TO_VOLTAGE_OUT_MAX_MIN = (VOLTAGE_OUT_MAX - VOLTAGE_OUT_MIN) / (MEASURED_AT_VOLTAGE_OUT_MAX - MEASURED_AT_VOLTAGE_OUT_MIN)
 MEASURED_TO_VOLTAGE_OUT_MIN_ZERO = VOLTAGE_OUT_MIN / (MEASURED_AT_VOLTAGE_OUT_MIN - MEASURED_AT_VOLTAGE_OUT_ZERO)
+
 
 def u16_to_voltage_out(u16):
     # return (((u16 * 3.3) / 65535) * (100 + 16)) / 16  # Ideal equation, kept for reference
@@ -63,14 +65,15 @@ MEASURED_AT_CURRENT_MAX = 14255  # (14544, 14257, 14445, 14155, 13937, 14067, 14
 MEASURED_TO_CURRENT_MAX_MID = (CURRENT_MAX - CURRENT_MID) / (MEASURED_AT_CURRENT_MAX - MEASURED_AT_CURRENT_MID)
 MEASURED_TO_CURRENT_MID_MIN = (CURRENT_MID - CURRENT_MIN) / (MEASURED_AT_CURRENT_MID - MEASURED_AT_CURRENT_MIN)
 
+
 def u16_to_current(u16):
     # return (((u16 * 3.3) / 65535) * ( 1 / (2.99 * 4020 * 0.0005 / 120)))  # Ideal equation, kept for reference
-    
-    ## Commented the below out as it reported underestimates for low current draws
-    #if u16 >= MEASURED_AT_CURRENT_MID:
-    #    return ((u16 - MEASURED_AT_CURRENT_MID) * MEASURED_TO_CURRENT_MAX_MID) + CURRENT_MID
-    #else:
-    #    return max(((u16 - MEASURED_AT_CURRENT_MIN) * MEASURED_TO_CURRENT_MID_MIN) + CURRENT_MIN, 0.0)
+
+    # Commented the below out as it reported underestimates for low current draws
+    # if u16 >= MEASURED_AT_CURRENT_MID:
+    #     return ((u16 - MEASURED_AT_CURRENT_MID) * MEASURED_TO_CURRENT_MAX_MID) + CURRENT_MID
+    # else:
+    #     return max(((u16 - MEASURED_AT_CURRENT_MIN) * MEASURED_TO_CURRENT_MID_MIN) + CURRENT_MIN, 0.0)
 
     return max(((u16 - MEASURED_AT_CURRENT_MID) * MEASURED_TO_CURRENT_MAX_MID) + CURRENT_MID, 0.0)  # This sadly overreports low current draws
 
@@ -84,6 +87,7 @@ ROOM_TEMP = ZERO_TEMP + 25
 PULLUP_RESISTANCE = 5100
 RESISTANCE_AT_ROOM_TEMP = 10000.0
 BETA = 3435
+
 
 def analog_to_temp(sense):
     r_thermistor = sense / ((ADC_REF - sense) / PULLUP_RESISTANCE)

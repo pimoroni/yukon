@@ -54,6 +54,7 @@ def CheckSum(buffer):
 
     return (~checksum) & 0xFF
 
+
 def AppendCheckSum(buffer):
     checksum = 0
     length = buffer[FRAME_LENGTH_INDEX]
@@ -63,6 +64,7 @@ def AppendCheckSum(buffer):
 
     buffer[last] = (~checksum) & 0xFF
 
+
 def SerialServoMove(uart, id, position, time):
     if position < 0:
         position = 0
@@ -71,102 +73,110 @@ def SerialServoMove(uart, id, position, time):
 
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_MOVE_TIME_WRITE.length)
     struct.pack_into("<BBBBBHH", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_MOVE_TIME_WRITE.length,
-        SERVO_MOVE_TIME_WRITE.value,
-        position,
-        time)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_MOVE_TIME_WRITE.length,
+                     SERVO_MOVE_TIME_WRITE.value,
+                     position,
+                     time)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoStopMove(uart, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_MOVE_STOP.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_MOVE_STOP.length,
-        SERVO_MOVE_STOP.value)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_MOVE_STOP.length,
+                     SERVO_MOVE_STOP.value)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoSetID(uart, old_id, new_id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_ID_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        old_id,
-        SERVO_ID_WRITE.length,
-        SERVO_ID_WRITE.value,
-        new_id)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     old_id,
+                     SERVO_ID_WRITE.length,
+                     SERVO_ID_WRITE.value,
+                     new_id)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoSetMode(uart, id, mode, speed):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_OR_MOTOR_MODE_WRITE.length)
     struct.pack_into("<BBBBBBBH", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_OR_MOTOR_MODE_WRITE.length,
-        SERVO_OR_MOTOR_MODE_WRITE.value,
-        mode,
-        0,
-        speed)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_OR_MOTOR_MODE_WRITE.length,
+                     SERVO_OR_MOTOR_MODE_WRITE.value,
+                     mode,
+                     0,
+                     speed)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoLoad(uart, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_LOAD_OR_UNLOAD_WRITE.length,
-        SERVO_LOAD_OR_UNLOAD_WRITE.value,
-        1)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_LOAD_OR_UNLOAD_WRITE.length,
+                     SERVO_LOAD_OR_UNLOAD_WRITE.value,
+                     1)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoUnload(uart, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_LOAD_OR_UNLOAD_WRITE.length,
-        SERVO_LOAD_OR_UNLOAD_WRITE.value,
-        0)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_LOAD_OR_UNLOAD_WRITE.length,
+                     SERVO_LOAD_OR_UNLOAD_WRITE.value,
+                     0)
     AppendCheckSum(buffer)
     uart.write(buffer)
+
 
 def SerialServoActivateLED(uart, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_LED_CTRL_WRITE.length,
-        SERVO_LED_CTRL_WRITE.value,
-        1)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_LED_CTRL_WRITE.length,
+                     SERVO_LED_CTRL_WRITE.value,
+                     1)
     AppendCheckSum(buffer)
 
     uart.write(buffer)
+
 
 def SerialServoDeactivateLED(uart, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_LED_CTRL_WRITE.length,
-        SERVO_LED_CTRL_WRITE.value,
-        0)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_LED_CTRL_WRITE.length,
+                     SERVO_LED_CTRL_WRITE.value,
+                     0)
     AppendCheckSum(buffer)
 
     uart.write(buffer)
+
 
 def SerialServoReceiveHandle(uart):
     frameStarted = False
@@ -209,6 +219,7 @@ def SerialServoReceiveHandle(uart):
     # print()
     return None
 
+
 def WaitForReceive(uart, id, timeout):
     ms = 1000.0 * timeout + 0.5
     end_ms = ticks_add(ticks_ms(), int(ms))
@@ -218,6 +229,7 @@ def WaitForReceive(uart, id, timeout):
         if remaining_ms <= 0:
             raise TimeoutError(f"Serial servo #{id} did not reply within the set time")
 
+
 def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
     send_func()
 
@@ -225,11 +237,11 @@ def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
 
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_TEMP_READ.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_TEMP_READ.length,
-        SERVO_TEMP_READ.value)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_TEMP_READ.length,
+                     SERVO_TEMP_READ.value)
     AppendCheckSum(buffer)
 
     while uart.any():
@@ -260,11 +272,11 @@ def SerialServoReadID(uart, send_func, rec_func, id, timeout=1.0):
 
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_ID_READ.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_ID_READ.length,
-        SERVO_ID_READ.value)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_ID_READ.length,
+                     SERVO_ID_READ.value)
     AppendCheckSum(buffer)
 
     while uart.any():
@@ -287,6 +299,7 @@ def SerialServoReadID(uart, send_func, rec_func, id, timeout=1.0):
 
     return ret
 
+
 def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
     send_func()
 
@@ -294,11 +307,11 @@ def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
 
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_POS_READ.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_POS_READ.length,
-        SERVO_POS_READ.value)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_POS_READ.length,
+                     SERVO_POS_READ.value)
     AppendCheckSum(buffer)
 
     while uart.any():
@@ -321,6 +334,7 @@ def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
 
     return ret
 
+
 def SerialServoReadVin(uart, send_func, rec_func, id, timeout=1.0):
     send_func()
 
@@ -328,11 +342,11 @@ def SerialServoReadVin(uart, send_func, rec_func, id, timeout=1.0):
 
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_VIN_READ.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-        FRAME_HEADER,
-        FRAME_HEADER,
-        id,
-        SERVO_VIN_READ.length,
-        SERVO_VIN_READ.value)
+                     FRAME_HEADER,
+                     FRAME_HEADER,
+                     id,
+                     SERVO_VIN_READ.length,
+                     SERVO_VIN_READ.value)
     AppendCheckSum(buffer)
 
     while uart.any():
