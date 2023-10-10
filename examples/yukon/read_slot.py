@@ -8,7 +8,7 @@ Read the IO pins of a single Yukon slot.
 """
 
 # Constants
-SLEEP = 0.5     # The time to sleep between each reading
+SLEEP = 0.5         # The time to sleep between each reading
 
 # Variables
 yukon = Yukon()     # A new Yukon object
