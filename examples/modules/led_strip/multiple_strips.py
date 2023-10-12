@@ -34,6 +34,7 @@ def update_rainbow(strip, offset):
     # Send the new colours to the LED strip
     strip.update()
 
+
 # Generator to get the next PIO and State Machine numbers
 def pio_and_sm_generator():
     pio = 0
@@ -53,7 +54,7 @@ def pio_and_sm_generator():
 
 
 pio_and_sm = pio_and_sm_generator()     # An instance of the generator
-    
+
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
