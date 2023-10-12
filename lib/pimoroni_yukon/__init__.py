@@ -137,6 +137,7 @@ class Yukon:
 
     OUTPUT_DISSIPATE_TIMEOUT_S = 15  # When a bench power module is attached and there is no additional output load, it can take a while for it to return to an idle state
     OUTPUT_DISSIPATE_TIMEOUT_US = OUTPUT_DISSIPATE_TIMEOUT_S * 1000 * 1000
+    OUTPUT_DISSIPATE_TIME_US = 10 * 1000
     OUTPUT_DISSIPATE_LEVEL = 0.4  # The voltage below which we can reliably obtain the address of attached modules
 
     def __init__(self, voltage_limit=DEFAULT_VOLTAGE_LIMIT, current_limit=DEFAULT_CURRENT_LIMIT, temperature_limit=DEFAULT_TEMPERATURE_LIMIT, logging_level=logging.LOG_INFO):
@@ -237,9 +238,32 @@ class Yukon:
 
         return slot
 
-    def find_slots_with_module(self, module_type):
+    def __check_output_dissipated(self, message):
+        logging.info("> Checking output voltage ...")
+        if self.read_output_voltage() >= self.OUTPUT_DISSIPATE_LEVEL:
+            logging.warn("> Waiting for output voltage to dissipate ...")
+
+            start = time.ticks_us()
+            first_below_time = 0
+            while True:
+                new_voltage = self.read_output_voltage()
+                new_time = time.ticks_us()
+                if new_voltage < self.OUTPUT_DISSIPATE_LEVEL:
+                    if first_below_time == 0:
+                        first_below_time = new_time
+                    elif ticks_diff(new_time, first_below_time) > self.OUTPUT_DISSIPATE_TIME_US:
+                        break
+                else:
+                    first_below_time = 0
+
+                if ticks_diff(new_time, start) > self.OUTPUT_DISSIPATE_TIMEOUT_US:
+                    raise FaultError(f"[Yukon] Output voltage did not dissipate in an acceptable time. Aborting {message}")
+
+    def find_slots_with(self, module_type):
         if self.is_main_output_enabled():
             raise RuntimeError("Cannot find slots with modules whilst the main output is active")
+
+        self.__check_output_dissipated("module finding")
 
         logging.info(f"> Finding slots with '{module_type.NAME}' module")
 
@@ -325,9 +349,11 @@ class Yukon:
 
         return detected
 
-    def detect_module(self, slot):
+    def detect_in_slot(self, slot):
         if self.is_main_output_enabled():
-            raise RuntimeError("Cannot detect modules whilst the main output is active")
+            raise RuntimeError("Cannot detect module whilst the main output is active")
+
+        self.__check_output_dissipated("module detection")
 
         slot = self.__check_slot(slot)
 
@@ -399,23 +425,11 @@ class Yukon:
 
         logging.info()  # New line
 
-    def initialise_modules(self, allow_unregistered=False, allow_undetected=False, allow_discrepencies=False, allow_no_modules=False):
+    def verify_and_initialise(self, allow_unregistered=False, allow_undetected=False, allow_discrepencies=False, allow_no_modules=False):
         if self.is_main_output_enabled():
             raise RuntimeError("Cannot verify modules whilst the main output is active")
 
-        logging.info("> Checking output voltage ...")
-        if self.read_output_voltage() >= self.OUTPUT_DISSIPATE_LEVEL:
-            logging.info("> Waiting for output voltage to dissipate ...")
-
-            start = time.ticks_us()
-            while True:
-                new_voltage = self.read_output_voltage()
-                if new_voltage < self.OUTPUT_DISSIPATE_LEVEL:
-                    break
-
-                new_time = time.ticks_us()
-                if ticks_diff(new_time, start) > self.OUTPUT_DISSIPATE_TIMEOUT_US:
-                    raise FaultError("[Yukon] Output voltage did not dissipate in an acceptable time. Aborting module initialisation")
+        self.__check_output_dissipated("module initialisation")
 
         logging.info("> Verifying modules")
 

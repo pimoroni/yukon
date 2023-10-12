@@ -23,8 +23,24 @@ class LEDStripModule(YukonModule):
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_LOW and slow1 is HIGH and slow2 is HIGH and slow3 is HIGH
 
-    def __init__(self, strip_type, num_leds, brightness=1.0, halt_on_not_pgood=False):
+    def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, halt_on_not_pgood=False):
         super().__init__()
+
+        if strip_type < 0 or strip_type > 2:
+            raise ValueError("strip_type out of range. Expected 0 (NEOPIXEL), 1 (DUAL_NEOPIXEL) or 2 (DOTSTAR)")
+
+        if pio < 0 or pio > 1:
+            raise ValueError("pio out of range. Expected 0 or 1")
+
+        if sm < 0 or sm > 3:
+            raise ValueError("sm out of range. Expected 0 to 3")
+
+        if num_leds <= 0:
+            raise ValueError("num_leds out of range. Expected greater than 0")
+
+        if strip_type == self.DOTSTAR and (brightness < 0.0 or brightness > 1.0):
+            raise ValueError("brightness out of range. Expected 0.0 to 1.0")
+
         self.__strip_type = strip_type
         if self.__strip_type == self.NEOPIXEL:
             self.NAME += " (NeoPixel)"
@@ -33,6 +49,8 @@ class LEDStripModule(YukonModule):
         else:
             self.NAME += " (DotStar)"
 
+        self.__pio = pio
+        self.__sm = sm
         self.__num_leds = num_leds
         self.__brightness = brightness
         self.halt_on_not_pgood = halt_on_not_pgood
@@ -48,13 +66,13 @@ class LEDStripModule(YukonModule):
                 if not isinstance(num_leds, (list, tuple)):
                     num_leds = (num_leds, num_leds)
 
-                self.strips = [WS2812(num_leds[0], 0, 0, slot.FAST4),
-                               WS2812(num_leds[1], 0, 1, slot.FAST3)]
+                self.strips = [WS2812(num_leds[0], self.__pio, self.__sm, slot.FAST4),
+                               WS2812(num_leds[1], self.__pio, (self.__sm + 1) % 4, slot.FAST3)]
             else:
-                self.strip = WS2812(self.__num_leds, 0, 0, slot.FAST4)
+                self.strip = WS2812(self.__num_leds, self.__pio, self.__sm, slot.FAST4)
         else:
             from plasma import APA102
-            self.strip = APA102(self.__num_leds, 0, 0, slot.FAST4, slot.FAST3)
+            self.strip = APA102(self.__num_leds, self.__pio, self.__sm, slot.FAST4, slot.FAST3)
             self.strip.set_brightness(int(self.__brightness * 31))
 
         # Create the power control pin objects

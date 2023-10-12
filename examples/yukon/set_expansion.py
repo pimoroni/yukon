@@ -7,7 +7,7 @@ Initialise the IO pins on Yukon's expansion header as outputs and set them.
 """
 
 # Constants
-SLEEP = 0.5         # The time to sleep between each reading
+SLEEP = 0.5         # The time to sleep between each toggle
 
 # Variables
 yukon = Yukon()     # A new Yukon object

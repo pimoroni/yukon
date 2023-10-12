@@ -8,7 +8,7 @@ Initialise the IO pins on a Yukon slot as outputs and set them.
 """
 
 # Constants
-SLEEP = 0.5         # The time to sleep between each reading
+SLEEP = 0.5         # The time to sleep between each toggle
 
 # Variables
 yukon = Yukon()     # A new Yukon object
