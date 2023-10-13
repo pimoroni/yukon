@@ -38,15 +38,15 @@ def angle_from_index(index, offset=0.0):
 try:
     # Find out which slots of Yukon have QuadServoDirectModules attached
     for slot in yukon.find_slots_with(QuadServoDirectModule):
-        module = QuadServoDirectModule(init_servos=False)    # Create a QuadServoDirectModule object, but do not have it create Servo objects
-        yukon.register_with_slot(module, slot)               # Register the QuadServoDirectModule object with the slot
-        modules.append(module)                               # Add the object to the module list
+        module = QuadServoDirectModule(init_servos=False)   # Create a QuadServoDirectModule object, but do not have it create Servo objects
+        yukon.register_with_slot(module, slot)              # Register the QuadServoDirectModule object with the slot
+        modules.append(module)                              # Add the object to the module list
 
     # Find out which slots of Yukon have QuadServoRegModule attached
     for slot in yukon.find_slots_with(QuadServoRegModule):
-        module = QuadServoRegModule(init_servos=False)       # Create a QuadServoRegModule object, but do not have it create Servo objects
-        yukon.register_with_slot(module, slot)               # Register the QuadServoDirectModule object with the slot
-        modules.append(module)                               # Add the object to the module list
+        module = QuadServoRegModule(init_servos=False)      # Create a QuadServoRegModule object, but do not have it create Servo objects
+        yukon.register_with_slot(module, slot)              # Register the QuadServoDirectModule object with the slot
+        modules.append(module)                              # Add the object to the module list
 
     # Record the number of servos that will be driven
     NUM_SERVOS = len(modules) * QuadServoDirectModule.NUM_SERVOS

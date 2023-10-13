@@ -107,11 +107,15 @@ class LEDStripModule(YukonModule):
 
     @property
     def strip1(self):
-        return self.strips[0]
+        if self.__strip_type == self.DUAL_NEOPIXEL:
+            return self.strips[0]
+        raise RuntimeError("strip1 is only accessible with the DUAL_NEOPIXEL strip_type")
 
     @property
     def strip2(self):
-        return self.strips[1]
+        if self.__strip_type == self.DUAL_NEOPIXEL:
+            return self.strips[1]
+        raise RuntimeError("strip2 is only accessible with the DUAL_NEOPIXEL strip_type")
 
     def read_power_good(self):
         return self.__power_good.value() == 1

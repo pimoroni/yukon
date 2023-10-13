@@ -37,7 +37,6 @@ class QuadServoRegModule(YukonModule):
             # Create servo objects
             self.servos = [Servo(pins[i], freq=50) for i in range(len(pins))]
         else:
-            self.servos = None
             self.servo_pins = pins
 
         # Create the power control pin objects
@@ -48,7 +47,7 @@ class QuadServoRegModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        if self.servos is not None:
+        if self.__init_servos:
             for servo in self.servos:
                 servo.disable()
 
@@ -66,19 +65,27 @@ class QuadServoRegModule(YukonModule):
 
     @property
     def servo1(self):
-        return self.servos[0]
+        if self.__init_servos:
+            return self.servos[0]
+        raise RuntimeError("servo1 is only accessible if init_servos was True during initialisation")
 
     @property
     def servo2(self):
-        return self.servos[1]
+        if self.__init_servos:
+            return self.servos[1]
+        raise RuntimeError("servo2 is only accessible if init_servos was True during initialisation")
 
     @property
     def servo3(self):
-        return self.servos[2]
+        if self.__init_servos:
+            return self.servos[2]
+        raise RuntimeError("servo3 is only accessible if init_servos was True during initialisation")
 
     @property
     def servo4(self):
-        return self.servos[3]
+        if self.__init_servos:
+            return self.servos[3]
+        raise RuntimeError("servo4 is only accessible if init_servos was True during initialisation")
 
     def read_power_good(self):
         return self.__power_good.value() == 1

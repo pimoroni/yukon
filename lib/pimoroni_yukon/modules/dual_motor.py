@@ -38,7 +38,7 @@ class DualMotorModule(YukonModule):
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_HIGH and slow1 is LOW and slow2 is LOW and slow3 is HIGH
 
-    def __init__(self, motor_type=DUAL, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT):
+    def __init__(self, motor_type=DUAL, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):
         super().__init__()
         self.__motor_type = motor_type
         if self.__motor_type == self.STEPPER:
@@ -46,6 +46,7 @@ class DualMotorModule(YukonModule):
 
         self.__frequency = frequency
         self.__current_limit = current_limit
+        self.__init_motors = init_motors
 
         # An ascending order list of current limits with the pin states to achieve them
         self.__current_limit_states = OrderedDict({
@@ -61,21 +62,19 @@ class DualMotorModule(YukonModule):
         })
 
     def initialise(self, slot, adc1_func, adc2_func):
-        try:
-            # Create pwm objects
-            self.__pwms_p = (slot.FAST2, slot.FAST4)
-            self.__pwms_n = (slot.FAST1, slot.FAST3)
-        except ValueError as e:
-            if slot.ID <= 2 or slot.ID >= 5:
-                conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
-                raise type(e)(f"PWM channel(s) already in use. Check that the module in Slot{conflicting_slot} does not share the same PWM channel(s)") from None
-            raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
-
         if self.__motor_type == self.DUAL:
-            from motor import Motor
 
-            # Create motor objects
-            self.motors = [Motor((self.__pwms_p[i], self.__pwms_n[i]), freq=self.__frequency) for i in range(len(self.__pwms_p))]
+            # Store the pwm pins
+            pins_p = (slot.FAST2, slot.FAST4)
+            pins_n = (slot.FAST1, slot.FAST3)
+
+            if self.__init_motors:
+                from motor import Motor
+
+                # Create motor objects
+                self.motors = [Motor((pins_p[i], pins_n[i]), freq=self.__frequency) for i in range(len(pins_p))]
+            else:
+                self.motor_pins = [(pins_p[i], pins_n[i]) for i in range(len(pins_p))]
         else:
             raise NotImplementedError("Stepper Motor support for the Dual Motor Module is currently not implemented")
 
@@ -88,7 +87,7 @@ class DualMotorModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        if self.__motor_type == self.DUAL:
+        if self.__motor_type == self.DUAL and self.__init_motors:
             for motor in self.motors:
                 motor.disable()
 
@@ -117,7 +116,7 @@ class DualMotorModule(YukonModule):
 
             # Find the closest current limit below the given amps value
             for limit, state in self.__current_limit_states.items():
-                if limit < amps:
+                if limit > amps:
                     break
                 chosen_limit = limit
                 chosen_state = state
@@ -142,11 +141,15 @@ class DualMotorModule(YukonModule):
 
     @property
     def motor1(self):
-        return self.motors[0]
+        if self.__motor_type == self.DUAL and self.__init_motors:
+            return self.motors[0]
+        raise RuntimeError("motor1 is only accessible with the DUAL motor_type, and if init_motors was True during initialisation")
 
     @property
     def motor2(self):
-        return self.motors[1]
+        if self.__motor_type == self.DUAL and self.__init_motors:
+            return self.motors[1]
+        raise RuntimeError("motor2 is only accessible with the DUAL motor_type, and if init_motors was True during initialisation")
 
     def read_fault(self):
         return self.__read_adc1() <= self.FAULT_THRESHOLD
