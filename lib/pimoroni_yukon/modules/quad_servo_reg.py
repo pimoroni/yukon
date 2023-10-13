@@ -22,8 +22,9 @@ class QuadServoRegModule(YukonModule):
     def is_module(adc_level, slow1, slow2, slow3):
         return adc_level == ADC_FLOAT and slow1 is LOW and slow2 is HIGH and slow3 is LOW
 
-    def __init__(self, halt_on_not_pgood=False):
+    def __init__(self, init_servos=True, halt_on_not_pgood=False):
         super().__init__()
+        self.__init_servos = init_servos
         self.halt_on_not_pgood = halt_on_not_pgood
 
         self.__last_pgood = False
