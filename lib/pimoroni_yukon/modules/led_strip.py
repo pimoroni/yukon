@@ -35,8 +35,18 @@ class LEDStripModule(YukonModule):
         if sm < 0 or sm > 3:
             raise ValueError("sm out of range. Expected 0 to 3")
 
-        if num_leds <= 0:
-            raise ValueError("num_leds out of range. Expected greater than 0")
+        if strip_type == self.DUAL_NEOPIXEL and isinstance(num_leds, (list, tuple)):
+            if len(num_leds) != 2:
+                raise ValueError("num_leds list or tuple should only contain two values")
+
+            if num_leds[0] <= 0 or num_leds[1] <= 0:
+                raise ValueError("value in num_leds list or tuple out of range. Expected greater than 0")
+        else:
+            if isinstance(num_leds, (list, tuple)):
+                raise ValueError("num_leds should not be a list or tuple for the NEOPIXEL and DOTSTAR strip types")
+
+            if num_leds <= 0:
+                raise ValueError("num_leds out of range. Expected greater than 0")
 
         if strip_type == self.DOTSTAR and (brightness < 0.0 or brightness > 1.0):
             raise ValueError("brightness out of range. Expected 0.0 to 1.0")

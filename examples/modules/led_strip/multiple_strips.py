@@ -11,7 +11,7 @@ A cycling rainbow pattern will be played on the attached strips.
 # Constants
 STRIP_TYPE = LEDStripModule.NEOPIXEL    # Change to LEDStripModule.DOTSTAR for APA102 style strips
                                         # Two Neopixel strips can be driven too, by using LEDStripModule.DUAL_NEOPIXEL
-LEDS_PER_STRIP = 60                     # How many LEDs are on the strip. If using DUAL_NEOPIXEL this can be a tuple
+LEDS_PER_STRIP = 60                     # How many LEDs are on the strip. If using DUAL_NEOPIXEL this can be a single value or a list or tuple
 BRIGHTNESS = 1.0                        # The max brightness of the LEDs (only supported by APA102s)
 SLEEP = 0.02                            # The time to sleep between each update
 SPEED = 0.01                            # How much to advance the rainbow hue offset by each update
@@ -58,8 +58,7 @@ pio_and_sm = pio_and_sm_generator()     # An instance of the generator
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-
-    # Find out which slots of Yukon has LEDStripModules attached
+    # Find out which slots of Yukon have LEDStripModules attached
     for slot in yukon.find_slots_with(LEDStripModule):
         pio, sm = next(pio_and_sm)              # Get the next PIO and State Machine numbers
         module = LEDStripModule(STRIP_TYPE,     # Create a LEDStripModule object, with the details of the attached strip(s)
@@ -74,7 +73,7 @@ try:
     yukon.enable_main_output()      # Turn on power to the module slots
 
     for module in modules:
-        module.enable()             # Enable each LEDStripModule's onboard 5V regulator
+        module.enable()             # Enable each LEDStripModule's onboard regulator
 
     current_time = ticks_ms()       # Record the start time of the program loop
 
@@ -90,7 +89,7 @@ try:
                 # Otherwise, just update the single Neopixel or Dotstar strip
                 update_rainbow(module.strip, hue_offset)
 
-        # Advance the rainbow offset, wrapping if it exceeds 1.0
+        # Advance the hue offset, wrapping if it exceeds 1.0
         hue_offset += SPEED
         if hue_offset >= 1.0:
             hue_offset -= 1.0

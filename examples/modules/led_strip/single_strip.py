@@ -14,7 +14,7 @@ STRIP_TYPE = LEDStripModule.NEOPIXEL    # Change to LEDStripModule.DOTSTAR for A
                                         # Two Neopixel strips can be driven too, by using LEDStripModule.DUAL_NEOPIXEL
 STRIP_PIO = 0                           # The PIO system to use (0 or 1) to drive the strip(s)
 STRIP_SM = 0                            # The State Machines (SM) to use to drive the strip(s)
-LEDS_PER_STRIP = 60                     # How many LEDs are on the strip. If using DUAL_NEOPIXEL this can be a tuple
+LEDS_PER_STRIP = 60                     # How many LEDs are on the strip. If using DUAL_NEOPIXEL this can be a single value or a list or tuple
 BRIGHTNESS = 1.0                        # The max brightness of the LEDs (only supported by APA102s)
 SLEEP = 0.02                            # The time to sleep between each update
 SPEED = 0.01                            # How much to advance the rainbow hue offset by each update
@@ -62,7 +62,7 @@ try:
             # Otherwise, just update the single Neopixel or Dotstar strip
             update_rainbow(module.strip, hue_offset)
 
-        # Advance the rainbow offset, wrapping if it exceeds 1.0
+        # Advance the hue offset, wrapping if it exceeds 1.0
         hue_offset += SPEED
         if hue_offset >= 1.0:
             hue_offset -= 1.0
