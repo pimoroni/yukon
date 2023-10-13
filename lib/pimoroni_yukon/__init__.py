@@ -121,6 +121,7 @@ class Yukon:
     DEFAULT_CURRENT_LIMIT = 20
     DEFAULT_TEMPERATURE_LIMIT = 80
     ABSOLUTE_MAX_VOLTAGE_LIMIT = 18
+    UNDERVOLTAGE_COUNT_LIMIT = 3
 
     DETECTION_SAMPLES = 64
     DETECTION_ADC_LOW = 0.2
@@ -204,11 +205,13 @@ class Yukon:
         # Shared analog input
         self.__shared_adc = ADC(Pin.board.SHARED_ADC)
 
-        self.__clear_readings()
+        self.__clear_counts_and_readings()
 
         self.__monitor_action_callback = None
 
     def reset(self):
+        logging.debug("[Yukon] Resetting")
+
         # Only disable the output if enabled (avoids duplicate messages)
         if self.is_main_output_enabled() is True:
             self.disable_main_output()
@@ -240,13 +243,16 @@ class Yukon:
 
     def __check_output_dissipated(self, message):
         logging.info("> Checking output voltage ...")
-        if self.read_output_voltage() >= self.OUTPUT_DISSIPATE_LEVEL:
+        voltage = self.read_output_voltage()
+        logging.debug(f"Output Voltage = {voltage} V")
+        if voltage >= self.OUTPUT_DISSIPATE_LEVEL:
             logging.warn("> Waiting for output voltage to dissipate ...")
 
             start = time.ticks_us()
             first_below_time = 0
             while True:
                 new_voltage = self.read_output_voltage()
+                logging.debug(f"Output Voltage = {new_voltage} V")
                 new_time = time.ticks_us()
                 if new_voltage < self.OUTPUT_DISSIPATE_LEVEL:
                     if first_below_time == 0:
@@ -615,8 +621,12 @@ class Yukon:
 
         # Under Voltage
         if voltage_in < self.VOLTAGE_LOWER_LIMIT:
-            self.disable_main_output()
-            raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level. Turning off output")
+            self.__undervoltage_count += 1
+            if self.__undervoltage_count > self.UNDERVOLTAGE_COUNT_LIMIT:
+                self.disable_main_output()
+                raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level. Turning off output")
+        else:
+            self.__undervoltage_count = 0
 
         voltage_out = self.read_output_voltage()
 
@@ -626,11 +636,6 @@ class Yukon:
             if voltage_out < self.VOLTAGE_SHORT_LEVEL:
                 self.disable_main_output()
                 raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {voltage_out}V whilst the input voltage was {voltage_in}V. Turning off output")
-
-            # Under Voltage
-            if voltage_out < self.VOLTAGE_LOWER_LIMIT:
-                self.disable_main_output()
-                raise UnderVoltageError(f"[Yukon] Output voltage of {voltage_out}V below minimum operating level. Turning off output")
 
         # Over Current
         current = self.read_current()
@@ -755,7 +760,9 @@ class Yukon:
             if module is not None:
                 module.process_readings()
 
-    def __clear_readings(self):
+    def __clear_counts_and_readings(self):
+        self.__undervoltage_count = 0
+
         self.__max_voltage_in = float('-inf')
         self.__min_voltage_in = float('inf')
         self.__avg_voltage_in = 0
@@ -775,7 +782,7 @@ class Yukon:
         self.__count_avg = 0
 
     def clear_readings(self):
-        self.__clear_readings()
+        self.__clear_counts_and_readings()
         for module in self.__slot_assignments.values():
             if module is not None:
                 module.clear_readings()
