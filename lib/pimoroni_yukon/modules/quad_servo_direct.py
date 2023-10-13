@@ -20,31 +20,28 @@ class QuadServoDirectModule(YukonModule):
         # Current protos need Slow3 jumpered to GND
         return slow1 is LOW and slow2 is LOW and slow3 is LOW
 
-    def __init__(self):
+    def __init__(self, init_servos=True):
         super().__init__()
+        self.__init_servos = init_servos
 
     def initialise(self, slot, adc1_func, adc2_func):
-        try:
-            # Create pwm objects
-            self.__pwms = (slot.FAST1,
-                           slot.FAST2,
-                           slot.FAST3,
-                           slot.FAST4)
-        except ValueError as e:
-            if slot.ID <= 2 or slot.ID >= 5:
-                conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
-                raise type(e)(f"PWM channel(s) already in use. Check that the module in Slot{conflicting_slot} does not share the same PWM channel(s)") from None
-            raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
+        # Store the pwm pins
+        pins = (slot.FAST1, slot.FAST2, slot.FAST3, slot.FAST4)
 
-        # Create servo objects
-        self.servos = [Servo(self.__pwms[i], freq=50) for i in range(len(self.__pwms))]
+        if self.__init_servos:
+            # Create servo objects
+            self.servos = [Servo(pins[i], freq=50) for i in range(len(pins))]
+        else:
+            self.servos = None
+            self.servo_pins = pins
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        for servo in self.servos:
-            servo.disable()
+        if self.servos is not None:
+            for servo in self.servos:
+                servo.disable()
 
     @property
     def servo1(self):
