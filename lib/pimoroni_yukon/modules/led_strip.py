@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_LOW, HIGH
+from .common import YukonModule, ADC_LOW, IO_HIGH
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -21,7 +21,7 @@ class LEDStripModule(YukonModule):
     # | LOW   | ALL   | 1     | 1     | 1     | LED Strip            |                             |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_LOW and slow1 is HIGH and slow2 is HIGH and slow3 is HIGH
+        return adc1_level == ADC_LOW and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_HIGH
 
     def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, halt_on_not_pgood=False):
         super().__init__()
@@ -161,6 +161,7 @@ class LEDStripModule(YukonModule):
     def process_readings(self):
         if self.__count_avg > 0:
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
     def clear_readings(self):
         self.__power_good_throughout = True

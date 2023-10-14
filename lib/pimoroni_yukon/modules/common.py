@@ -4,12 +4,13 @@
 
 from collections import OrderedDict
 from pimoroni_yukon.conversion import analog_to_temp
+import pimoroni_yukon.logging as logging
 
 ADC_LOW = 0
 ADC_HIGH = 1
 ADC_FLOAT = 2
-LOW = False
-HIGH = True
+IO_LOW = False
+IO_HIGH = True
 
 
 class YukonModule:
@@ -21,7 +22,7 @@ class YukonModule:
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         # This will return true if a slot is detected as not being empty, so as to give useful error information
-        return adc1_level is not ADC_FLOAT or adc2_level is not ADC_HIGH or slow1 is not HIGH or slow2 is not HIGH or slow3 is not HIGH
+        return adc1_level is not ADC_FLOAT or adc2_level is not ADC_HIGH or slow1 is not IO_HIGH or slow2 is not IO_HIGH or slow3 is not IO_HIGH
 
     def __init__(self):
         self.slot = None
@@ -75,6 +76,12 @@ class YukonModule:
     def get_readings(self):
         # Override this to return any readings obtained during monitoring
         return OrderedDict()
+
+    def get_formatted_readings(self, allowed=None, excluded=None):
+        return logging.format_dict(f"[Slot{self.slot.ID}]", self.get_readings(), allowed, excluded)
+
+    def print_readings(self, allowed=None, excluded=None):
+        print(self.get_formatted_readings(allowed, excluded))
 
     def process_readings(self):
         # Override this to calculate averages, or do other post-processing on readings after monitor

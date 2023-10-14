@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_LOW, LOW, HIGH
+from .common import YukonModule, ADC_LOW, IO_LOW, IO_HIGH
 from machine import Pin
 from motor import Motor, SLOW_DECAY
 from encoder import Encoder, MMME_CPR
@@ -26,7 +26,7 @@ class BigMotorModule(YukonModule):
     # | LOW   | ALL   | 0     | 1     | 1     | Big Motor            | In fault                    |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_LOW and slow1 is LOW and slow3 is HIGH
+        return adc1_level == ADC_LOW and slow1 is IO_LOW and slow3 is IO_HIGH
 
     def __init__(self, frequency=DEFAULT_FREQUENCY, counts_per_rev=None):
         super().__init__()
@@ -128,6 +128,7 @@ class BigMotorModule(YukonModule):
         if self.__count_avg > 0:
             self.__avg_current /= self.__count_avg
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
     def clear_readings(self):
         self.__fault_triggered = False

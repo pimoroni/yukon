@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_HIGH, LOW, HIGH
+from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -36,7 +36,7 @@ class DualMotorModule(YukonModule):
     # | HIGH  | ALL   | 0     | 0     | 1     | Dual Motor           |                             |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_HIGH and slow1 is LOW and slow2 is LOW and slow3 is HIGH
+        return adc1_level == ADC_HIGH and slow1 is IO_LOW and slow2 is IO_LOW and slow3 is IO_HIGH
 
     def __init__(self, motor_type=DUAL, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):
         super().__init__()
@@ -187,6 +187,7 @@ class DualMotorModule(YukonModule):
     def process_readings(self):
         if self.__count_avg > 0:
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
     def clear_readings(self):
         self.__fault_triggered = False

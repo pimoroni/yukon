@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, LOW
+from .common import YukonModule, IO_LOW
 from servo import Servo
 
 
@@ -23,7 +23,7 @@ class QuadServoDirectModule(YukonModule):
     # | HIGH  | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 near 3.3V  |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return slow1 is LOW and slow2 is LOW and slow3 is LOW
+        return slow1 is IO_LOW and slow2 is IO_LOW and slow3 is IO_LOW
 
     def __init__(self, init_servos=True):
         super().__init__()

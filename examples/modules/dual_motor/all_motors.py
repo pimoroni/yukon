@@ -14,17 +14,17 @@ It also staggers the updates of each motor to reduce peak current draw.
 """
 
 # Constants
-SPEED = 0.005                               # How much to advance the motor phase offset by each update
-UPDATES = 50                                # How many times to update the motors per second
-SPEED_EXTENT = 1.0                          # How far from zero to drive the motors
-CURRENT_LIMIT = 0.5                         # The maximum current (in amps) the motors will be driven with
-CLUSTER_PIO = 0                             # The PIO system to use (0 or 1) to drive the motor cluster
-CLUSTER_SM = 0                              # The State Machines (SM) to use to drive the motor cluster
+SPEED = 0.005                   # How much to advance the motor phase offset by each update
+UPDATES = 50                    # How many times to update the motors per second
+SPEED_EXTENT = 1.0              # How far from zero to drive the motors
+CURRENT_LIMIT = 0.5             # The maximum current (in amps) the motors will be driven with
+CLUSTER_PIO = 0                 # The PIO system to use (0 or 1) to drive the motor cluster
+CLUSTER_SM = 0                  # The State Machines (SM) to use to drive the motor cluster
 
 # Variables
-yukon = Yukon(logging_level=LOG_WARN)       # Create a new Yukon object, with its logging level lowered
-modules = []                                # A list to store QuadServo module objects created later
-phase_offset = 0                            # The offset used to animate the motors
+yukon = Yukon()                 # Create a new Yukon object
+modules = []                    # A list to store QuadServo module objects created later
+phase_offset = 0                # The offset used to animate the motors
 
 
 # Function to get a motor speed from its index

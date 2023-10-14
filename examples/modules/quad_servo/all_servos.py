@@ -2,7 +2,6 @@ import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import QuadServoDirectModule, QuadServoRegModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
-from pimoroni_yukon.logging import LOG_WARN
 from servo import ServoCluster
 
 """
@@ -14,17 +13,17 @@ It also staggers the updates of each servo to reduce peak current draw.
 """
 
 # Constants
-SPEED = 0.005                                   # How much to advance the servo phase offset by each update
-UPDATES = 50                                    # How many times to update the servos per second
-SERVO_EXTENT = 80.0                             # How far from zero to move the servos
-START_DELAY = 0.5                               # The time to sleep between activating and animating the servos
-CLUSTER_PIO = 0                                 # The PIO system to use (0 or 1) to drive the servo cluster
-CLUSTER_SM = 0                                  # The State Machines (SM) to use to drive the servo cluster
+SPEED = 0.005                   # How much to advance the servo phase offset by each update
+UPDATES = 50                    # How many times to update the servos per second
+SERVO_EXTENT = 80.0             # How far from zero to move the servos
+START_DELAY = 0.5               # The time to sleep between activating and animating the servos
+CLUSTER_PIO = 0                 # The PIO system to use (0 or 1) to drive the servo cluster
+CLUSTER_SM = 0                  # The State Machines (SM) to use to drive the servo cluster
 
 # Variables
-yukon = Yukon(logging_level=LOG_WARN)           # Create a new Yukon object, with its logging level lowered
-modules = []                                    # A list to store QuadServo module objects created later
-phase_offset = 0                                # The offset used to animate the servos
+yukon = Yukon()                 # Create a new Yukon object, with its logging level lowered
+modules = []                    # A list to store QuadServo module objects created later
+phase_offset = 0                # The offset used to animate the servos
 
 
 # Function to get a servo angle from its index

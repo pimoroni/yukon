@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, LOW, HIGH
+from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
 import tca
 from machine import Pin
 from ucollections import OrderedDict
@@ -133,7 +133,7 @@ class AudioAmpModule(YukonModule):
     # | FLOAT | ALL   | 0     | 1     | 1     | Audio Amp            |                             |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_FLOAT and slow1 is LOW and slow2 is HIGH and slow3 is HIGH
+        return adc1_level == ADC_FLOAT and slow1 is IO_LOW and slow2 is IO_HIGH and slow3 is IO_HIGH
 
     def __init__(self):
         super().__init__()
@@ -269,6 +269,7 @@ class AudioAmpModule(YukonModule):
     def process_readings(self):
         if self.__count_avg > 0:
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
     def clear_readings(self):
         self.__max_temperature = float('-inf')

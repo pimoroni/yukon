@@ -691,18 +691,18 @@ class Yukon:
 
         self.__count_avg += 1
 
-    def monitored_sleep(self, seconds, allowed=None, excluded=None):
+    def monitored_sleep(self, seconds, allowed=None, excluded=None, include_modules=True):
         # Convert and handle the sleep as milliseconds
-        self.monitored_sleep_ms(1000.0 * seconds + 0.5, allowed=allowed, excluded=excluded)
+        self.monitored_sleep_ms(1000.0 * seconds + 0.5, allowed, excluded, include_modules)
 
-    def monitored_sleep_ms(self, ms, allowed=None, excluded=None):
+    def monitored_sleep_ms(self, ms, allowed=None, excluded=None, include_modules=True):
         if ms < 0:
             raise ValueError("sleep length must be non-negative")
 
         # Calculate the time this sleep should end at, and monitor until then
-        self.monitor_until_ms(ticks_add(ticks_ms(), int(ms)), allowed=allowed, excluded=excluded)
+        self.monitor_until_ms(ticks_add(ticks_ms(), int(ms)), allowed, excluded, include_modules)
 
-    def monitor_until_ms(self, end_ms, allowed=None, excluded=None):
+    def monitor_until_ms(self, end_ms, allowed=None, excluded=None, include_modules=True):
         if end_ms < 0:
             raise ValueError("end_ms out or range. Must be a value obtained from time.ticks_ms()")
 
@@ -721,10 +721,10 @@ class Yukon:
         # Process any readings that need it (e.g. averages)
         self.process_readings()
 
-        if logging.level >= logging.LOG_INFO:
-            self.__print_readings(allowed, excluded)
+        if logging.level >= logging.LOG_DEBUG:
+            self.print_readings(allowed, excluded, include_modules)
 
-    def monitor_once(self, allowed=None, excluded=None):
+    def monitor_once(self, allowed=None, excluded=None, include_modules=True):
         # Clear any readings from previous monitoring attempts
         self.clear_readings()
 
@@ -734,16 +734,8 @@ class Yukon:
         # Process any readings that need it (e.g. averages)
         self.process_readings()
 
-        if logging.level >= logging.LOG_INFO:
-            self.__print_readings(allowed, excluded)
-
-    def __print_readings(self, allowed=None, excluded=None):
-        self.__print_dict("[Yukon]", self.get_readings(), allowed, excluded)
-
-        for slot, module in self.__slot_assignments.items():
-            if module is not None:
-                self.__print_dict(f"[Slot{slot.ID}]", module.get_readings(), allowed, excluded)
-        print()
+        if logging.level >= logging.LOG_DEBUG:
+            self.print_readings(allowed, excluded, include_modules)
 
     def get_readings(self):
         return OrderedDict({
@@ -761,12 +753,25 @@ class Yukon:
             "T_avg": self.__avg_temperature
         })
 
+    def get_formatted_readings(self, allowed=None, excluded=None, include_modules=True):
+        text = logging.format_dict("[Yukon]", self.get_readings(), allowed, excluded)
+
+        if include_modules:
+            for module in self.__slot_assignments.values():
+                if module is not None:
+                    text += module.get_formatted_readings(allowed, excluded)
+        return text
+
+    def print_readings(self, allowed=None, excluded=None, include_modules=True):
+        print(self.get_formatted_readings(allowed, excluded, include_modules))
+
     def process_readings(self):
         if self.__count_avg > 0:
             self.__avg_voltage_in /= self.__count_avg
             self.__avg_voltage_out /= self.__count_avg
             self.__avg_current /= self.__count_avg
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
         for module in self.__slot_assignments.values():
             if module is not None:
@@ -798,13 +803,3 @@ class Yukon:
         for module in self.__slot_assignments.values():
             if module is not None:
                 module.clear_readings()
-
-    def __print_dict(self, section_name, readings, allowed=None, excluded=None):
-        if len(readings) > 0:
-            print(section_name, end=" ")
-            for name, value in readings.items():
-                if ((allowed is None) or (allowed is not None and name in allowed)) and ((excluded is None) or (excluded is not None and name not in excluded)):
-                    if isinstance(value, bool):
-                        print(f"{name} = {int(value)},", end=" ")  # Output 0 or 1 rather than True of False, so bools can appear on plotter charts
-                    else:
-                        print(f"{name} = {value},", end=" ")

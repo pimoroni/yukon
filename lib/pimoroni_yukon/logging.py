@@ -23,3 +23,16 @@ def info(objects='', sep='', end='\n'):
 def debug(objects='', sep='', end='\n'):
     if level >= LOG_DEBUG:
         print(objects, sep=sep, end=end)
+
+
+def format_dict(section_name, readings, allowed, excluded):
+    text = ""
+    if len(readings) > 0:
+        text += f"{section_name} "
+        for name, value in readings.items():
+            if ((allowed is None) or (allowed is not None and name in allowed)) and ((excluded is None) or (excluded is not None and name not in excluded)):
+                if isinstance(value, bool):
+                    text += f"{name} = {int(value)}, "  # Output 0 or 1 rather than True of False, so bools can appear on plotter charts
+                else:
+                    text += f"{name} = {value}, "
+    return text

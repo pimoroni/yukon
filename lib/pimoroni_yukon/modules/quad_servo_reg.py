@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, LOW, HIGH
+from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
 from machine import Pin
 from servo import Servo
 from ucollections import OrderedDict
@@ -20,7 +20,7 @@ class QuadServoRegModule(YukonModule):
     # | FLOAT | ALL   | 0     | 1     | 0     | Quad Servo Regulated |                             |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_FLOAT and slow1 is LOW and slow2 is HIGH and slow3 is LOW
+        return adc1_level == ADC_FLOAT and slow1 is IO_LOW and slow2 is IO_HIGH and slow3 is IO_LOW
 
     def __init__(self, init_servos=True, halt_on_not_pgood=False):
         super().__init__()
@@ -131,6 +131,7 @@ class QuadServoRegModule(YukonModule):
     def process_readings(self):
         if self.__count_avg > 0:
             self.__avg_temperature /= self.__count_avg
+            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
 
     def clear_readings(self):
         self.__power_good_throughout = True

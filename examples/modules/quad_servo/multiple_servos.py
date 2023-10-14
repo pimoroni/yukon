@@ -2,7 +2,6 @@ import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import QuadServoDirectModule, QuadServoRegModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
-from pimoroni_yukon.logging import LOG_WARN
 
 """
 How to drive up to 16 servos from a set of Quad Servo Modules connected to Slots.
@@ -12,15 +11,15 @@ To use more servos, or to reduce peak current draw, look at the all_servos.py ex
 """
 
 # Constants
-SPEED = 0.005                                   # How much to advance the servo phase offset by each update
-UPDATES = 50                                    # How many times to update the servos per second
-SERVO_EXTENT = 80.0                             # How far from zero to move the servos
-START_DELAY = 0.5                               # The time to sleep between activating and animating the servos
+SPEED = 0.005                   # How much to advance the servo phase offset by each update
+UPDATES = 50                    # How many times to update the servos per second
+SERVO_EXTENT = 80.0             # How far from zero to move the servos
+START_DELAY = 0.5               # The time to sleep between activating and animating the servos
 
 # Variables
-yukon = Yukon(logging_level=LOG_WARN)           # Create a new Yukon object, with its logging level lowered
-modules = []                                    # A list to store QuadServo module objects created later
-phase_offset = 0                                # The offset used to animate the servos
+yukon = Yukon()                 # Create a new Yukon object, with its logging level lowered
+modules = []                    # A list to store QuadServo module objects created later
+phase_offset = 0                # The offset used to animate the servos
 
 
 # Function to get a servo angle from its index

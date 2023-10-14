@@ -1,7 +1,6 @@
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import LEDStripModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
-from pimoroni_yukon.logging import LOG_WARN
 
 """
 How to drive multiple Neopixel or Dotstar LED strips with a set of LED Strip Modules connected to slots.
@@ -19,7 +18,7 @@ RAINBOW_SAT = 1.0                       # The saturation of the rainbow
 RAINBOW_VAL = 1.0                       # The value (brightness) of the rainbow
 
 # Variables
-yukon = Yukon(logging_level=LOG_WARN)   # A new Yukon object, with its logging level lowered
+yukon = Yukon()                         # Create a new Yukon object
 modules = []                            # A list to store LEDStripModule objects created later
 hue_offset = 0                          # The offset used to animate the rainbow
 

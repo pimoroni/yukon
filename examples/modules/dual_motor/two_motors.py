@@ -3,7 +3,6 @@ from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import DualMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
-from pimoroni_yukon.logging import LOG_WARN
 
 """
 How to drive up to 2 motors from a Dual Motor Module connected to Slot1.
@@ -11,15 +10,15 @@ A wave pattern will be played on the attached motors.
 """
 
 # Constants
-SPEED = 0.005                               # How much to advance the motor phase offset by each update
-UPDATES = 50                                # How many times to update the motors per second
-SPEED_EXTENT = 1.0                          # How far from zero to drive the motors
-CURRENT_LIMIT = 0.5                         # The maximum current (in amps) the motors will be driven with
+SPEED = 0.005                   # How much to advance the motor phase offset by each update
+UPDATES = 50                    # How many times to update the motors per second
+SPEED_EXTENT = 1.0              # How far from zero to drive the motors
+CURRENT_LIMIT = 0.5             # The maximum current (in amps) the motors will be driven with
 
 # Variables
-yukon = Yukon(logging_level=LOG_WARN)       # Create a new Yukon object, with its logging level lowered
-module = DualMotorModule()                  # Create a DualMotorModule object
-phase_offset = 0                            # The offset used to animate the motors
+yukon = Yukon()                 # Create a new Yukon object
+module = DualMotorModule()      # Create a DualMotorModule object
+phase_offset = 0                # The offset used to animate the motors
 
 
 # Function to get a motor speed from its index

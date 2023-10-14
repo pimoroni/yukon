@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, ADC_HIGH, LOW, HIGH
+from .common import YukonModule, ADC_FLOAT, ADC_HIGH, IO_LOW, IO_HIGH
 
 
 class ProtoPotModule(YukonModule):
@@ -15,7 +15,7 @@ class ProtoPotModule(YukonModule):
     # | HIGH  | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc2_level is ADC_HIGH and slow1 is HIGH and slow2 is HIGH and slow3 is LOW
+        return adc2_level is ADC_HIGH and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_LOW
 
     def __init__(self):
         super().__init__()
@@ -36,7 +36,7 @@ class ProtoPotModule2(YukonModule):
     # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level is ADC_FLOAT and slow1 is HIGH and slow2 is HIGH and slow3 is LOW
+        return adc1_level is ADC_FLOAT and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_LOW
 
     # ADC2 has a pull-up connected to simplify its use with modules that feature an onboard thermistor.
     # Unfortunately, when connecting up a potentiometer, creating the below circuit, this has the
