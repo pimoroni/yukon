@@ -169,7 +169,7 @@ try:
   yukon.register_with_slot(module1, 1)
 
   # Initialise Yukon's registered modules
-  yukon.initialise_modules()
+  yukon.verify_and_initialise()
 
   # Turn on the module power
   yukon.enable_main_output()
@@ -237,11 +237,11 @@ reset() -> None
 change_logging(logging_level : int) -> None
 
 ## Slot ##
-find_slots_with_module(module_type : type[YukonModule]) -> list[SLOT]
+find_slots_with(module_type : type[YukonModule]) -> list[SLOT]
 register_with_slot(module : YukonModule, slot : int | SLOT) -> None
 deregister_slot(slot : int | SLOT) -> None
-detect_module(slot : int | SLOT) -> type[YukonModule]
-initialise_modules(allow_unregistered : bool | int | SLOT | list | tuple,
+detect_in_slot(slot : int | SLOT) -> type[YukonModule]
+verify_and_initialise(allow_unregistered : bool | int | SLOT | list | tuple,
                    allow_undetected : bool | int | SLOT | list | tuple
                    allow_discrepencies : bool | int | SLOT | list | tuple,
                    allow_no_modules : bool) -> None
@@ -257,12 +257,12 @@ disable_main_output() -> None
 is_main_output_enabled() -> bool
 
 ## Sensing ##
-read_voltage() -> float
+read_input_voltage() -> float
+read_output_voltage() -> float
 read_current() -> float
 read_temperature() -> float
-read_expansion() -> float
-read_slot_adc1(slot : int | SLOT) -> float
-read_slot_adc2(slot : int | SLOT) -> float
+read_slot_adc1(slot : SLOT) -> float
+read_slot_adc2(slot : SLOT) -> float
 
 ## Monitoring ##
 assign_monitor_action(callback_function : Any) -> None
@@ -281,7 +281,7 @@ clear_readings() -> None
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 YukonModule()
@@ -318,7 +318,7 @@ I2S_FS : SLOT
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 AudioAmpModule()
@@ -376,7 +376,7 @@ halt_on_not_pgood : bool
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 BenchPowerModule(halt_on_not_pgood=False : bool)
@@ -426,7 +426,7 @@ motor : Motor
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 BigMotorModule(frequency=DEFAULT_FREQUENCY : float)
@@ -476,7 +476,7 @@ stepper : Stepper
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 DualMotorModule(motor_type=DUAL : int,
@@ -520,7 +520,7 @@ halt_on_not_pgood : bool
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 DualSwitchedModule(halt_on_not_pgood=False : bool)
@@ -566,7 +566,7 @@ halt_on_not_pgood -> bool
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 LEDStripModule(strip_type : int, num_pixels : int, brightness=1.0 : float, halt_on_not_pgood=False : bool)
@@ -613,7 +613,7 @@ servo4 -> Servo
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 QuadServoDirect()
@@ -647,7 +647,7 @@ servo4 -> Servo
 ```python
 ## Address Checking ##
 @staticmethod
-is_module(adc_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
+is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
 QuadServoRegModule(halt_on_not_pgood=False : bool)
