@@ -2,7 +2,6 @@ import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import DualMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
-from pimoroni_yukon.logging import LOG_WARN
 from motor import MotorCluster
 
 """
