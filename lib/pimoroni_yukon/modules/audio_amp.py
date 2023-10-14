@@ -139,16 +139,16 @@ class AudioAmpModule(YukonModule):
         super().__init__()
 
     def initialise(self, slot, adc1_func, adc2_func):
-        # Create the "I2C" pin objects
-        self.__slow_sda = slot.SLOW1
-        self.__slow_scl = slot.SLOW2
-
         # Create the enable pin object
-        self.__amp_en = slot.SLOW3
+        self.__amp_en = slot.SLOW1
 
-        self.__chip = tca.get_chip(slot.SLOW1)
-        self.__sda_bit = 1 << tca.get_number(slot.SLOW1)
-        self.__scl_bit = 1 << tca.get_number(slot.SLOW2)
+        # Create the "I2C" pin objects
+        self.__slow_sda = slot.SLOW2
+        self.__slow_scl = slot.SLOW3
+
+        self.__chip = tca.get_chip(slot.SLOW2)
+        self.__sda_bit = 1 << tca.get_number(slot.SLOW2)
+        self.__scl_bit = 1 << tca.get_number(slot.SLOW3)
 
         self.I2S_DATA = slot.FAST1
         self.I2S_CLK = slot.FAST2
