@@ -10,14 +10,19 @@ class QuadServoDirectModule(YukonModule):
     NAME = "Quad Servo Direct"
     NUM_SERVOS = 4
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 input near 0V            |
-    # | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 input between 0 and 3.3V |
-    # | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 input near 3.3V          |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | LOW   | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 near 0V    |
+    # | FLOAT | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 near 0V    |
+    # | HIGH  | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 near 0V    |
+    # | LOW   | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 between    |
+    # | FLOAT | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 between    |
+    # | HIGH  | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 between    |
+    # | LOW   | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 near 3.3V  |
+    # | FLOAT | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 near 3.3V  |
+    # | HIGH  | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 near 3.3V  |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
-        # Current protos need Slow3 jumpered to GND
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         return slow1 is LOW and slow2 is LOW and slow3 is LOW
 
     def __init__(self, init_servos=True):

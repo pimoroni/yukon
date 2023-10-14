@@ -15,13 +15,13 @@ HIGH = True
 class YukonModule:
     NAME = "Unknown"
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | 1     | 1     | 1     | Empty                |                             |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | FLOAT | HIGH  | 1     | 1     | 1     | Empty                |                             |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         # This will return true if a slot is detected as not being empty, so as to give useful error information
-        return adc_level is not ADC_FLOAT or slow1 is not HIGH or slow2 is not HIGH or slow3 is not HIGH
+        return adc1_level is not ADC_FLOAT or adc2_level is not ADC_HIGH or slow1 is not HIGH or slow2 is not HIGH or slow3 is not HIGH
 
     def __init__(self):
         self.slot = None

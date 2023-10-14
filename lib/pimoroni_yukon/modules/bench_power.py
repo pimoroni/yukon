@@ -23,12 +23,12 @@ class BenchPowerModule(YukonModule):
 
     TEMPERATURE_THRESHOLD = 70.0
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | 1     | 0     | 0     | Bench Power          |                             |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | LOW   | ALL   | 1     | 0     | 0     | Bench Power          |                             |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
-        return adc_level is ADC_LOW and slow1 is HIGH and slow2 is LOW and slow3 is LOW
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
+        return adc1_level is ADC_LOW and slow1 is HIGH and slow2 is LOW and slow3 is LOW
 
     def __init__(self, halt_on_not_pgood=False):
         super().__init__()

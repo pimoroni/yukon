@@ -2,20 +2,20 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, LOW, HIGH
+from .common import YukonModule, ADC_FLOAT, ADC_HIGH, LOW, HIGH
 
 
 class ProtoPotModule(YukonModule):
     NAME = "Proto Potentiometer"
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
-    # | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
-    # | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | LOW   | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
+    # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
+    # | HIGH  | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
-        return slow1 is HIGH and slow2 is HIGH and slow3 is LOW
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
+        return adc2_level is ADC_HIGH and slow1 is HIGH and slow2 is HIGH and slow3 is LOW
 
     def __init__(self):
         super().__init__()
@@ -29,14 +29,14 @@ class ProtoPotModule2(YukonModule):
     NAME = "Proto Potentiometer 2"
     PULLUP = 5100
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
-    # | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
-    # | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | FLOAT | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
+    # | FLOAT | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
+    # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
-        return slow1 is HIGH and slow2 is HIGH and slow3 is LOW
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
+        return adc1_level is ADC_FLOAT and slow1 is HIGH and slow2 is HIGH and slow3 is LOW
 
     # ADC2 has a pull-up connected to simplify its use with modules that feature an onboard thermistor.
     # Unfortunately, when connecting up a potentiometer, creating the below circuit, this has the

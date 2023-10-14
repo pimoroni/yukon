@@ -14,12 +14,12 @@ class DualSwitchedModule(YukonModule):
     NUM_SWITCHES = 2
     TEMPERATURE_THRESHOLD = 50.0
 
-    # | ADC1  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | 1     | 0     | 1     | Dual Switched Output |                             |
+    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+    # | FLOAT | ALL   | 1     | 0     | 1     | Dual Switched Output |                             |
     @staticmethod
-    def is_module(adc_level, slow1, slow2, slow3):
-        return adc_level == ADC_FLOAT and slow1 is HIGH and slow2 is LOW and slow3 is HIGH
+    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
+        return adc1_level == ADC_FLOAT and slow1 is HIGH and slow2 is LOW and slow3 is HIGH
 
     def __init__(self, halt_on_not_pgood=False):
         super().__init__()

@@ -317,11 +317,11 @@ class Yukon:
             module.deregister()
             self.__slot_assignments[slot] = None
 
-    def __match_module(self, adc_level, slow1, slow2, slow3):
+    def __match_module(self, adc1_level, adc2_level, slow1, slow2, slow3):
         for m in KNOWN_MODULES:
-            if m.is_module(adc_level, slow1, slow2, slow3):
+            if m.is_module(adc1_level, adc2_level, slow1, slow2, slow3):
                 return m
-        if YukonModule.is_module(adc_level, slow1, slow2, slow3):
+        if YukonModule.is_module(adc1_level, adc2_level, slow1, slow2, slow3):
             return YukonModule
         return None
 
@@ -336,20 +336,32 @@ class Yukon:
         slow3.init(Pin.IN)
 
         self.__select_address(slot.ADC1_ADDR)
-        adc_val = 0
-        for i in range(self.DETECTION_SAMPLES):
-            adc_val += self.__shared_adc_voltage()
-        adc_val /= self.DETECTION_SAMPLES
+        adc1_val = 0
+        for _ in range(self.DETECTION_SAMPLES):
+            adc1_val += self.__shared_adc_voltage()
+        adc1_val /= self.DETECTION_SAMPLES
 
-        logging.debug(f"ADC1 = {adc_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
+        self.__select_address(slot.ADC2_THERM_ADDR)
+        adc2_val = 0
+        for _ in range(self.DETECTION_SAMPLES):
+            adc2_val += self.__shared_adc_voltage()
+        adc2_val /= self.DETECTION_SAMPLES
 
-        adc_level = ADC_FLOAT
-        if adc_val <= self.DETECTION_ADC_LOW:
-            adc_level = ADC_LOW
-        elif adc_val >= self.DETECTION_ADC_HIGH:
-            adc_level = ADC_HIGH
+        logging.debug(f"ADC1 = {adc1_val}, ADC2 = {adc2_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
 
-        detected = self.__match_module(adc_level, slow1.value() == 1, slow2.value() == 1, slow3.value() == 1)
+        adc1_level = ADC_FLOAT
+        if adc1_val <= self.DETECTION_ADC_LOW:
+            adc1_level = ADC_LOW
+        elif adc1_val >= self.DETECTION_ADC_HIGH:
+            adc1_level = ADC_HIGH
+
+        adc2_level = ADC_FLOAT
+        if adc2_val <= self.DETECTION_ADC_LOW:
+            adc2_level = ADC_LOW
+        elif adc2_val >= self.DETECTION_ADC_HIGH:
+            adc2_level = ADC_HIGH
+
+        detected = self.__match_module(adc1_level, adc2_level, slow1.value() == 1, slow2.value() == 1, slow3.value() == 1)
 
         self.__deselect_address()
 
