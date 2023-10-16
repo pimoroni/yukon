@@ -335,31 +335,14 @@ class Yukon:
         slow3 = slot.SLOW3
         slow3.init(Pin.IN)
 
-        self.__select_address(slot.ADC1_ADDR)
-        adc1_val = 0
-        for _ in range(self.DETECTION_SAMPLES):
-            adc1_val += self.__shared_adc_voltage()
-        adc1_val /= self.DETECTION_SAMPLES
-
-        self.__select_address(slot.ADC2_THERM_ADDR)
-        adc2_val = 0
-        for _ in range(self.DETECTION_SAMPLES):
-            adc2_val += self.__shared_adc_voltage()
-        adc2_val /= self.DETECTION_SAMPLES
+        adc1_val = self.read_slot_adc1(slot, self.DETECTION_SAMPLES)
+        adc2_val = self.read_slot_adc2(slot, self.DETECTION_SAMPLES)
 
         logging.debug(f"ADC1 = {adc1_val}, ADC2 = {adc2_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
 
-        adc1_level = ADC_FLOAT
-        if adc1_val <= self.DETECTION_ADC_LOW:
-            adc1_level = ADC_LOW
-        elif adc1_val >= self.DETECTION_ADC_HIGH:
-            adc1_level = ADC_HIGH
-
-        adc2_level = ADC_FLOAT
-        if adc2_val <= self.DETECTION_ADC_LOW:
-            adc2_level = ADC_LOW
-        elif adc2_val >= self.DETECTION_ADC_HIGH:
-            adc2_level = ADC_HIGH
+        # Convert the ADC voltage to a LOW, FLOAT, or HIGH level
+        adc1_level = ADC_LOW if adc1_val <= self.DETECTION_ADC_LOW else ADC_HIGH if adc1_val >= self.DETECTION_ADC_HIGH else ADC_FLOAT
+        adc2_level = ADC_LOW if adc2_val <= self.DETECTION_ADC_LOW else ADC_HIGH if adc2_val >= self.DETECTION_ADC_HIGH else ADC_FLOAT
 
         detected = self.__match_module(adc1_level, adc2_level, slow1.value() == 1, slow2.value() == 1, slow3.value() == 1)
 
@@ -587,32 +570,38 @@ class Yukon:
 
             tca.change_output_mask(self.__adc_io_chip, self.__adc_io_mask, state)
 
-    def __shared_adc_voltage(self):
-        return (self.__shared_adc.read_u16() * 3.3) / 65535  # This has been checked to be correct
+    def __shared_adc_u16(self, samples=1):
+        val = 0
+        for _ in range(samples):
+            val += self.__shared_adc.read_u16()
+        return val / samples
 
-    def read_input_voltage(self):
+    def __shared_adc_voltage(self, samples=1):
+        return (self.__shared_adc_u16(samples) * 3.3) / 65535  # This has been checked to be correct
+
+    def read_input_voltage(self, samples=1):
         self.__select_address(self.VOLTAGE_IN_SENSE_ADDR)
-        return u16_to_voltage_in(self.__shared_adc.read_u16())
+        return u16_to_voltage_in(self.__shared_adc_u16(samples))
 
-    def read_output_voltage(self):
+    def read_output_voltage(self, samples=1):
         self.__select_address(self.VOLTAGE_OUT_SENSE_ADDR)
-        return u16_to_voltage_out(self.__shared_adc.read_u16())
+        return u16_to_voltage_out(self.__shared_adc_u16(samples))
 
-    def read_current(self):
+    def read_current(self, samples=1):
         self.__select_address(self.CURRENT_SENSE_ADDR)
-        return u16_to_current(self.__shared_adc.read_u16())
+        return u16_to_current(self.__shared_adc_u16(samples))
 
-    def read_temperature(self):
+    def read_temperature(self, samples=1):
         self.__select_address(self.TEMP_SENSE_ADDR)
-        return analog_to_temp(self.__shared_adc_voltage())
+        return analog_to_temp(self.__shared_adc_voltage(samples))
 
-    def read_slot_adc1(self, slot):
+    def read_slot_adc1(self, slot, samples=1):
         self.__select_address(slot.ADC1_ADDR)
-        return self.__shared_adc_voltage()
+        return self.__shared_adc_voltage(samples)
 
-    def read_slot_adc2(self, slot):
+    def read_slot_adc2(self, slot, samples=1):
         self.__select_address(slot.ADC2_THERM_ADDR)
-        return self.__shared_adc_voltage()
+        return self.__shared_adc_voltage(samples)
 
     def assign_monitor_action(self, callback_function):
         if not None and not callable(callback_function):
