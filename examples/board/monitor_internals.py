@@ -2,6 +2,8 @@ from pimoroni_yukon import Yukon
 
 """
 Use Yukon's monitoring function to read the internal sensors.
+Power needs to be provided to the XT30 connector, otherwise
+the monitoring will raise an UnderVoltageError.
 """
 
 # Constants
@@ -16,8 +18,10 @@ try:
     while not yukon.is_boot_pressed():
 
         # Monitor sensors for a number of seconds, recording the min, max, and average for each
-        # With the default logging level, these values will be also be printed out
         yukon.monitored_sleep(SLEEP)
+
+        # Print out the readings taken during monitoring
+        yukon.print_readings()
 
 finally:
     # Put the board back into a safe state, regardless of how the program may have ended

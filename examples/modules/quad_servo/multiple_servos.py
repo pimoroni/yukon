@@ -17,7 +17,7 @@ SERVO_EXTENT = 80.0             # How far from zero to move the servos
 START_DELAY = 0.5               # The time to sleep between activating and animating the servos
 
 # Variables
-yukon = Yukon()                 # Create a new Yukon object, with its logging level lowered
+yukon = Yukon()                 # Create a new Yukon object
 modules = []                    # A list to store QuadServo module objects created later
 phase_offset = 0                # The offset used to animate the servos
 

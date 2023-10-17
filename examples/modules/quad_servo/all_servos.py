@@ -21,7 +21,7 @@ CLUSTER_PIO = 0                 # The PIO system to use (0 or 1) to drive the se
 CLUSTER_SM = 0                  # The State Machines (SM) to use to drive the servo cluster
 
 # Variables
-yukon = Yukon()                 # Create a new Yukon object, with its logging level lowered
+yukon = Yukon()                 # Create a new Yukon object
 modules = []                    # A list to store QuadServo module objects created later
 phase_offset = 0                # The offset used to animate the servos
 

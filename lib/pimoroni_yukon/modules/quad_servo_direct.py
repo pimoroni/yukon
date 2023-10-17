@@ -71,8 +71,8 @@ class QuadServoDirectModule(YukonModule):
             return self.servos[3]
         raise RuntimeError("servo4 is only accessible if init_servos was True during initialisation")
 
-    def read_adc1(self):
-        return self.__read_adc1()
+    def read_adc1(self, samples=1):
+        return self.__read_adc1(samples)
 
-    def read_adc2(self):
-        return self.__read_adc2()
+    def read_adc2(self, samples=1):
+        return self.__read_adc2(samples)

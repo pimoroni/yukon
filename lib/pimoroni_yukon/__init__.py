@@ -625,7 +625,7 @@ class Yukon:
             self.__undervoltage_count += 1
             if self.__undervoltage_count > self.UNDERVOLTAGE_COUNT_LIMIT:
                 self.disable_main_output()
-                raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level. Turning off output")
+                raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level of {self.VOLTAGE_LOWER_LIMIT}V. Turning off output")
         else:
             self.__undervoltage_count = 0
 
