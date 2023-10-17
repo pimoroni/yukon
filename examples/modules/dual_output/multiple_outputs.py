@@ -1,10 +1,10 @@
 import math
 from pimoroni_yukon import Yukon
-from pimoroni_yukon.modules import DualSwitchedModule
+from pimoroni_yukon.modules import DualOutputModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 12 powered outputs from a set of Dual Switched Modules connected to Slots.
+How to drive up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
 A cycling pattern will be played on the attached outputs.
 """
 
@@ -23,28 +23,28 @@ phase_offset = 0                            # The offset used to animate the out
 
 # Function to get an output state from its index
 def state_from_index(index, offset=0.0):
-    phase = (((index * WAVE_SCALE) / DualSwitchedModule.NUM_OUTPUTS) + offset) * math.pi * 2
+    phase = (((index * WAVE_SCALE) / DualOutputModule.NUM_OUTPUTS) + offset) * math.pi * 2
     state = math.sin(phase) > TRIGGER_LEVEL
     return state
 
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    # Find out which slots of Yukon have DualMotorModule attached
-    for slot in yukon.find_slots_with(DualSwitchedModule):
-        module = DualSwitchedModule()           # Create a DualSwitchedModule object
-        yukon.register_with_slot(module, slot)  # Register the DualSwitchedModule object with the slot
+    # Find out which slots of Yukon have DualOutputModule attached
+    for slot in yukon.find_slots_with(DualOutputModule):
+        module = DualOutputModule()             # Create a DualOutputModule object
+        yukon.register_with_slot(module, slot)  # Register the DualOutputModule object with the slot
         modules.append(module)                  # Add the object to the module list
 
     # Record the number of outputs that will be driven
-    NUM_OUTPUTS = len(modules) * DualSwitchedModule.NUM_OUTPUTS
+    NUM_OUTPUTS = len(modules) * DualOutputModule.NUM_OUTPUTS
     print(f"Up to {NUM_OUTPUTS} outputs available")
 
     yukon.verify_and_initialise()               # Verify that DualMotorModules are attached to Yukon, and initialise them
     yukon.enable_main_output()                  # Turn on power to the module slots
 
     for module in modules:
-        for i in range(DualSwitchedModule.NUM_OUTPUTS):
+        for i in range(DualOutputModule.NUM_OUTPUTS):
             module.enable(i + 1)                # Enable each output driver
 
     current_time = ticks_ms()                   # Record the start time of the program loop
@@ -55,7 +55,7 @@ try:
         # Give all the outputs new states
         current_output = 0
         for module in modules:
-            for i in range(DualSwitchedModule.NUM_OUTPUTS):
+            for i in range(DualOutputModule.NUM_OUTPUTS):
                 state = state_from_index(current_output, phase_offset)
                 module.output(i + 1, state)
                 current_output += 1

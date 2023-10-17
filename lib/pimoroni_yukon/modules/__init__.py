@@ -6,7 +6,7 @@ from .audio_amp import AudioAmpModule
 from .bench_power import BenchPowerModule
 from .big_motor import BigMotorModule
 from .dual_motor import DualMotorModule
-from .dual_switched import DualSwitchedModule
+from .dual_output import DualOutputModule
 from .led_strip import LEDStripModule
 from .proto import ProtoPotModule
 from .quad_servo_direct import QuadServoDirectModule
@@ -19,7 +19,7 @@ KNOWN_MODULES = (
     BenchPowerModule,
     BigMotorModule,
     DualMotorModule,
-    DualSwitchedModule,
+    DualOutputModule,
     LEDStripModule,
     ProtoPotModule,
     QuadServoDirectModule,

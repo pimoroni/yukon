@@ -523,7 +523,7 @@ halt_on_not_pgood : bool
 is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
 ## Initialisation ##
-DualSwitchedModule(halt_on_not_pgood=False : bool)
+DualOutputModule(halt_on_not_pgood=False : bool)
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
 reset() -> None
 

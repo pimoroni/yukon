@@ -55,23 +55,23 @@ A wave pattern will be played on the attached motors.
 ## Dual Switched Output Module
 
 ### Two Outputs
-[dual_switched/two_outputs.py](dual_switched/two_outputs.py)
+[dual_output/two_outputs.py](dual_output/two_outputs.py)
 
-How to control up to 2 powered outputs from a Dual Switched Module connected to Slot1.
+How to control up to 2 powered outputs from a Dual Output Module connected to Slot1.
 Buttons 'A' and 'B' toggle the state of each output.
 
 
 ### Multiple Outputs
-[dual_switched/multiple_outputs.py](dual_switched/multiple_outputs.py)
+[dual_output/multiple_outputs.py](dual_output/multiple_outputs.py)
 
-How to drive up to 12 powered outputs from a set of Dual Switched Modules connected to Slots.
+How to drive up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
 A cycling pattern will be played on the attached outputs.
 
 
 ### Actioned Output
-[dual_switched/actioned_output.py](dual_switched/actioned_output.py)
+[dual_output/actioned_output.py](dual_output/actioned_output.py)
 
-How to control a powered output from a Dual Switched Module connected to Slot1, using a monitor action.
+How to control a powered output from a Dual Output Module connected to Slot1, using a monitor action.
 
 
 ## LED Strip Module

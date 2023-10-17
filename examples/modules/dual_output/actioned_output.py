@@ -1,9 +1,9 @@
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT1 as SLOT
-from pimoroni_yukon.modules import DualSwitchedModule
+from pimoroni_yukon.modules import DualOutputModule
 
 """
-How to control a powered output from a Dual Switched Module connected to Slot1, using a monitor action.
+How to control a powered output from a Dual Output Module connected to Slot1, using a monitor action.
 """
 
 # Constants
@@ -15,7 +15,7 @@ SLEEP = 1.0                                 # The time to sleep between each rea
 
 # Variables
 yukon = Yukon(voltage_limit=VOLTAGE_LIMIT)  # Create a new Yukon object, with a lower voltage limit set
-module = DualSwitchedModule()               # Create a DualSwitchedModule object
+module = DualOutputModule()                 # Create a DualOutputModule object
 
 
 # A function that Yukon will call every time it gets new readings
@@ -30,9 +30,9 @@ def temperature_check(voltage_in, voltage_out, current, temperature):
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    yukon.register_with_slot(module, SLOT)          # Register the DualSwitchedModule object with the slot
+    yukon.register_with_slot(module, SLOT)          # Register the DualOutputModule object with the slot
     yukon.assign_monitor_action(temperature_check)  # Pass the monitor action function to Yukon
-    yukon.verify_and_initialise()                   # Verify that a DualSwitchedModule is attached to Yukon, and initialise it
+    yukon.verify_and_initialise()                   # Verify that a DualOutputModule is attached to Yukon, and initialise it
     yukon.enable_main_output()                      # Turn on power to the module slots
 
     module.enable(OUTPUT)                           # Enable the output driver

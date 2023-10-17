@@ -9,7 +9,7 @@ from pimoroni_yukon.errors import FaultError, OverTemperatureError
 import pimoroni_yukon.logging as logging
 
 
-class DualSwitchedModule(YukonModule):
+class DualOutputModule(YukonModule):
     NAME = "Dual Switched Output"
     NUM_OUTPUTS = 2
     TEMPERATURE_THRESHOLD = 50.0

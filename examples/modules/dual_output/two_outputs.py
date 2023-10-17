@@ -1,9 +1,9 @@
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT1 as SLOT
-from pimoroni_yukon.modules import DualSwitchedModule
+from pimoroni_yukon.modules import DualOutputModule
 
 """
-How to control up to 2 powered outputs from a Dual Switched Module connected to Slot1.
+How to control up to 2 powered outputs from a Dual Output Module connected to Slot1.
 Buttons 'A' and 'B' toggle the state of each output.
 """
 
@@ -13,22 +13,22 @@ VOLTAGE_LIMIT = 12.1                        # The voltage to not exceed, to prot
 
 # Variables
 yukon = Yukon(voltage_limit=VOLTAGE_LIMIT)  # Create a new Yukon object, with a lower voltage limit set
-module = DualSwitchedModule()               # Create a DualSwitchedModule object
+module = DualOutputModule()                 # Create a DualOutputModule object
 last_button_states = [False, False]         # The last states of the buttons
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    yukon.register_with_slot(module, SLOT)  # Register the DualSwitchedModule object with the slot
-    yukon.verify_and_initialise()           # Verify that a DualSwitchedModule is attached to Yukon, and initialise it
+    yukon.register_with_slot(module, SLOT)  # Register the DualOutputModule object with the slot
+    yukon.verify_and_initialise()           # Verify that a DualOutputModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
 
-    for i in range(DualSwitchedModule.NUM_OUTPUTS):
+    for i in range(DualOutputModule.NUM_OUTPUTS):
         module.enable(i + 1)                # Enable each output driver
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
 
-        for i in range(DualSwitchedModule.NUM_OUTPUTS):
+        for i in range(DualOutputModule.NUM_OUTPUTS):
             state = yukon.is_pressed(i)                         # Read the state of each onboard button
 
             # Has the button been newly pressed?
