@@ -15,6 +15,7 @@
   - [Four Servos](#four-servos)
   - [Multiple Servos](#multiple-servos)
   - [All Servos](#all-servos)
+  - [Servo Feedback](#servo-feedback)
 - [Serial Servo Module](#serial-servo-module)
 - [Proto Module](#proto-module)
 
@@ -87,6 +88,12 @@ A wave pattern will be played on the attached servos.
 
 How to drive up to 24 servos from a set of Quad Servo Modules connected to Slots, using a ServoCluster.
 A wave pattern will be played on the attached servos.
+
+
+### Servo Feedback
+[quad_servo/servo_feedback.py](quad_servo/servo_feedback.py)
+
+How to read the analog inputs on Quad Servo Direct modules connected to Slots.
 
 
 ## Serial Servo Module

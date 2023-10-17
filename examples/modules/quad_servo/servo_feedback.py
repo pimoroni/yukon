@@ -1,7 +1,5 @@
-import math
 from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import QuadServoDirectModule
-from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
 How to read the analog inputs on Quad Servo Direct modules connected to Slots.
