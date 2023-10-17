@@ -508,7 +508,7 @@ clear_readings() -> None
 #### Constants
 ```python
 NAME = "Dual Switched Output"
-NUM_SWITCHES = 2
+NUM_OUTPUTS = 2
 TEMPERATURE_THRESHOLD = 50.0
 ```
 

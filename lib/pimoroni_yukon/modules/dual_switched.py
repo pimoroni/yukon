@@ -11,7 +11,7 @@ import pimoroni_yukon.logging as logging
 
 class DualSwitchedModule(YukonModule):
     NAME = "Dual Switched Output"
-    NUM_SWITCHES = 2
+    NUM_OUTPUTS = 2
     TEMPERATURE_THRESHOLD = 50.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
@@ -52,41 +52,41 @@ class DualSwitchedModule(YukonModule):
         self.__power_good[0].init(Pin.IN)
         self.__power_good[1].init(Pin.IN)
 
-    def enable(self, switch):
-        if switch < 1 or switch > self.NUM_SWITCHES:
+    def enable(self, output):
+        if output < 1 or output > self.NUM_OUTPUTS:
+            raise ValueError("output index out of range. Expected 1 to 2")
+
+        self.__sw_enable[output - 1].value(True)
+
+    def disable(self, output):
+        if output < 1 or output > self.NUM_OUTPUTS:
+            raise ValueError("output index out of range. Expected 1 to 2")
+
+        self.__sw_enable[output - 1].value(False)
+
+    def is_enabled(self, output):
+        if output < 1 or output > self.NUM_OUTPUTS:
+            raise ValueError("output index out of range. Expected 1 to 2")
+
+        return self.__sw_enable[output - 1].value() == 1
+
+    def output(self, output, value):
+        if output < 1 or output > self.NUM_OUTPUTS:
+            raise ValueError("output index out of range. Expected 1 to 2")
+
+        self.__sw_output[output - 1].value(value)
+
+    def read_output(self, output):
+        if output < 1 or output > self.NUM_OUTPUTS:
+            raise ValueError("output index out of range. Expected 1 to 2")
+
+        return self.__sw_output[output - 1].value() == 1
+
+    def read_power_good(self, output):
+        if output < 1 or output > self.NUM_OUTPUTS:
             raise ValueError("switch index out of range. Expected 1 to 2")
 
-        self.__sw_enable[switch - 1].value(True)
-
-    def disable(self, switch):
-        if switch < 1 or switch > self.NUM_SWITCHES:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        self.__sw_enable[switch - 1].value(False)
-
-    def is_enabled(self, switch):
-        if switch < 1 or switch > self.NUM_SWITCHES:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        return self.__sw_enable[switch - 1].value() == 1
-
-    def output(self, switch, value):
-        if switch < 1 or switch > self.NUM_SWITCHES:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        self.__sw_output[switch - 1].value(value)
-
-    def read_output(self, switch):
-        if switch < 1 or switch > self.NUM_SWITCHES:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        return self.__sw_output[switch - 1].value() == 1
-
-    def read_power_good(self, switch):
-        if switch < 1 or switch > self.NUM_SWITCHES:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        return self.__power_good[switch - 1].value() == 1
+        return self.__power_good[output - 1].value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()

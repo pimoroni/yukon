@@ -17,6 +17,7 @@ SPEED = 0.005                   # How much to advance the motor phase offset by 
 UPDATES = 50                    # How many times to update the motors per second
 SPEED_EXTENT = 1.0              # How far from zero to drive the motors
 CURRENT_LIMIT = 0.5             # The maximum current (in amps) the motors will be driven with
+WAVE_SCALE = 1.0                # A scale to apply to the phase calculation to expand or contract the wave
 CLUSTER_PIO = 0                 # The PIO system to use (0 or 1) to drive the motor cluster
 CLUSTER_SM = 0                  # The State Machines (SM) to use to drive the motor cluster
 
@@ -28,7 +29,7 @@ phase_offset = 0                # The offset used to animate the motors
 
 # Function to get a motor speed from its index
 def speed_from_index(index, offset=0.0):
-    phase = ((index / DualMotorModule.NUM_MOTORS) + offset) * math.pi * 2
+    phase = (((index * WAVE_SCALE) / DualMotorModule.NUM_MOTORS) + offset) * math.pi * 2
     speed = math.sin(phase) * SPEED_EXTENT
     return speed
 

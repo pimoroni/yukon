@@ -33,7 +33,7 @@ try:
     yukon.register_with_slot(module, SLOT)  # Register the DualMotorModule object with the slot
     yukon.verify_and_initialise()           # Verify that a DualMotorModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
-    
+
     module.current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
     module.enable()                         # Enable the motor driver on the DualMotorModule
 
