@@ -609,7 +609,7 @@ class Yukon:
 
         self.__monitor_action_callback = callback_function
 
-    def monitor(self):
+    def monitor(self, under_voltage_counter=UNDERVOLTAGE_COUNT_LIMIT):
         voltage_in = self.read_input_voltage()
 
         # Over Voltage
@@ -623,7 +623,7 @@ class Yukon:
         # Under Voltage
         if voltage_in < self.VOLTAGE_LOWER_LIMIT:
             self.__undervoltage_count += 1
-            if self.__undervoltage_count > self.UNDERVOLTAGE_COUNT_LIMIT:
+            if self.__undervoltage_count > under_voltage_counter:
                 self.disable_main_output()
                 raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level of {self.VOLTAGE_LOWER_LIMIT}V. Turning off output")
         else:
@@ -634,7 +634,7 @@ class Yukon:
         # Only check the output voltage if the main output is enabled
         if self.is_main_output_enabled():
             # Short Circuit
-            if voltage_out < self.VOLTAGE_SHORT_LEVEL:
+            if voltage_out < self.VOLTAGE_SHORT_LEVEL and voltage_in >= self.VOLTAGE_LOWER_LIMIT:
                 self.disable_main_output()
                 raise FaultError(f"[Yukon] Possible short circuit! Output voltage was {voltage_out}V whilst the input voltage was {voltage_in}V. Turning off output")
 
@@ -718,7 +718,7 @@ class Yukon:
         self.clear_readings()
 
         # Perform a single monitoring check
-        self.monitor()
+        self.monitor(under_voltage_counter=0)
 
         # Process any readings that need it (e.g. averages)
         self.process_readings()
