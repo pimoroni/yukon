@@ -30,14 +30,14 @@ def speed_from_index(index, offset=0.0):
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    yukon.register_with_slot(module, SLOT)  # Register the DualMotorModule object with the slot
-    yukon.verify_and_initialise()           # Verify that a DualMotorModule is attached to Yukon, and initialise it
-    yukon.enable_main_output()              # Turn on power to the module slots
+    yukon.register_with_slot(module, SLOT)      # Register the DualMotorModule object with the slot
+    yukon.verify_and_initialise()               # Verify that a DualMotorModule is attached to Yukon, and initialise it
+    yukon.enable_main_output()                  # Turn on power to the module slots
 
-    module.current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
-    module.enable()                         # Enable the motor driver on the DualMotorModule
+    module.set_current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
+    module.enable()                             # Enable the motor driver on the DualMotorModule
 
-    current_time = ticks_ms()               # Record the start time of the program loop
+    current_time = ticks_ms()                   # Record the start time of the program loop
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():

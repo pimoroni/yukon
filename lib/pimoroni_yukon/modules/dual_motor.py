@@ -92,7 +92,7 @@ class DualMotorModule(YukonModule):
                 motor.disable()
 
         self.__motors_en.init(Pin.OUT, value=False)
-        self.current_limit(self.__current_limit)
+        self.set_current_limit(self.__current_limit)
 
     def enable(self):
         self.__motors_en.value(True)
@@ -103,41 +103,41 @@ class DualMotorModule(YukonModule):
     def is_enabled(self):
         return self.__motors_en.value() == 1
 
-    def current_limit(self, amps):
-        if amps is None:
-            return self.__current_limit
+    def current_limit(self):
+        return self.__current_limit
+
+    def set_current_limit(self, amps):
+        if self.is_enabled():
+            raise RuntimeError("Cannot change current limit whilst motor driver is active")
+
+        # Start with the lowest limit
+        chosen_limit = CURRENT_LIMIT_1
+        chosen_state = self.__current_limit_states[CURRENT_LIMIT_1]
+
+        # Find the closest current limit below the given amps value
+        for limit, state in self.__current_limit_states.items():
+            if limit > amps:
+                break
+            chosen_limit = limit
+            chosen_state = state
+
+        if chosen_state[0] == -1:
+            self.__motors_vref1.init(Pin.IN)
+        elif chosen_state[0] == 0:
+            self.__motors_vref1.init(Pin.OUT, value=False)
         else:
-            if self.is_enabled():
-                raise RuntimeError("Cannot change current limit whilst motor driver is active")
+            self.__motors_vref1.init(Pin.OUT, value=True)
 
-            # Start with the lowest limit
-            chosen_limit = CURRENT_LIMIT_1
-            chosen_state = self.__current_limit_states[CURRENT_LIMIT_1]
+        if chosen_state[1] == -1:
+            self.__motors_vref2.init(Pin.IN)
+        elif chosen_state[1] == 0:
+            self.__motors_vref2.init(Pin.OUT, value=False)
+        else:
+            self.__motors_vref2.init(Pin.OUT, value=True)
 
-            # Find the closest current limit below the given amps value
-            for limit, state in self.__current_limit_states.items():
-                if limit > amps:
-                    break
-                chosen_limit = limit
-                chosen_state = state
+        self.__current_limit = chosen_limit
 
-            if chosen_state[0] == -1:
-                self.__motors_vref1.init(Pin.IN)
-            elif chosen_state[0] == 0:
-                self.__motors_vref1.init(Pin.OUT, value=False)
-            else:
-                self.__motors_vref1.init(Pin.OUT, value=True)
-
-            if chosen_state[1] == -1:
-                self.__motors_vref2.init(Pin.IN)
-            elif chosen_state[1] == 0:
-                self.__motors_vref2.init(Pin.OUT, value=False)
-            else:
-                self.__motors_vref2.init(Pin.OUT, value=True)
-
-            self.__current_limit = chosen_limit
-
-            logging.info(self.__message_header() + f"Current limit set to {self.__current_limit}A")
+        logging.info(self.__message_header() + f"Current limit set to {self.__current_limit}A")
 
     @property
     def motor1(self):

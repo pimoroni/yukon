@@ -34,22 +34,22 @@ def speed_from_index(index, offset=0.0):
 try:
     # Find out which slots of Yukon have DualMotorModule attached
     for slot in yukon.find_slots_with(DualMotorModule):
-        module = DualMotorModule()              # Create a DualMotorModule object
-        yukon.register_with_slot(module, slot)  # Register the DualMotorModule object with the slot
-        modules.append(module)                  # Add the object to the module list
+        module = DualMotorModule()                  # Create a DualMotorModule object
+        yukon.register_with_slot(module, slot)      # Register the DualMotorModule object with the slot
+        modules.append(module)                      # Add the object to the module list
 
     # Record the number of motors that will be driven
     NUM_MOTORS = len(modules) * DualMotorModule.NUM_MOTORS
     print(f"Up to {NUM_MOTORS} motors available")
 
-    yukon.verify_and_initialise()               # Verify that DualMotorModules are attached to Yukon, and initialise them
-    yukon.enable_main_output()                  # Turn on power to the module slots
+    yukon.verify_and_initialise()                   # Verify that DualMotorModules are attached to Yukon, and initialise them
+    yukon.enable_main_output()                      # Turn on power to the module slots
 
     for module in modules:
-        module.current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
-        module.enable()                         # Enable the motor driver on the DualMotorModule
+        module.set_current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
+        module.enable()                             # Enable the motor driver on the DualMotorModule
 
-    current_time = ticks_ms()                   # Record the start time of the program loop
+    current_time = ticks_ms()                       # Record the start time of the program loop
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():

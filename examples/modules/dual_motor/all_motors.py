@@ -46,20 +46,20 @@ try:
     NUM_MOTORS = len(modules) * DualMotorModule.NUM_MOTORS
     print(f"Up to {NUM_MOTORS} motors available")
 
-    yukon.verify_and_initialise()               # Verify that DualMotorModules are attached to Yukon, and initialise them
+    yukon.verify_and_initialise()                   # Verify that DualMotorModules are attached to Yukon, and initialise them
 
     # Create a MotorCluster object, with a list of motor pin pairs to control.
     # The pin list is created using nested list comprehension
     motors = MotorCluster(CLUSTER_PIO, CLUSTER_SM,
                           pins=[pin for module in modules for pin in module.motor_pins])
 
-    yukon.enable_main_output()                  # Turn on power to the module slots
+    yukon.enable_main_output()                      # Turn on power to the module slots
 
     for module in modules:
-        module.current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
-        module.enable()                         # Enable the motor driver on the DualMotorModule
+        module.set_current_limit(CURRENT_LIMIT)     # Change the current limit (in amps) of the motor driver
+        module.enable()                             # Enable the motor driver on the DualMotorModule
 
-    current_time = ticks_ms()                   # Record the start time of the program loop
+    current_time = ticks_ms()                       # Record the start time of the program loop
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
