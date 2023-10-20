@@ -88,7 +88,7 @@ With the `LEDStripModule` powered, its output to the strip(s) can be enabled or 
 
 ### Accessing the LED Strip
 
-The `LEDStripModule` class makes use of the Plasma Library. Depending on the strip type provided during creation, either an APA102 objects or WS2812 objects will be accessible through the variable `.strip`.
+The `LEDStripModule` class makes use of the [Plasma Library](https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/plasma/README.md). Depending on the strip type provided during creation, either an APA102 objects or WS2812 objects will be accessible through the variable `.strip`.
 
 For example, to set all the LEDs of the strip to full (for either APA102 or WS2812), the following loop can be run:
 
