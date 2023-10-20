@@ -7,7 +7,7 @@ This repository is home to the MicroPython build, library, and examples for Pimo
 
 - [Introduction](#introduction)
 - [Download MicroPython](#download-micropython)
-  - [Regular](#regular)
+  - [Firmware Only](#firmware-only)
   - [With Filesystem](#with-filesystem)
 - [Flashing the Firmware](#flashing-the-firmware)
 - [Examples](#examples)
@@ -30,11 +30,11 @@ Grab the latest release from [https://github.com/pimoroni/yukon/releases/latest]
 
 There are two .uf2 files to pick from:
 
-### Regular
+### Firmware Only
 
 * `pimoroni-yukon-vX.X.X-micropython.uf2`
 
-This build includes only the firmware needed for Yukon to function, and leaves your files alone. You will need to manually update the `lib/pimoroni_yukon` library afterwards to get the latest features and bug fixes.
+This build includes only the firmware needed for Yukon to function. You will need to manually update the `lib/pimoroni_yukon` library afterwards to get the latest features and bug fixes.
 
 
 ### With Filesystem
