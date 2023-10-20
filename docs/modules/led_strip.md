@@ -8,7 +8,7 @@ This is the library reference for the [LED Strip Module for Yukon](https://pimor
 - [Using the Module](#using-the-module)
   - [Controlling its Output](#controlling-its-output)
   - [Accessing the LED Strip](#accessing-the-led-strip)
-  - [Reading Sensors](#reading-sensors)
+  - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
   - [Constants](#constants)
   - [Variables](#variables)
@@ -101,7 +101,7 @@ module.strip.update()
 
 For the case of the `DUAL_NEOPIXEL` strip type, a `.strips` list is accessible containing two WS2812 objects, instead of a `.strip` variable. There are also `.strip1` and `.strip2` properties to make access to these strips easier.
 
-### Reading Sensors
+### Onboard Sensors
 
 The LED Strip module features an onboard thermistor, letting its temperature be monitored. This can be read by calling `.read_temperature()`.
 
@@ -128,7 +128,7 @@ halt_on_not_pgood: bool
 strip: APA102 | WS2812
 
 # If strip_type is DUAL_NEOPIXEL
-strips: list[WS2812, WS2812]
+strips: list[WS2812]
 ```
 
 ### Functions
@@ -139,7 +139,7 @@ strips: list[WS2812, WS2812]
 is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool
 
 # Initialisation
-LEDStripModule(strip_type: int, pio: int, sm: int, num_leds: int, brightness=1.0: float, halt_on_not_pgood=False: bool)
+LEDStripModule(strip_type: int, pio: int, sm: int, num_leds: int, brightness: float=1.0, halt_on_not_pgood: bool=False)
 initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
 reset() -> None
 
@@ -149,7 +149,9 @@ disable() -> None
 is_enabled() -> bool
 
 # Access (only usable when strip_type is DUAL_NEOPIXEL)
+@property
 strip1 -> WS2812
+@property
 strip2 -> WS2812
 
 # Sensing
