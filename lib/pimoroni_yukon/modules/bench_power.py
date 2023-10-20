@@ -72,14 +72,14 @@ class BenchPowerModule(YukonModule):
     def __set_pwm(self, percent):
         self.__voltage_pwm.duty_u16(int(((2 ** 16) - 1) * percent))
 
-    def set_target_voltage(self, voltage):
+    def set_voltage(self, voltage):
         if voltage >= self.VOLTAGE_MID:
             percent = min((voltage - self.VOLTAGE_MID) * 0.5 / (self.VOLTAGE_MAX - self.VOLTAGE_MID) + 0.5, 1.0)
         else:
             percent = max((voltage - self.VOLTAGE_MIN) * 0.5 / (self.VOLTAGE_MID - self.VOLTAGE_MIN), 0.0)
-        self.set_target(percent)
+        self.set_percent(percent)
 
-    def set_target(self, percent):
+    def set_percent(self, percent):
         if percent < 0 or percent > 1.0:
             raise ValueError("percent out of range. Expected 0.0 to 1.0")
 
