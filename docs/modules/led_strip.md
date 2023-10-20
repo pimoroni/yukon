@@ -84,7 +84,7 @@ yukon.enable_main_output()
 
 ### Controlling its Output
 
-With the `LEDStripModule` powered, its output to the strip(s) can be enabled or disabled by calling `.enable()` or `.disable()`. The output state can also be queried by calling `.is_enabled()`.
+With the `LEDStripModule` powered, its output to the strip(s) can be enabled or disabled by calling `.enable()` or `.disable()`. The state can also be queried by calling `.is_enabled()`.
 
 ### Accessing the LED Strip
 
