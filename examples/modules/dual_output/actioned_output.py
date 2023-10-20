@@ -7,7 +7,7 @@ How to control a powered output from a Dual Output Module connected to Slot1, us
 """
 
 # Constants
-OUTPUT = 1                                  # The output from the Dual Switched Module to use
+OUTPUT = DualOutputModule.OUTPUT_1          # The output from the Dual Switched Module to use
 VOLTAGE_LIMIT = 12.1                        # The voltage to not exceed, to protect the output
 ACTION_HIGH_TEMP = 25.0                     # The temperature above which the output (e.g. a fan) should be on
 ACTION_LOW_TEMP = 23.0                      # The temperature below which the output (e.g. a fan) should be off
@@ -23,9 +23,9 @@ module = DualOutputModule()                 # Create a DualOutputModule object
 # and off if it falls below a low temperature.
 def temperature_check(voltage_in, voltage_out, current, temperature):
     if temperature > ACTION_HIGH_TEMP:
-        module.output(OUTPUT, True)
+        module.outputs[OUTPUT].on()
     elif temperature < ACTION_LOW_TEMP:
-        module.output(OUTPUT, False)
+        module.outputs[OUTPUT].off()
 
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
@@ -34,8 +34,7 @@ try:
     yukon.assign_monitor_action(temperature_check)  # Pass the monitor action function to Yukon
     yukon.verify_and_initialise()                   # Verify that a DualOutputModule is attached to Yukon, and initialise it
     yukon.enable_main_output()                      # Turn on power to the module slots
-
-    module.enable(OUTPUT)                           # Enable the output driver
+    module.enable(OUTPUT)                           # Enable a single output switch
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():

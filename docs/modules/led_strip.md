@@ -6,7 +6,7 @@ This is the library reference for the [LED Strip Module for Yukon](https://pimor
   - [Strip Types](#strip-types)
 - [Initialising the Module](#initialising-the-module)
 - [Using the Module](#using-the-module)
-  - [Controlling its Output](#controlling-its-output)
+  - [Enabling its Output](#enabling-its-output)
   - [Accessing the LED Strip](#accessing-the-led-strip)
   - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
@@ -82,7 +82,7 @@ yukon.enable_main_output()
 
 ## Using the Module
 
-### Controlling its Output
+### Enabling its Output
 
 With the `LEDStripModule` powered, its output to the strip(s) can be enabled or disabled by calling `.enable()` or `.disable()`. The state can also be queried by calling `.is_enabled()`.
 
@@ -117,6 +117,9 @@ NAME = "LED Strip"
 NEOPIXEL = 0
 DUAL_NEOPIXEL = 1
 DOTSTAR = 2
+STRIP_1 = 0       # Only for DUAL_NEOPIXEL strip_type
+STRIP_2 = 1       # Only for DUAL_NEOPIXEL strip_type
+NUM_STRIPS = 1    # Becomes 2 with the DUAL_NEOPIXEL strip_type
 TEMPERATURE_THRESHOLD = 70.0
 ```
 

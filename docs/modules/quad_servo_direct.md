@@ -61,7 +61,7 @@ yukon.enable_main_output()
 
 The `QuadServoDirectModule` class makes use of the [Servo Library](https://github.com/pimoroni/pimoroni-pico/blob/main/micropython/modules/servo/README.md).
 
-By default four Servo objects are created and made assessible through the `.servos` list.
+By default four Servo objects are created and made accessible through the `.servos` list.
 
 For example, to move all the servos to their zero position, the following loop can be run:
 
@@ -69,6 +69,8 @@ For example, to move all the servos to their zero position, the following loop c
 for servo in module.servos:
     servo.value(0.0)
 ```
+
+It is also possible to access the servos individually using the properties `.servo1`, `.servo2`, `.servo3`, and `.servo4`.
 
 Up to four modules, for a total of 16 servos, can be used in this way, provided their PWM pins do not conflict. Refer to the Yukon board pinout for the slots you are using.
 
@@ -112,6 +114,10 @@ There is also an optional `samples` parameter that lets multiple readings be tak
 
 ```python
 NAME = "Quad Servo Direct"
+SERVO_1 = 0
+SERVO_2 = 1
+SERVO_3 = 2
+SERVO_4 = 3
 NUM_SERVOS = 4
 ```
 

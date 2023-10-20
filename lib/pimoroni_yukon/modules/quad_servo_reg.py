@@ -12,6 +12,10 @@ import pimoroni_yukon.logging as logging
 
 class QuadServoRegModule(YukonModule):
     NAME = "Quad Servo Regulated"
+    SERVO_1 = 0
+    SERVO_2 = 1
+    SERVO_3 = 2
+    SERVO_4 = 3
     NUM_SERVOS = 4
     TEMPERATURE_THRESHOLD = 70.0
 

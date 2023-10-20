@@ -11,6 +11,8 @@ import pimoroni_yukon.logging as logging
 
 class DualOutputModule(YukonModule):
     NAME = "Dual Switched Output"
+    OUTPUT_1 = 0
+    OUTPUT_2 = 1
     NUM_OUTPUTS = 2
     TEMPERATURE_THRESHOLD = 50.0
 
@@ -30,8 +32,8 @@ class DualOutputModule(YukonModule):
 
     def initialise(self, slot, adc1_func, adc2_func):
         # Create the switch and power control pin objects
-        self.__sw_output = (slot.FAST1,
-                            slot.FAST3)
+        self.outputs = [slot.FAST1,
+                        slot.FAST3]
 
         self.__sw_enable = (slot.FAST2,
                             slot.FAST4)
@@ -43,8 +45,8 @@ class DualOutputModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        self.__sw_output[0].init(Pin.OUT, value=False)
-        self.__sw_output[1].init(Pin.OUT, value=False)
+        self.outputs[0].init(Pin.OUT, value=False)
+        self.outputs[1].init(Pin.OUT, value=False)
 
         self.__sw_enable[0].init(Pin.OUT, value=False)
         self.__sw_enable[1].init(Pin.OUT, value=False)
@@ -52,51 +54,55 @@ class DualOutputModule(YukonModule):
         self.__power_good[0].init(Pin.IN)
         self.__power_good[1].init(Pin.IN)
 
-    def enable(self, output):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("output index out of range. Expected 1 to 2")
+    def enable(self, output=None):
+        if output is None:
+            self.__sw_enable[0].value(True)
+            self.__sw_enable[1].value(True)
+        elif isinstance(output, int):
+            if output < 0 or output >= self.NUM_OUTPUTS:
+                raise ValueError("output index out of range. Expected 0 to 1")
+            self.__sw_enable[output].value(True)
 
-        self.__sw_enable[output - 1].value(True)
+    def disable(self, output=None):
+        if output is None:
+            self.__sw_enable[0].value(False)
+            self.__sw_enable[1].value(False)
+        elif isinstance(output, int):
+            if output < 0 or output >= self.NUM_OUTPUTS:
+                raise ValueError("output index out of range. Expected 0 to 1")
+            self.__sw_enable[output].value(False)
 
-    def disable(self, output):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("output index out of range. Expected 1 to 2")
+    def is_enabled(self, output=None):
+        if output is None:
+            return self.__sw_enable[0].value() == 1 or self.__sw_enable[1].value() == 1
+        elif isinstance(output, int):
+            if output < 0 or output >= self.NUM_OUTPUTS:
+                raise ValueError("output index out of range. Expected 0 to 1")
+            return self.__sw_enable[output].value() == 1
 
-        self.__sw_enable[output - 1].value(False)
+    @property
+    def output1(self):
+        return self.output[0]
 
-    def is_enabled(self, output):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("output index out of range. Expected 1 to 2")
+    @property
+    def output2(self):
+        return self.output[1]
 
-        return self.__sw_enable[output - 1].value() == 1
+    def read_power_good1(self):
+        return self.__power_good[0].value() == 1
 
-    def output(self, output, value):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("output index out of range. Expected 1 to 2")
-
-        self.__sw_output[output - 1].value(value)
-
-    def read_output(self, output):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("output index out of range. Expected 1 to 2")
-
-        return self.__sw_output[output - 1].value() == 1
-
-    def read_power_good(self, output):
-        if output < 1 or output > self.NUM_OUTPUTS:
-            raise ValueError("switch index out of range. Expected 1 to 2")
-
-        return self.__power_good[output - 1].value() == 1
+    def read_power_good2(self):
+        return self.__power_good[1].value() == 1
 
     def read_temperature(self):
         return self.__read_adc2_as_temp()
 
     def monitor(self):
-        pgood1 = self.read_power_good(1)
+        pgood1 = self.read_power_good1()
         if pgood1 is not True:
             if self.halt_on_not_pgood:
                 raise FaultError(self.__message_header() + "Power1 is not good! Turning off output")
-        pgood2 = self.read_power_good(2)
+        pgood2 = self.read_power_good2()
         if pgood2 is not True:
             if self.halt_on_not_pgood:
                 raise FaultError(self.__message_header() + "Power2 is not good! Turning off output")

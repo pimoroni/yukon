@@ -21,9 +21,7 @@ try:
     yukon.register_with_slot(module, SLOT)  # Register the DualOutputModule object with the slot
     yukon.verify_and_initialise()           # Verify that a DualOutputModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
-
-    for i in range(DualOutputModule.NUM_OUTPUTS):
-        module.enable(i + 1)                # Enable each output driver
+    module.enable()                         # Enable the output switches
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
@@ -33,8 +31,8 @@ try:
 
             # Has the button been newly pressed?
             if state is True and state != last_button_states[i]:
-                next_out_state = not module.read_output(i + 1)  # Read the current output state of the switch, and invert it
-                module.output(i + 1, next_out_state)            # Set the output to the inverted state
+                next_out_state = not module.outputs[i].value()  # Read the current output state, and invert it
+                module.outputs[i].value(next_out_state)         # Set the output to the inverted state
                 yukon.set_led(i, next_out_state)                # Set the button LED to match
 
                 # Print out the new state of the output with its name

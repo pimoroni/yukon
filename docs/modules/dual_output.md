@@ -5,7 +5,8 @@ This is the library reference for the [Dual Switched Output Module for Yukon](ht
 - [Getting Started](#getting-started)
 - [Initialising the Module](#initialising-the-module)
 - [Using the Module](#using-the-module)
-  - [Controlling its Outputs](#controlling-its-outputs)
+  - [Enabling its Outputs](#enabling-its-outputs)
+  - [Accessing the Outputs](#accessing-the-outputs)
   - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
     - [Constants](#constants)
@@ -58,33 +59,41 @@ yukon.enable_main_output()
 
 ## Using the Module
 
-### Controlling its Outputs
+### Enabling its Outputs
 
-With the `DualOutputModule` powered, its outputs can be enabled or disabled by calling `.enable(output)` or `.disable(output)`. The state can also be queried by calling `.is_enabled(output)`. `output` is either `1` or `2`.
+With the `DualOutputModule` powered, its switches can be enabled or disabled by calling `.enable()` or `.disable()`. Without a parameter provided, these functions will control both switches. To control a single switch, provide the index of the output as a parameter e.g. `.enable(0)`.
 
-Enabling an output does not cause it to produce a voltage, but rather "unlocks" the output to be controllable.
+The state can also be queried by calling `.is_enabled()`. Without a parameter provided, this will return the OR of both driver's enabled states. To query a single switch, provide the index of the output as a parameter e.g. `.is_enabled(0)`.
 
-Control an output by calling `.output(output, value)` where `output` is either `1` or `2` and `value` is either `True` or `False`. The control state of an output can also be read, by calling `read_output(output)`.
+For convenience the constants `OUTPUT_1 = 0` and `OUTPUT_2 = 0` are provided.
 
-Here is an example that toggles one of the outputs.
+:information_source: **Enabling a switch does not produce an output on its own. Rather, it "unlocks" the switch to respond to commands.**
+
+### Accessing the Outputs
+
+The `DualOutputModule` class uses MicroPython's native [Pin class](https://docs.micropython.org/en/latest/library/machine.Pin.html) for its outputs. To Pin objects are created and made accessible through the `.outputs` list.
+
+Here is an example that enables and toggles one of the outputs.
 
 ```python
-OUTPUT = 1
+OUTPUT = DualOutputModule.OUTPUT_1
 
 module.enable(OUTPUT)
 
 while True:
-    next_out_state = not module.read_output(OUTPUT)
-    module.output(OUTPUT, next_out_state)
+    next_out_state = not module.outputs[OUTPUT].value()
+    module.outputs[OUTPUT].value(next_out_state)
     yukon.monitored_sleep(1.0)
 ```
+
+It is also possible to access the outputs individually using the properties `.output1`, and `.output2`.
 
 
 ### Onboard Sensors
 
 The Dual Switched Output module features an onboard thermistor, letting its temperature be monitored. This can be read by calling `.read_temperature()`.
 
-Additionally, the power good status of the two output switches can be read by calling `.read_power_good(output)`, where `output` is either `1` or `2`. This will be `True` during normal operation, but will switch to `False` under various conditions. For details of these conditions, check the [SLG55021 datasheet](https://www.renesas.com/eu/en/document/dst/slg55021-200010v-datasheet).
+Additionally, the power good status of the two output switches can be read by calling `.read_power_good1()` and `.read_power_good2()`. These will be `True` during normal operation, but will switch to `False` under various conditions. For details of these conditions, check the [SLG55021 datasheet](https://www.renesas.com/eu/en/document/dst/slg55021-200010v-datasheet).
 
 
 ## References
@@ -93,6 +102,8 @@ Additionally, the power good status of the two output switches can be read by ca
 
 ```python
 NAME = "Dual Switched Output"
+OUTPUT_1 = 0
+OUTPUT_2 = 1
 NUM_OUTPUTS = 2
 TEMPERATURE_THRESHOLD = 50.0
 ```
@@ -100,6 +111,8 @@ TEMPERATURE_THRESHOLD = 50.0
 #### Variables
 ```python
 halt_on_not_pgood: bool
+
+outputs: list[Pin]
 ```
 
 ### Functions
@@ -115,16 +128,19 @@ initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
 reset() -> None
 
 # Power Control
-enable(output: int) -> None
-disable(output: int) -> None
-is_enabled(output: int) -> bool
+enable(output: int | None=None) -> None
+disable(output: int | None=None) -> None
+is_enabled(output: int | None=None) -> bool
 
-# Output Control
-output(output: int, value: bool) -> None
-read_output(output: int) -> bool
+# Access
+@property
+output1 -> Pin
+@property
+output2 -> Pin
 
 # Sensing
-read_power_good(output: int) -> bool
+read_power_good1() -> bool
+read_power_good2() -> bool
 read_temperature() -> float
 
 # Monitoring

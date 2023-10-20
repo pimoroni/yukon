@@ -43,9 +43,9 @@ try:
     yukon.verify_and_initialise()               # Verify that DualMotorModules are attached to Yukon, and initialise them
     yukon.enable_main_output()                  # Turn on power to the module slots
 
+    # Enable each output driver
     for module in modules:
-        for i in range(DualOutputModule.NUM_OUTPUTS):
-            module.enable(i + 1)                # Enable each output driver
+        module.enable()                         # Enable the output switches
 
     current_time = ticks_ms()                   # Record the start time of the program loop
 
@@ -57,7 +57,7 @@ try:
         for module in modules:
             for i in range(DualOutputModule.NUM_OUTPUTS):
                 state = state_from_index(current_output, phase_offset)
-                module.output(i + 1, state)
+                module.outputs[i].value(state)
                 current_output += 1
 
         # Advance the phase offset, wrapping if it exceeds 1.0

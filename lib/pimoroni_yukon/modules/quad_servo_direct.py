@@ -8,6 +8,10 @@ from servo import Servo
 
 class QuadServoDirectModule(YukonModule):
     NAME = "Quad Servo Direct"
+    SERVO_1 = 0
+    SERVO_2 = 1
+    SERVO_3 = 2
+    SERVO_4 = 3
     NUM_SERVOS = 4
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
