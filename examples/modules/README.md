@@ -11,6 +11,7 @@
   - [Two Outputs](#two-outputs)
   - [Multiple Outputs](#multiple-outputs)
   - [Actioned Output](#actioned-output)
+  - [PWM Output](#pwm-output)
 - [LED Strip Module](#led-strip-module)
   - [Single Strip](#single-strip)
   - [Multiple Strips](#multiple-strips)
@@ -72,6 +73,12 @@ A cycling pattern will be played on the attached outputs.
 [dual_output/actioned_output.py](dual_output/actioned_output.py)
 
 How to control a powered output from a Dual Output Module connected to Slot1, using a monitor action.
+
+
+### PWM Output
+[dual_output/pwm_output.py](dual_output/pwm_output.py)
+
+How to control a powered output from a Dual Output Module connected to Slot1, using PWM.
 
 
 ## LED Strip Module

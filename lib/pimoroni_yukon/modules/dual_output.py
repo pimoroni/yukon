@@ -82,11 +82,11 @@ class DualOutputModule(YukonModule):
 
     @property
     def output1(self):
-        return self.output[0]
+        return self.outputs[0]
 
     @property
     def output2(self):
-        return self.output[1]
+        return self.outputs[1]
 
     def read_power_good1(self):
         return self.__power_good[0].value() == 1
