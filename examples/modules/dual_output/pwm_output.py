@@ -33,8 +33,8 @@ try:
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
 
-        # Monitor sensors for a number of seconds, recording the min, max, and average for each
-        yukon.monitored_sleep(SLEEP)
+        # Perform a single check of Yukon's internal voltage, current, and temperature sensors
+        yukon.monitor_once()
 
 finally:
     # Put the board back into a safe state, regardless of how the program may have ended

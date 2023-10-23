@@ -77,12 +77,12 @@ class BigMotorModule(YukonModule):
     def read_fault(self):
         return self.__motor_nfault.value() != 1
 
-    def read_current(self):
+    def read_current(self, samples=1):
         # This needs more validation
-        return (abs(self.__read_adc1() - (3.3 / 2))) / (self.SHUNT_RESISTOR * self.GAIN)
+        return (abs(self.__read_adc1(samples) - (3.3 / 2))) / (self.SHUNT_RESISTOR * self.GAIN)
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         fault = self.read_fault()

@@ -85,9 +85,9 @@ class BenchPowerModule(YukonModule):
 
         self.__set_pwm((percent * (self.PWM_MAX - self.PWM_MIN)) + self.PWM_MIN)
 
-    def read_voltage(self):
-        # return (self.__shared_adc_voltage() * (100 + 22)) / 22
-        voltage = self.__read_adc1()
+    def read_voltage(self, samples=1):
+        # return (self.__read_adc1(samples) * (100 + 22)) / 22
+        voltage = self.__read_adc1(samples)
         if voltage >= self.VOLTAGE_MID_MEASURE:
             return ((voltage - self.VOLTAGE_MID_MEASURE) * (self.VOLTAGE_MAX - self.VOLTAGE_MID)) / (self.VOLTAGE_MAX_MEASURE - self.VOLTAGE_MID_MEASURE) + self.VOLTAGE_MID
         else:
@@ -96,8 +96,8 @@ class BenchPowerModule(YukonModule):
     def read_power_good(self):
         return self.__power_good.value() == 1
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         pgood = self.read_power_good()

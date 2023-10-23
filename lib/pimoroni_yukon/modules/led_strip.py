@@ -124,8 +124,8 @@ class LEDStripModule(YukonModule):
     def read_power_good(self):
         return self.__power_good.value() == 1
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         pgood = self.read_power_good()

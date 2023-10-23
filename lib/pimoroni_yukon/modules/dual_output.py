@@ -94,8 +94,8 @@ class DualOutputModule(YukonModule):
     def read_power_good2(self):
         return self.__power_good[1].value() == 1
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         pgood1 = self.read_power_good1()

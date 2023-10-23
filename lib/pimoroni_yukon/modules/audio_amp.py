@@ -242,8 +242,8 @@ class AudioAmpModule(YukonModule):
 
         self.write_i2c_reg(DVC, int((1.0 - volume) * 0xC8))
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         temperature = self.read_temperature()

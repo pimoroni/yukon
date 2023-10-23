@@ -154,8 +154,8 @@ class DualMotorModule(YukonModule):
     def read_fault(self):
         return self.__read_adc1() <= self.FAULT_THRESHOLD
 
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
+    def read_temperature(self, samples=1):
+        return self.__read_adc2_as_temp(samples)
 
     def monitor(self):
         fault = self.read_fault()

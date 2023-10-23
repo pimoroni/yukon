@@ -54,14 +54,14 @@ class YukonModule:
         # Override this to reset the module back into a default state post-initialisation
         pass
 
-    def __read_adc1(self):
-        return self.__adc1_func(self.slot)
+    def __read_adc1(self, samples=1):
+        return self.__adc1_func(self.slot, samples)
 
-    def __read_adc2(self):
-        return self.__adc2_func(self.slot)
+    def __read_adc2(self, samples=1):
+        return self.__adc2_func(self.slot, samples)
 
-    def __read_adc2_as_temp(self):
-        return analog_to_temp(self.__adc2_func(self.slot))
+    def __read_adc2_as_temp(self, samples=1):
+        return analog_to_temp(self.__adc2_func(self.slot, samples))
 
     def assign_monitor_action(self, callback_function):
         if not None and not callable(callback_function):
