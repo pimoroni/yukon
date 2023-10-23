@@ -4,6 +4,7 @@ from pimoroni_yukon.modules import BenchPowerModule
 
 """
 How to control the variable output of a Bench Power Module connected to Slot1.
+Use the A and B buttons to increase and decrease the output voltage.
 """
 
 # Constants
@@ -43,7 +44,7 @@ try:
         # Read the state of the onboard buttons
         state_a = yukon.is_pressed('A')
         state_b = yukon.is_pressed('B')
-        
+
         # Have the LEDs mirror the button states to show the program is working
         yukon.set_led('A', state_a)
         yukon.set_led('B', state_b)

@@ -101,6 +101,9 @@ TEMPERATURE_THRESHOLD = 70.0
 
 ```python
 halt_on_not_pgood: bool
+
+FAST3 = Pin
+FAST4 = Pin
 ```
 
 ### Methods
@@ -125,9 +128,9 @@ set_voltage(voltage: float) -> None
 set_percent(percent: float) -> None
 
 # Sensing
-read_voltage() -> float
+read_voltage(samples: int=1) -> float
 read_power_good() -> bool
-read_temperature() -> float
+read_temperature(samples: int=1) -> float
 
 # Monitoring
 monitor() -> None

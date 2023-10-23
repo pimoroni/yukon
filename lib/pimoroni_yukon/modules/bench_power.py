@@ -51,6 +51,10 @@ class BenchPowerModule(YukonModule):
         self.__power_en = slot.FAST1
         self.__power_good = slot.SLOW1
 
+        # Create the user accessible FAST pins
+        self.FAST3 = slot.FAST3
+        self.FAST4 = slot.FAST4
+
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 

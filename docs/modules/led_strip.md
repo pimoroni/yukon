@@ -159,7 +159,7 @@ strip2 -> WS2812
 
 # Sensing
 read_power_good() -> bool
-read_temperature() -> float
+read_temperature(samples: int=1) -> float
 
 # Monitoring
 monitor() -> None

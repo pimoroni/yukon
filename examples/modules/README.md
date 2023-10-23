@@ -2,6 +2,9 @@
 
 - [Audio Amp Module](#audio-amp-module)
 - [Bench Power Module](#bench-power-module)
+  - [Single Power](#single-power)
+  - [Multiple Powers](#multiple-powers)
+  - [Controllable Power](#controllable-power)
 - [Big Motor + Encoder Module](#big-motor--encoder-module)
 - [Dual Motor / Bipolar Stepper Module](#dual-motor--bipolar-stepper-module)
   - [Two Motors](#two-motors)
@@ -27,6 +30,27 @@
 ## Audio Amp Module
 
 ## Bench Power Module
+
+### Single Power
+[bench_power/single_power.py](bench_power/single_power.py)
+
+How to control the variable output of a Bench Power Module connected to Slot1.
+Use the A and B buttons to increase and decrease the output voltage.
+
+
+### Multiple Powers
+[bench_power/multiple_powers.py](bench_power/multiple_powers.py)
+
+How to drive up to 4 variable outputs from a set of Bench Power Modules connected to Slots.
+A wave pattern will be played on the attached outputs.
+
+
+### Controllable Power
+[bench_power/controllable_power.py](bench_power/controllable_power.py)
+
+How to control the variable output of a Bench Power Module connected to Slot1.
+A potentiometer on a Proto Module connected to Slot2 is used for input.
+
 
 ## Big Motor + Encoder Module
 

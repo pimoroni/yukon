@@ -141,7 +141,7 @@ output2 -> Pin
 # Sensing
 read_power_good1() -> bool
 read_power_good2() -> bool
-read_temperature() -> float
+read_temperature(samples: int=1) -> float
 
 # Monitoring
 monitor() -> None

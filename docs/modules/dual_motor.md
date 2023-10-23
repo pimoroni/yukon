@@ -61,7 +61,7 @@ motor2 -> Motor
 
 # Sensing
 read_fault() -> bool
-read_temperature() -> float
+read_temperature(samples: int=1) -> float
 
 # Monitoring
 monitor() -> None
