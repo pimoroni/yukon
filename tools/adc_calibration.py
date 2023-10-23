@@ -25,12 +25,12 @@ For currents beyond 10A, the readout from the electronic load (a BK Precision 86
 with a -20mA offset applied to the constant current (as was needed for all currents 10A and below).
 """
 
-
+# Constants
 CURRENT_SENSE_ADDR = 12      # 0b1100
 TEMP_SENSE_ADDR = 13         # 0b1101
 VOLTAGE_OUT_SENSE_ADDR = 14  # 0b1110
 VOLTAGE_IN_SENSE_ADDR = 15   # 0b1111
-
+SAMPLES = 1000000
 
 # Main output enable
 main_en = Pin.board.MAIN_EN
@@ -57,7 +57,7 @@ adc_io_adc_addrs = (1 << tca.get_number(Pin.board.ADC_ADDR_1),
                     1 << tca.get_number(Pin.board.ADC_ADDR_2),
                     1 << tca.get_number(Pin.board.ADC_ADDR_3))
 adc_io_mask = adc_io_ens_addrs[0] | adc_io_ens_addrs[1] | \
-              adc_io_adc_addrs[0] | adc_io_adc_addrs[1] | adc_io_adc_addrs[2]
+    adc_io_adc_addrs[0] | adc_io_adc_addrs[1] | adc_io_adc_addrs[2]
 
 
 # Shared analog input
@@ -69,13 +69,16 @@ def enable_main_output():
     time.sleep(1)  # Time for capacitor to charge
     print("> Output enabled")
 
+
 def disable_main_output():
     main_en.value(False)
     print("> Output disabled")
 
+
 def deselect_address():
     adc_mux_ens[0].value(False)
     adc_mux_ens[1].value(False)
+
 
 def select_address(address):
     if address < 0:
@@ -101,6 +104,7 @@ def select_address(address):
 
         tca.change_output_mask(adc_io_chip, adc_io_mask, state)
 
+
 def sample_shared_adc(address, samples):
     select_address(address)
     time.sleep(0.1)
@@ -111,8 +115,10 @@ def sample_shared_adc(address, samples):
     adc_int = int(round(adc_int / samples, 0))
     return adc_int, raw_to_flt(adc_int)
 
+
 def raw_to_flt(raw):
-    return (raw * 3.3) / 65536 # TODO check if 65536 or 65535
+    return (raw * 3.3) / 65535  # This has been checked to be correct
+
 
 def raws_avg(raws):
     raw_avg = 0
@@ -124,8 +130,10 @@ def raws_avg(raws):
     raw_avg /= len(raws)
     return int(round(raw_avg, 0))
 
+
 def map_float(x, in_min, in_max, out_min, out_max):
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+
 
 # Yukon Unit:            0    1    2    3    4    5    6    7    8    9
 VI_ZERO_MEASURED_RAWS = (534, 456, 503, 395, 320, 340, 315, 382, 533, 450)
@@ -156,7 +164,6 @@ VI_SEVENTEEN_MEASURED = raw_to_flt(VI_SEVENTEEN_MEASURED_AVG)
 VO_SEVENTEEN_MEASURED_RAWS = (45888, 45575, 45627, 45809, 45651, 45577, 45469, 45802, 45346, 45615)
 VO_SEVENTEEN_MEASURED_AVG = raws_avg(VO_SEVENTEEN_MEASURED_RAWS)
 VO_SEVENTEEN_MEASURED = raw_to_flt(VO_SEVENTEEN_MEASURED_AVG)
-
 
 # Yukon Unit:                  0    1    2    3    4    5    6    7    8    9
 C_MILLITHIRTY_MEASURED_RAWS = (522, 439, 472, 350, 317, 315, 287, 356, 491, 422)
@@ -244,16 +251,16 @@ enable_main_output()
 
 while True:
     # Read the input voltage sense
-    vi_raw, vi_flt = sample_shared_adc(VOLTAGE_IN_SENSE_ADDR, 1000000)
+    vi_raw, vi_flt = sample_shared_adc(VOLTAGE_IN_SENSE_ADDR, SAMPLES)
     if vi_raw >= VI_FIVE_MEASURED_AVG:
         vi_mapped = map_float(vi_flt, VI_FIVE_MEASURED, VI_SEVENTEEN_MEASURED, 5, 17)
     else:
         vi_mapped = map_float(vi_flt, VI_ZERO_MEASURED, VI_FIVE_MEASURED, 0, 5)
     print("ViRaw = ", vi_raw, ", ViFlt = ", vi_flt, ", ViMapped = ", vi_mapped, sep="", end=", ")
-    
+
     # Read the output voltage sense
     select_address(VOLTAGE_OUT_SENSE_ADDR)
-    vo_raw, vo_flt = sample_shared_adc(VOLTAGE_OUT_SENSE_ADDR, 1000000)
+    vo_raw, vo_flt = sample_shared_adc(VOLTAGE_OUT_SENSE_ADDR, SAMPLES)
     if vo_raw >= VO_FIVE_MEASURED_AVG:
         vo_mapped = map_float(vo_flt, VO_FIVE_MEASURED, VO_SEVENTEEN_MEASURED, 5, 17)
     else:
@@ -261,6 +268,6 @@ while True:
     print("VoRaw = ", vo_raw, ", VoFlt = ", vo_flt, ", VoMapped = ", vo_mapped, sep="", end=", ")
 
     # Read the current sense
-    c_raw, c_flt = sample_shared_adc(CURRENT_SENSE_ADDR, 1000000)
+    c_raw, c_flt = sample_shared_adc(CURRENT_SENSE_ADDR, SAMPLES)
     c_mapped = map_float(c_flt, C_ONE_MEASURED, C_FIFTEEN_MEASURED, 1, 15)
     print("CRaw = ", c_raw, ", CFlt = ", c_flt, ", CMapped = ", c_mapped, sep="")
