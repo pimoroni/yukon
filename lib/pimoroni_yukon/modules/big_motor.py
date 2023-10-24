@@ -28,39 +28,58 @@ class BigMotorModule(YukonModule):
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         return adc1_level == ADC_LOW and slow1 is IO_LOW and slow3 is IO_HIGH
 
-    def __init__(self, frequency=DEFAULT_FREQUENCY, counts_per_rev=None):
+    def __init__(self, frequency=DEFAULT_FREQUENCY,
+                 encoder_pio=0, encoder_sm=0, counts_per_rev=DEFAULT_COUNTS_PER_REV,
+                 init_motor=True, init_encoder=True):
         super().__init__()
+
+        if init_encoder:
+            if encoder_pio < 0 or encoder_pio > 1:
+                raise ValueError("encoder_pio out of range. Expected 0 or 1")
+
+            if encoder_sm < 0 or encoder_sm > 3:
+                raise ValueError("encoder_sm out of range. Expected 0 to 3")
+
         self.__frequency = frequency
+        self.__encoder_pio = encoder_pio
+        self.__encoder_sm = encoder_sm
         self.__counts_per_rev = counts_per_rev
 
-    def initialise(self, slot, adc1_func, adc2_func):
-        try:
-            # Create pwm objects
-            self.__pwm_p = slot.FAST4
-            self.__pwm_n = slot.FAST3
-        except ValueError as e:
-            if slot.ID <= 2 or slot.ID >= 5:
-                conflicting_slot = (((slot.ID - 1) + 4) % 8) + 1
-                raise type(e)(f"PWM channel(s) already in use. Check that the module in Slot{conflicting_slot} does not share the same PWM channel(s)") from None
-            raise type(e)("PWM channel(s) already in use. Check that a module in another slot does not share the same PWM channel(s)") from None
+        self.__init_motor = init_motor
+        self.__init_encoder = init_encoder
 
-        # Create motor object
-        self.motor = Motor((self.__pwm_p, self.__pwm_n), freq=self.__frequency)
+    def initialise(self, slot, adc1_func, adc2_func):
+        # Store the pwm pins
+        pwm_p = slot.FAST4
+        pwm_n = slot.FAST3
+
+        if self.__init_motor:
+            # Create motor object
+            self.motor = Motor((pwm_p, pwm_n), freq=self.__frequency)
+        else:
+            self.motor_pins = (pwm_p, pwm_n)
 
         # Create motor control pin objects
         self.__motor_en = slot.SLOW3
         self.__motor_nfault = slot.SLOW2
 
-        if self.__counts_per_rev is not None:
+        # Store the encoder pins
+        enc_a = slot.FAST1
+        enc_b = slot.FAST2
+
+        if self.__init_encoder:
             # Create rotary encoder object
-            self.encoder = Encoder(0, 2, (slot.FAST1, slot.FAST2), counts_per_rev=self.__counts_per_rev, count_microsteps=True)
+            self.encoder = Encoder(self.__encoder_pio, self.__encoder_sm, (enc_a, enc_b), counts_per_rev=self.__counts_per_rev, count_microsteps=True)
+        else:
+            self.encoder_pins = (enc_a, enc_b)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        self.motor.disable()
-        self.motor.decay_mode(SLOW_DECAY)
+        if self.__init_motor:
+            self.motor.disable()
+            self.motor.decay_mode(SLOW_DECAY)
 
         self.__motor_nfault.init(Pin.IN)
         self.__motor_en.init(Pin.OUT, value=False)

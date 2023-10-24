@@ -100,6 +100,8 @@ CLUSTER_SM = 0
 servos = ServoCluster(CLUSTER_PIO, CLUSTER_SM, pins=module.servo_pins)
 ```
 
+:warning: **Be sure to choose a PIO and State Machine that does not conflict with any others you have already set up.**
+
 If you have multiple Quad Servo Modules you wish to use with a single Servo Cluster, then a technique called nested list comprehension can be used to combine all the `.servo_pins` together.
 
 ```python

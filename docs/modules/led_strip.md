@@ -40,6 +40,8 @@ module = LEDStripModule(STRIP_TYPE,
                         BRIGHTNESS)
 ```
 
+:warning: **Be sure to choose a PIO and State Machine that does not conflict with any others you have already set up.**
+
 ### Strip Types
 
 Both WS2812's (aka NeoPixels) and APA102's (aka DotStars) are supported by the `LEDStripModule`.
