@@ -191,8 +191,11 @@ is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: boo
 
 # Initialisation
 BigMotorModule(frequency: float=DEFAULT_FREQUENCY, 
-               encoder_pio: int=0, encoder_sm: int=0, counts_per_rev: float=DEFAULT_COUNTS_PER_REV,
-               init_motor: bool=True, init_encoder: bool=True)
+               encoder_pio: int=0,
+               encoder_sm: int=0,
+               counts_per_rev: float=DEFAULT_COUNTS_PER_REV,
+               init_motor: bool=True,
+               init_encoder: bool=True)
 initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
 reset() -> None
 

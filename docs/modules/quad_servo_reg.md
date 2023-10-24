@@ -149,7 +149,8 @@ servo_pins: tuple[Pin, Pin, Pin, Pin]
 is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool
 
 # Initialisation
-QuadServoRegModule(init_servos: bool=True,halt_on_not_pgood: bool=False)
+QuadServoRegModule(init_servos: bool=True,
+                   halt_on_not_pgood: bool=False)
 initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
 reset() -> None
 

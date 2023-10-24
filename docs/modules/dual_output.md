@@ -9,8 +9,8 @@ This is the library reference for the [Dual Switched Output Module for Yukon](ht
   - [Accessing the Outputs](#accessing-the-outputs)
   - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
-    - [Constants](#constants)
-    - [Variables](#variables)
+  - [Constants](#constants)
+  - [Variables](#variables)
   - [Functions](#functions)
 
 
@@ -98,7 +98,7 @@ Additionally, the power good status of the two output switches can be read by ca
 
 ## References
 
-#### Constants
+### Constants
 
 ```python
 NAME = "Dual Switched Output"
@@ -108,7 +108,7 @@ NUM_OUTPUTS = 2
 TEMPERATURE_THRESHOLD = 50.0
 ```
 
-#### Variables
+### Variables
 ```python
 halt_on_not_pgood: bool
 

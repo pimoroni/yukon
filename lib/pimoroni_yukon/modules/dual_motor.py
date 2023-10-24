@@ -25,6 +25,8 @@ class DualMotorModule(YukonModule):
     DUAL = 0
     STEPPER = 1
     NUM_MOTORS = 2
+    MOTOR_1 = 0       # Only for DUAL motor_type
+    MOTOR_2 = 1       # Only for DUAL motor_type
     NUM_STEPPERS = 1
     FAULT_THRESHOLD = 0.1
     DEFAULT_FREQUENCY = 25000
@@ -62,21 +64,21 @@ class DualMotorModule(YukonModule):
         })
 
     def initialise(self, slot, adc1_func, adc2_func):
+        # Store the pwm pins
+        pins_p = (slot.FAST2, slot.FAST4)
+        pins_n = (slot.FAST1, slot.FAST3)
+
         if self.__motor_type == self.DUAL:
-
-            # Store the pwm pins
-            pins_p = (slot.FAST2, slot.FAST4)
-            pins_n = (slot.FAST1, slot.FAST3)
-
             if self.__init_motors:
                 from motor import Motor
 
                 # Create motor objects
                 self.motors = [Motor((pins_p[i], pins_n[i]), freq=self.__frequency) for i in range(len(pins_p))]
-            else:
-                self.motor_pins = [(pins_p[i], pins_n[i]) for i in range(len(pins_p))]
         else:
-            raise NotImplementedError("Stepper Motor support for the Dual Motor Module is currently not implemented")
+            raise NotImplementedError("Stepper motor support for the Dual Motor Module is currently not implemented")
+
+        if not self.__init_motors:
+            self.motor_pins = [(pins_p[i], pins_n[i]) for i in range(len(pins_p))]
 
         # Create motor control pin objects
         self.__motors_en = slot.SLOW3

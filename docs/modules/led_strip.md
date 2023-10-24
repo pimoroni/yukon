@@ -144,7 +144,9 @@ strips: list[WS2812]
 is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool
 
 # Initialisation
-LEDStripModule(strip_type: int, pio: int, sm: int, num_leds: int, brightness: float=1.0, halt_on_not_pgood: bool=False)
+LEDStripModule(strip_type: int, pio: int, sm: int, num_leds: int,
+               brightness: float=1.0,
+               halt_on_not_pgood: bool=False)
 initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
 reset() -> None
 
