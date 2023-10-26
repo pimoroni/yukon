@@ -7,6 +7,9 @@ import tca
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import OverTemperatureError
+import os
+import struct
+from machine import I2S
 
 # PAGE 0 Regs
 PAGE = 0x00             # Device Page Section 8.9.5
@@ -122,11 +125,181 @@ SDOUT_HIZ_8 = 0x44      # Slots Control Section 8.9.115
 SDOUT_HIZ_9 = 0x45      # Slots Control Section 8.9.116
 TG_EN = 0x47            # Thermal Detection Enable Section 8.9.117
 
+# Modified from: https://github.com/miketeachman/micropython-i2s-examples/blob/master/examples/wavplayer.py
+class WavPlayer:
+    PLAY = 0
+    PAUSE = 1
+    RESUME = 2
+    FLUSH = 3
+    STOP = 4
+
+    def __init__(self, id, sck_pin, ws_pin, sd_pin, ibuf, root="/"):
+        self.id = id
+        self.sck_pin = sck_pin
+        self.ws_pin = ws_pin
+        self.sd_pin = sd_pin
+        self.ibuf = ibuf
+        self.root = root.rstrip("/") + "/"
+        self.state = WavPlayer.STOP
+        self.wav = None
+        self.loop = False
+        self.format = None
+        self.sample_rate = None
+        self.bits_per_sample = None
+        self.first_sample_offset = None
+        self.num_read = 0
+        self.sbuf = 1000
+        self.nflush = 0
+        self.audio_out = None
+
+        # allocate a small array of blank audio samples used for silence
+        self.silence_samples = bytearray(self.sbuf)
+
+        # allocate audio sample array buffer
+        self.wav_samples_mv = memoryview(bytearray(10000))
+
+    def i2s_callback(self, arg):
+        if self.state == WavPlayer.PLAY:
+            self.num_read = self.wav.readinto(self.wav_samples_mv)
+            # end of WAV file?
+            if self.num_read == 0:
+                # end-of-file
+                if self.loop == False:
+                    self.state = WavPlayer.FLUSH
+                else:
+                    # advance to first byte of Data section
+                    _ = self.wav.seek(self.first_sample_offset)
+                _ = self.audio_out.write(self.silence_samples)
+            else:
+                _ = self.audio_out.write(self.wav_samples_mv[: self.num_read])
+        elif self.state == WavPlayer.RESUME:
+            self.state = WavPlayer.PLAY
+            _ = self.audio_out.write(self.silence_samples)
+        elif self.state == WavPlayer.PAUSE:
+            _ = self.audio_out.write(self.silence_samples)
+        elif self.state == WavPlayer.FLUSH:
+            # Flush is used to allow the residual audio samples in the
+            # internal buffer to be written to the I2S peripheral.  This step
+            # avoids part of the sound file from being cut off
+            if self.nflush > 0:
+                self.nflush -= 1
+                _ = self.audio_out.write(self.silence_samples)
+            else:
+                self.wav.close()
+                self.audio_out.deinit()
+                self.state = WavPlayer.STOP
+        elif self.state == WavPlayer.STOP:
+            pass
+        else:
+            raise SystemError("Internal error:  unexpected state")
+            self.state == WavPlayer.STOP
+
+    def parse(self, wav_file):
+        chunk_ID = wav_file.read(4)
+        if chunk_ID != b"RIFF":
+            raise ValueError("WAV chunk ID invalid")
+        chunk_size = wav_file.read(4)
+        format = wav_file.read(4)
+        if format != b"WAVE":
+            raise ValueError("WAV format invalid")
+        sub_chunk1_ID = wav_file.read(4)
+        if sub_chunk1_ID != b"fmt ":
+            raise ValueError("WAV sub chunk 1 ID invalid")
+        sub_chunk1_size = wav_file.read(4)
+        audio_format = struct.unpack("<H", wav_file.read(2))[0]
+        num_channels = struct.unpack("<H", wav_file.read(2))[0]
+
+        if num_channels == 1:
+            self.format = I2S.MONO
+        else:
+            self.format = I2S.STEREO
+
+        self.sample_rate = struct.unpack("<I", wav_file.read(4))[0]
+        if self.sample_rate != 44_100 and self.sample_rate != 48_000:
+            raise ValueError(f"WAV sample rate of {self.sample_rate} invalid. Only 44.1KHz or 48KHz audio are supported")
+
+        byte_rate = struct.unpack("<I", wav_file.read(4))[0]
+        block_align = struct.unpack("<H", wav_file.read(2))[0]
+        self.bits_per_sample = struct.unpack("<H", wav_file.read(2))[0]
+
+        # usually the sub chunk2 ID ("data") comes next, but
+        # some online MP3->WAV converters add
+        # binary data before "data".  So, read a fairly large
+        # block of bytes and search for "data".
+
+        binary_block = wav_file.read(200)
+        offset = binary_block.find(b"data")
+        if offset == -1:
+            raise ValueError("WAV sub chunk 2 ID not found")
+
+        self.first_sample_offset = 44 + offset
+
+    def queue(self, wav_file, loop=False):
+        if os.listdir(self.root).count(wav_file) == 0:
+            raise ValueError("%s: not found" % wav_file)
+        if self.state == WavPlayer.PLAY:
+            raise ValueError("already playing a WAV file")
+        elif self.state == WavPlayer.PAUSE:
+            raise ValueError("paused while playing a WAV file")
+        else:
+            self.wav = open(self.root + wav_file, "rb")
+            self.loop = loop
+            self.parse(self.wav)
+
+            self.audio_out = I2S(
+                self.id,
+                sck=self.sck_pin,
+                ws=self.ws_pin,
+                sd=self.sd_pin,
+                mode=I2S.TX,
+                bits=self.bits_per_sample,
+                format=self.format,
+                rate=self.sample_rate,
+                ibuf=self.ibuf,
+            )
+
+            # advance to first byte of Data section in WAV file
+            _ = self.wav.seek(self.first_sample_offset)
+            self.audio_out.irq(self.i2s_callback)
+            self.nflush = self.ibuf // self.sbuf + 1
+            self.state = WavPlayer.PAUSE
+            _ = self.audio_out.write(self.silence_samples)
+
+    def resume(self):
+        if self.state != WavPlayer.PAUSE:
+            raise ValueError("can only resume when WAV file is paused")
+        else:
+            self.state = WavPlayer.RESUME
+
+    def pause(self):
+        if self.state == WavPlayer.PAUSE:
+            pass
+        elif self.state != WavPlayer.PLAY:
+            raise ValueError("can only pause when WAV file is playing")
+
+        self.state = WavPlayer.PAUSE
+
+    def stop(self):
+        self.state = WavPlayer.FLUSH
+
+    def isplaying(self):
+        if self.state != WavPlayer.STOP:
+            return True
+        else:
+            return False
+        
+    def terminate(self):
+        if self.audio_out is not None:
+            self.audio_out.deinit()
+
+
 
 class AudioAmpModule(YukonModule):
     NAME = "Audio Amp"
     AMP_I2C_ADDRESS = 0x38
     TEMPERATURE_THRESHOLD = 50.0
+    I2S_ID = 0
+    BUFFER_LENGTH_IN_BYTES = 20000
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
@@ -136,6 +309,7 @@ class AudioAmpModule(YukonModule):
         return adc1_level == ADC_FLOAT and slow1 is IO_LOW and slow2 is IO_HIGH and slow3 is IO_HIGH
 
     def __init__(self):
+        self.player = None
         super().__init__()
 
     def initialise(self, slot, adc1_func, adc2_func):
@@ -153,6 +327,12 @@ class AudioAmpModule(YukonModule):
         self.I2S_DATA = slot.FAST1
         self.I2S_CLK = slot.FAST2
         self.I2S_FS = slot.FAST3
+        
+        self.player = WavPlayer(id=self.I2S_ID,
+                                sck_pin=self.I2S_CLK,
+                                ws_pin=self.I2S_FS,
+                                sd_pin=self.I2S_DATA,
+                                ibuf=self.BUFFER_LENGTH_IN_BYTES)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
@@ -161,6 +341,9 @@ class AudioAmpModule(YukonModule):
         self.__slow_sda.init(Pin.OUT, value=True)
         self.__slow_scl.init(Pin.OUT, value=True)
         self.__amp_en.init(Pin.OUT, value=False)
+        
+        if self.player is not None:
+            self.player.terminate()
 
     def enable(self):
         self.__amp_en.value(True)
@@ -232,6 +415,18 @@ class AudioAmpModule(YukonModule):
 
     def is_enabled(self):
         return self.__amp_en.value() == 1
+    
+    def play(self, wav_file, volume=0.5, loop=False):
+        self.player.queue(wav_file, loop=loop)
+        self.enable()
+        self.set_volume(volume)
+        self.player.resume()
+        
+    def stop(self):
+        self.player.stop()
+        
+    def is_playing(self):
+        return self.player.isplaying()
 
     def exit_soft_shutdown(self):
         self.write_i2c_reg(MODE_CTRL, 0x80)  # Calling this after a play seems to wake the amp up, but adds around 16ms
