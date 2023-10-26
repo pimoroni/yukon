@@ -87,7 +87,7 @@ For example, to move the motor at half its speed, the following line of code can
 module.motor.speed(0.5)
 ```
 
-Up to four modules, for a total of 4 big motors, can be used in this way, provided their PWM pins do not conflict. Refer to the Yukon board pinout for the slots you are using.
+Up to four modules, for a total of 4 big motors, can be used in this way, provided their PWM pins do not conflict. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using.
 
 
 #### More than 4 Big Motors

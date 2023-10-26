@@ -106,7 +106,7 @@ for motor in module.motors:
 
 It is also possible to access the motors individually using the properties `.motor1`, and `.motor2`.
 
-Up to four modules, for a total of 8 DC motors, can be used in this way, provided their PWM pins do not conflict. Refer to the Yukon board pinout for the slots you are using.
+Up to four modules, for a total of 8 DC motors, can be used in this way, provided their PWM pins do not conflict. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using.
 
 
 #### More than 8 Motors

@@ -78,7 +78,7 @@ for servo in module.servos:
 
 It is also possible to access the servos individually using the properties `.servo1`, `.servo2`, `.servo3`, and `.servo4`.
 
-Up to four modules, for a total of 16 servos, can be used in this way, provided their PWM pins do not conflict. Refer to the Yukon board pinout for the slots you are using.
+Up to four modules, for a total of 16 servos, can be used in this way, provided their PWM pins do not conflict. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using.
 
 #### More than 16 Servos
 
