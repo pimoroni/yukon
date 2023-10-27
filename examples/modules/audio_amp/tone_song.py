@@ -1,13 +1,9 @@
-import time
-import math
-import struct
-from machine import I2S
 from pimoroni_yukon import Yukon
-from pimoroni_yukon import SLOT6 as SLOT
+from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import AudioAmpModule
 
 """
-How to play a pure sinewave tone out of an Audio Amp Module connected to Slot1.
+How to play a sequence of tones out of an Audio Amp Module connected to Slot1.
 """
 
 # This handy list converts notes into frequencies, which you can use with the inventor.play_tone function
@@ -104,82 +100,20 @@ TONES = {
 }
 
 # Put the notes for your song in here!
-SONG = ("F6", "F6", "E6", "F6", "F5", "P", "F5", "P", "C6", "AS5", "A5", "C6", "F6", "P", "F6", "P", "G6", "FS6", "G6", "G5", "P", "G5", "P", "G6", "F6", "E6", "D6", "C6", "P", "C6", "P", "D6", "E6", "F6", "E6", "D6", "C6", "D6", "C6", "AS5", "A5", "AS5", "A5", "G5", "F5", "G5", "F5", "E5", "D5", "C5", "D5", "E5", "F5", "G5", "AS5", "A5", "G5", "A5", "F5", "P", "F5")
-
-NOTE_DURATION = 0.150           # The time (in seconds) to play each note for. Change this to make the song play faster or slower
+SONG = ("F6", "F6", "E6", "F6", "F5", "P", "F5", "P", "C6", "AS5", "A5", "C6", "F6", "P", "F6", "P",
+        "G6", "FS6", "G6", "G5", "P", "G5", "P", "G6", "F6", "E6", "D6", "C6", "P", "C6", "P", "D6",
+        "E6", "F6", "E6", "D6", "C6", "D6", "C6", "AS5", "A5", "AS5", "A5", "G5", "F5", "G5", "F5", "E5",
+        "D5", "C5", "D5", "E5", "F5", "G5", "AS5", "A5", "G5", "A5", "F5", "P", "F5")
 
 
 # Constants
-I2S_ID = 0
-BUFFER_LENGTH_IN_BYTES = 20000
-TONE_FREQUENCY_IN_HZ = 1000
-SAMPLE_SIZE_IN_BITS = 16
-FORMAT = I2S.MONO  # only MONO supported in this example
-SAMPLE_RATE_IN_HZ = 44_100
-SLEEP = 1.0                                 # The time to sleep between each reading
+NOTE_DURATION = 0.150           # The time (in seconds) to play each note for. Change this to make the song play faster or slower
+NOTE_VOLUME = 0.6               # The volume (between 0 and 1) to play the notes at
+I2S_ID = 0                      # The I2S instance to use for outputting audio
 
 # Variables
 yukon = Yukon()                 # Create a new Yukon object
-amp = AudioAmpModule()          # Create an AudioAmpModule object
-audio_out = None                # Stores the I2S audio output object created later
-samples = None
-
-is_playing = False
-
-# Callback function to queue up the next section of audio
-def i2s_callback(arg):
-    global audio_out
-    global samples
-    if samples != None:
-        audio_out.write(samples)
-    else:
-        audio_out.deinit()
-
-
-# Using this for testing: https://github.com/miketeachman/micropython-i2s-examples/tree/master
-def make_silence(rate, bits, frequency=1000):
-    # create a buffer containing the pure tone samples
-    samples_per_cycle = rate // frequency
-    sample_size_in_bytes = bits // 8
-    samples = bytearray(2 * samples_per_cycle * sample_size_in_bytes)
-    range = pow(2, bits) // 2
-    
-    if bits == 16:
-        format = "<h"
-    else:  # assume 32 bits
-        format = "<l"
-    
-    # I had to extend the sine buffer as it completed too quickly for code to react, causing drop outs
-    for i in range(samples_per_cycle * 2):
-        sample = range
-        struct.pack_into(format, samples, i * sample_size_in_bytes, sample)
-
-    return samples
-
-# Using this for testing: https://github.com/miketeachman/micropython-i2s-examples/tree/master
-def make_tone(rate, bits, frequency, volume=0.2):
-    complete_waves = 2
-    if volume < 0.0 or volume > 1.0:
-        raise ValueError("volume out of range. Expected 0.0 to 1.0")
-
-    # create a buffer containing the pure tone samples
-    samples_per_cycle = rate // frequency
-    sample_size_in_bytes = bits // 8
-    samples = bytearray(complete_waves * samples_per_cycle * sample_size_in_bytes)
-    range = pow(2, bits) // 2
-    
-    format = "<h" if bits == 16 else "<l"
-    
-    # I had to extend the sine buffer as it completed too quickly for code to react, causing drop outs
-    for i in range(samples_per_cycle * complete_waves):
-        sample = range + int((range - 1) * (math.sin(2 * math.pi * i / samples_per_cycle)) * volume)
-        struct.pack_into(format, samples, i * sample_size_in_bytes, sample)
-        
-    print(samples_per_cycle * 2)
-
-    return samples
-
-
+amp = AudioAmpModule(I2S_ID)    # Create an AudioAmpModule object
 
 
 # Variables for recording the button state and if it has been toggled
@@ -200,29 +134,6 @@ def check_button_toggle():
 
     return button_toggle
 
-def play_silence():
-    global audio_out
-    global samples
-    print("silence")
-    samples = bytearray(1000)#make_silence(SAMPLE_RATE_IN_HZ, SAMPLE_SIZE_IN_BITS)
-    audio_out.write(samples)   
-    pass
-
-def play_tone(frequency):
-    global audio_out
-    global samples
-    print(f"{frequency}Hz")
-    samples = make_tone(SAMPLE_RATE_IN_HZ, SAMPLE_SIZE_IN_BITS, frequency)
-    audio_out.write(samples)   
-    pass
-
-def stop_playing():
-    global audio_out
-    print("stop")
-    audio_out.deinit()   
-    pass
-
-
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
@@ -230,30 +141,14 @@ try:
     yukon.verify_and_initialise()           # Verify that a AudioAmpModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
 
-    audio_out = I2S(
-        I2S_ID,
-        sck=amp.I2S_CLK,
-        ws=amp.I2S_FS,
-        sd=amp.I2S_DATA,
-        mode=I2S.TX,
-        bits=SAMPLE_SIZE_IN_BITS,
-        format=I2S.MONO,
-        rate=SAMPLE_RATE_IN_HZ,
-        ibuf=BUFFER_LENGTH_IN_BYTES,
-    )
-
-    # Enable the switched outputs
     amp.enable()                            # Enable the audio amp. This includes I2C configuration
-    amp.set_volume(0.3)                     # Set the output volume of the audio amp
+    amp.set_volume(NOTE_VOLUME)             # Set the output volume of the audio amp
 
-    audio_out.irq(i2s_callback)             # i2s_callback is called when buf is emptied
-    play_silence()
-    
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
-        
+
         yukon.set_led('A', button_toggle)
-        
+
         # Has the button been toggled?
         if check_button_toggle():
 
@@ -261,22 +156,20 @@ try:
             for i in range(len(SONG)):
                 if check_button_toggle():
                     if SONG[i] == "P":
-                        # This is a "pause" note, so stop the motors
-                        play_silence()
+                        # Pause for the duration of this note
+                        amp.player.pause()
                     else:
                         # Get the frequency of the note and play it
-                        play_tone(TONES[SONG[i]])
+                        amp.player.play_tone(TONES[SONG[i]], 1.0)
 
                     yukon.monitored_sleep(NOTE_DURATION)
 
             button_toggle = False
 
-            play_silence()
+            amp.player.stop()
 
         yukon.monitor_once()
 
 finally:
-    if audio_out is not None:
-        audio_out.deinit()
     # Put the board back into a safe state, regardless of how the program may have ended
     yukon.reset()
