@@ -15,7 +15,7 @@ class BigMotorModule(YukonModule):
     NUM_MOTORS = 1
     DEFAULT_FREQUENCY = 25000
     DEFAULT_COUNTS_PER_REV = MMME_CPR
-    TEMPERATURE_THRESHOLD = 50.0
+    TEMPERATURE_THRESHOLD = 80.0
     CURRENT_THRESHOLD = 25.0
     SHUNT_RESISTOR = 0.001
     GAIN = 80
@@ -97,8 +97,11 @@ class BigMotorModule(YukonModule):
         return self.__motor_nfault.value() != 1
 
     def read_current(self, samples=1):
-        # This needs more validation
-        return (abs(self.__read_adc1(samples) - (3.3 / 2))) / (self.SHUNT_RESISTOR * self.GAIN)
+        if self.is_enabled():
+            # This gives a full range close to +-20A
+            return (self.__read_adc1(samples) - (3.3 / 2)) / (self.SHUNT_RESISTOR * self.GAIN)
+        else:
+            return 0.0
 
     def read_temperature(self, samples=1):
         return self.__read_adc2_as_temp(samples)
@@ -109,7 +112,7 @@ class BigMotorModule(YukonModule):
             raise FaultError(self.__message_header() + "Fault detected on motor driver! Turning off output")
 
         current = self.read_current()
-        if current > self.CURRENT_THRESHOLD:
+        if abs(current) > self.CURRENT_THRESHOLD:
             raise OverCurrentError(self.__message_header() + f"Current of {current}A exceeded the limit of {self.CURRENT_THRESHOLD}A! Turning off output")
 
         temperature = self.read_temperature()
