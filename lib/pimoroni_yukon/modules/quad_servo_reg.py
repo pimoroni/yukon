@@ -17,7 +17,7 @@ class QuadServoRegModule(YukonModule):
     SERVO_3 = 2
     SERVO_4 = 3
     NUM_SERVOS = 4
-    TEMPERATURE_THRESHOLD = 70.0
+    TEMPERATURE_THRESHOLD = 80.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|

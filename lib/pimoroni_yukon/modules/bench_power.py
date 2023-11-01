@@ -21,7 +21,7 @@ class BenchPowerModule(YukonModule):
     PWM_MIN = 0.3
     PWM_MAX = 0.0
 
-    TEMPERATURE_THRESHOLD = 70.0
+    TEMPERATURE_THRESHOLD = 80.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|

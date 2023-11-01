@@ -17,7 +17,7 @@ class LEDStripModule(YukonModule):
     STRIP_1 = 0       # Only for DUAL_NEOPIXEL strip_type
     STRIP_2 = 1       # Only for DUAL_NEOPIXEL strip_type
     NUM_STRIPS = 1    # Becomes 2 with the DUAL_NEOPIXEL strip_type
-    TEMPERATURE_THRESHOLD = 70.0
+    TEMPERATURE_THRESHOLD = 80.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
