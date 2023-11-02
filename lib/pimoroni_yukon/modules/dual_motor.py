@@ -8,17 +8,6 @@ from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
 import pimoroni_yukon.logging as logging
 
-# The current (in amps) associated with each limit (Do Not Modify!)
-CURRENT_LIMIT_1 = 0.161
-CURRENT_LIMIT_2 = 0.251
-CURRENT_LIMIT_3 = 0.444
-CURRENT_LIMIT_4 = 0.786
-CURRENT_LIMIT_5 = 1.143
-CURRENT_LIMIT_6 = 1.611
-CURRENT_LIMIT_7 = 1.890
-CURRENT_LIMIT_8 = 2.153
-CURRENT_LIMIT_9 = 2.236
-
 
 class DualMotorModule(YukonModule):
     NAME = "Dual Motor"
@@ -30,8 +19,21 @@ class DualMotorModule(YukonModule):
     NUM_STEPPERS = 1
     FAULT_THRESHOLD = 0.1
     DEFAULT_FREQUENCY = 25000
-    DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
     TEMPERATURE_THRESHOLD = 50.0
+
+    # The current (in amps) associated with each limit (Do Not Modify!)
+    CURRENT_LIMIT_1 = 0.161
+    CURRENT_LIMIT_2 = 0.251
+    CURRENT_LIMIT_3 = 0.444
+    CURRENT_LIMIT_4 = 0.786
+    CURRENT_LIMIT_5 = 1.143
+    CURRENT_LIMIT_6 = 1.611
+    CURRENT_LIMIT_7 = 1.890
+    CURRENT_LIMIT_8 = 2.153
+    CURRENT_LIMIT_9 = 2.236
+    MIN_CURRENT_LIMIT = CURRENT_LIMIT_1
+    DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
+    MAX_CURRENT_LIMIT = CURRENT_LIMIT_9
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
@@ -52,15 +54,15 @@ class DualMotorModule(YukonModule):
 
         # An ascending order list of current limits with the pin states to achieve them
         self.__current_limit_states = OrderedDict({
-            CURRENT_LIMIT_1: (0, 0),
-            CURRENT_LIMIT_2: (-1, 0),
-            CURRENT_LIMIT_3: (0, -1),
-            CURRENT_LIMIT_4: (1, 0),
-            CURRENT_LIMIT_5: (-1, -1),
-            CURRENT_LIMIT_6: (0, 1),
-            CURRENT_LIMIT_7: (1, -1),
-            CURRENT_LIMIT_8: (-1, 1),
-            CURRENT_LIMIT_9: (1, 1),
+            self.CURRENT_LIMIT_1: (0, 0),
+            self.CURRENT_LIMIT_2: (-1, 0),
+            self.CURRENT_LIMIT_3: (0, -1),
+            self.CURRENT_LIMIT_4: (1, 0),
+            self.CURRENT_LIMIT_5: (-1, -1),
+            self.CURRENT_LIMIT_6: (0, 1),
+            self.CURRENT_LIMIT_7: (1, -1),
+            self.CURRENT_LIMIT_8: (-1, 1),
+            self.CURRENT_LIMIT_9: (1, 1),
         })
 
     def initialise(self, slot, adc1_func, adc2_func):
@@ -113,8 +115,8 @@ class DualMotorModule(YukonModule):
             raise RuntimeError("Cannot change current limit whilst motor driver is active")
 
         # Start with the lowest limit
-        chosen_limit = CURRENT_LIMIT_1
-        chosen_state = self.__current_limit_states[CURRENT_LIMIT_1]
+        chosen_limit = self.MIN_CURRENT_LIMIT
+        chosen_state = self.__current_limit_states[chosen_limit]
 
         # Find the closest current limit below the given amps value
         for limit, state in self.__current_limit_states.items():

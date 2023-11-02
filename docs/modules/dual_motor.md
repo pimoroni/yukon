@@ -10,7 +10,7 @@ This is the library reference for the [Dual Motor / Bipolar Stepper Module for Y
   - [Current Limiting](#current-limiting)
   - [Accessing the DC Motors](#accessing-the-dc-motors)
     - [More than 8 Motors](#more-than-8-motors)
-  - [Accessing the Stepper Motor](#accessing-the-stepper-motor)
+  - [Driving a Stepper Motor](#driving-a-stepper-motor)
   - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
   - [Constants](#constants)
@@ -138,9 +138,29 @@ pins = [pin for module in modules for pin in module.motor_pins]
 ```
 
 
-### Accessing the Stepper Motor
+### Driving a Stepper Motor
 
-Currently the Yukon library does not support stepper motors. For now it is recommended to make use of a 3rd-party Micropython library, and follow the instructions from the [More than 8 Motors](#more-than-8-motors) section above to get direct access to the GPIO pins that control the motor driver.
+For driving a stepper motor, the Yukon library includes a class called `OkayStepper`. It is likely this will be replaced with a better solution in the future, hence the name.
+
+To use `OkayStepper`, set up the `DualMotorModule` as you would for driving two DC motors. Then, once verified and initialised, pass its two `Motor` objects to the stepper class.
+
+```python
+stepper = OkayStepper(module.motor1, module.motor2)
+```
+
+From there, the stepper motor can be controlled with the following functions.
+
+```python
+OkayStepper(motor_a: Motor, motor_b: Motor, current_scale: float=DEFAULT_CURRENT_SCALE, microsteps: int=DEFAULT_MICROSTEPS, debug_pin: Pin=None)
+hold() -> None
+release() -> None
+move_to(step: float, travel_time: float, debug: int=True) -> None
+move_by(steps: float, travel_time: float, debug: int=True) -> None
+is_moving() -> bool
+wait_for_move() -> None
+```
+
+To see how these functions may be used, look at the [single_stepper.py](../../examples/modules/dual_motor/single_stepper.py) example.
 
 
 ### Onboard Sensors
@@ -162,8 +182,20 @@ MOTOR_2 = 1       # Only for DUAL motor_type
 NUM_STEPPERS = 1
 FAULT_THRESHOLD = 0.1
 DEFAULT_FREQUENCY = 25000
-DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
 TEMPERATURE_THRESHOLD = 50.0
+
+CURRENT_LIMIT_1 = 0.161
+CURRENT_LIMIT_2 = 0.251
+CURRENT_LIMIT_3 = 0.444
+CURRENT_LIMIT_4 = 0.786
+CURRENT_LIMIT_5 = 1.143
+CURRENT_LIMIT_6 = 1.611
+CURRENT_LIMIT_7 = 1.890
+CURRENT_LIMIT_8 = 2.153
+CURRENT_LIMIT_9 = 2.236
+MIN_CURRENT_LIMIT = CURRENT_LIMIT_1
+DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
+MAX_CURRENT_LIMIT = CURRENT_LIMIT_9
 ```
 
 ### Variables
