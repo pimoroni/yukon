@@ -55,6 +55,7 @@ Power can now be provided to all modules, by calling.
 yukon.enable_main_output()
 ```
 
+
 ## Using the Module
 
 ### Accessing the Servos
@@ -73,6 +74,7 @@ for servo in module.servos:
 It is also possible to access the servos individually using the properties `.servo1`, `.servo2`, `.servo3`, and `.servo4`.
 
 Up to four modules, for a total of 16 servos, can be used in this way, provided their PWM pins do not conflict. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using.
+
 
 #### More than 16 Servos
 
@@ -123,6 +125,7 @@ SERVO_4 = 3
 NUM_SERVOS = 4
 ```
 
+
 ### Variables
 ```python
 # If init_servos was True
@@ -131,6 +134,7 @@ servos: list[Servo]
 # If init_servos was False
 servo_pins: tuple[Pin, Pin, Pin, Pin]
 ```
+
 
 ### Functions
 

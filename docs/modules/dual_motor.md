@@ -37,6 +37,7 @@ module = DualMotorModule(MOTOR_TYPE,
                          FREQUENCY)
 ```
 
+
 ### Motor Types
 
 The `DualMotorModule` can drive both 2x brushed DC motors, or 1x bipolar stepper motor. The type of motor driven can be chosen using the following constants:
@@ -72,6 +73,7 @@ Power can now be provided to all modules, by calling.
 ```python
 yukon.enable_main_output()
 ```
+
 
 ## Using the Module
 
@@ -169,9 +171,11 @@ The Dual Motor / Bipolar Stepper module features an onboard thermistor, letting 
 
 Additionally, the fault state of the motor driver can be read by calling `.read_fault()`. This will be `False` during normal operation, but will switch to `True` under various conditions. For details of these conditions, check the [DRV8424P datasheet](https://www.ti.com/lit/ds/symlink/drv8424e.pdf).
 
+
 ## References
 
 ### Constants
+
 ```python
 NAME = "Dual Motor"
 DUAL = 0
@@ -198,6 +202,7 @@ DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
 MAX_CURRENT_LIMIT = CURRENT_LIMIT_9
 ```
 
+
 ### Variables
 
 ```python
@@ -207,6 +212,7 @@ motors: list[Motor]
 # If init_motors was False
 motor_pins: tuple[tuple[Pin, Pin], tuple[Pin, Pin]]
 ```
+
 
 ### Functions
 

@@ -119,11 +119,13 @@ AMP_I2C_ADDRESS = 0x38
 TEMPERATURE_THRESHOLD = 50.0
 ```
 
+
 ### Variables
 
 ```python
 player: WavPlayer
 ```
+
 
 ### Functions
 

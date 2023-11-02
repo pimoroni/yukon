@@ -14,7 +14,6 @@ This is the library reference for the [Dual Switched Output Module for Yukon](ht
   - [Functions](#functions)
 
 
-
 ## Getting Started
 
 To start using a Dual Switched Output Module, you first need to import the class from `pimoroni_yukon.modules`.
@@ -69,6 +68,7 @@ For convenience the constants `OUTPUT_1 = 0` and `OUTPUT_2 = 0` are provided.
 
 :information_source: **Enabling a switch does not produce an output on its own. Rather, it "unlocks" the switch to respond to commands.**
 
+
 ### Accessing the Outputs
 
 The `DualOutputModule` class uses MicroPython's native [Pin class](https://docs.micropython.org/en/latest/library/machine.Pin.html) for its outputs. To Pin objects are created and made accessible through the `.outputs` list.
@@ -108,12 +108,14 @@ NUM_OUTPUTS = 2
 TEMPERATURE_THRESHOLD = 50.0
 ```
 
+
 ### Variables
 ```python
 halt_on_not_pgood: bool
 
 outputs: list[Pin]
 ```
+
 
 ### Functions
 

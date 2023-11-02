@@ -42,6 +42,7 @@ module = LEDStripModule(STRIP_TYPE,
 
 :warning: **Be sure to choose a PIO and State Machine that does not conflict with any others you have already set up.**
 
+
 ### Strip Types
 
 Both WS2812's (aka NeoPixels) and APA102's (aka DotStars) are supported by the `LEDStripModule`.
@@ -55,6 +56,7 @@ Strip types can accessed with the following constants:
 * `LEDStripModule.DOTSTAR` = `2`
 
 When using the `DUAL_NEOPIXEL` strip type, the lengths of the two strips can be provided as a tuple pair as the `LEDS_PER_STRIP` constant from the getting started section, or left as a single value if both strips are the same length.
+
 
 ## Initialising the Module
 
@@ -82,11 +84,13 @@ Power can now be provided to all modules, by calling.
 yukon.enable_main_output()
 ```
 
+
 ## Using the Module
 
 ### Enabling its Output
 
 With the `LEDStripModule` powered, its output to the strip(s) can be enabled or disabled by calling `.enable()` or `.disable()`. The state can also be queried by calling `.is_enabled()`.
+
 
 ### Accessing the LED Strip
 
@@ -102,6 +106,7 @@ module.strip.update()
 ```
 
 For the case of the `DUAL_NEOPIXEL` strip type, a `.strips` list is accessible containing two WS2812 objects, instead of a `.strip` variable. There are also `.strip1` and `.strip2` properties to make access to these strips easier.
+
 
 ### Onboard Sensors
 
@@ -122,10 +127,12 @@ DOTSTAR = 2
 STRIP_1 = 0       # Only for DUAL_NEOPIXEL strip_type
 STRIP_2 = 1       # Only for DUAL_NEOPIXEL strip_type
 NUM_STRIPS = 1    # Becomes 2 with the DUAL_NEOPIXEL strip_type
-TEMPERATURE_THRESHOLD = 70.0
+TEMPERATURE_THRESHOLD = 80.0
 ```
 
+
 ### Variables
+
 ```python
 halt_on_not_pgood: bool
 
@@ -135,6 +142,7 @@ strip: APA102 | WS2812
 # If strip_type is DUAL_NEOPIXEL
 strips: list[WS2812]
 ```
+
 
 ### Functions
 

@@ -55,6 +55,7 @@ Power can now be provided to all modules, by calling.
 yukon.enable_main_output()
 ```
 
+
 ## Using the Module
 
 ### Controlling its Output
@@ -94,8 +95,9 @@ VOLTAGE_MID_MEASURE = 1.1706
 VOLTAGE_MAX_MEASURE = 2.2007
 PWM_MIN = 0.3
 PWM_MAX = 0.0
-TEMPERATURE_THRESHOLD = 70.0
+TEMPERATURE_THRESHOLD = 80.0
 ```
+
 
 ### Variables
 
@@ -105,6 +107,7 @@ halt_on_not_pgood: bool
 FAST3 = Pin
 FAST4 = Pin
 ```
+
 
 ### Methods
 

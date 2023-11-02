@@ -69,11 +69,13 @@ Power can now be provided to all modules, by calling.
 yukon.enable_main_output()
 ```
 
+
 ## Using the Module
 
 ### Enabling its Driver
 
 With the `BigMotorModule` powered, its motor driver can be enabled or disabled by calling `.enable()` or `.disable()`. The state can also be queried by calling `.is_enabled()`.
+
 
 ### Accessing the Motor
 
@@ -131,6 +133,7 @@ For example, to read the current angle of the encoder, the following line of cod
 angle = module.encoder.degrees()
 ```
 
+
 #### Direct GPIO Access
 
 If your project does not need an encoder, then the pins on Big Motor + Encoder Module can be made available as GPIO. During creation of the `BigMotorModule`, instruct it to *not* create the encoder object, by providing it with the `init_encoder=False` parameter. Other encoder specific parameters, such as the PIO and SM, can also be omitted.
@@ -160,11 +163,12 @@ NAME = "Big Motor + Encoder"
 NUM_MOTORS = 1
 DEFAULT_FREQUENCY = 25000
 DEFAULT_COUNTS_PER_REV = MMME_CPR   # 12
-TEMPERATURE_THRESHOLD = 50.0
+TEMPERATURE_THRESHOLD = 80.0
 CURRENT_THRESHOLD = 25.0
 SHUNT_RESISTOR = 0.001
 GAIN = 80
 ```
+
 
 ### Variables
 
@@ -181,6 +185,7 @@ encoder: Encoder
 # If init_encoder was False
 encoder_pins: tuple[Pin, Pin]
 ```
+
 
 ### Methods
 

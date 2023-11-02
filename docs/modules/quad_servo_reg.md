@@ -15,7 +15,6 @@ This is the library reference for the [Quad Servo Regulated Module for Yukon](ht
   - [Functions](#functions)
 
 
-
 ## Getting Started
 
 To start using a Quad Servo Regulated Module, you first need to import the class from `pimoroni_yukon.modules`.
@@ -57,11 +56,13 @@ Power can now be provided to all modules, by calling.
 yukon.enable_main_output()
 ```
 
+
 ## Using the Module
 
 ### Enabling its Output
 
 With the `QuadServoRegModule` powered, its output to the servos can be enabled or disabled by calling `.enable()` or `.disable()`. The state can also be queried by calling `.is_enabled()`.
+
 
 ### Accessing the Servos
 
@@ -79,6 +80,7 @@ for servo in module.servos:
 It is also possible to access the servos individually using the properties `.servo1`, `.servo2`, `.servo3`, and `.servo4`.
 
 Up to four modules, for a total of 16 servos, can be used in this way, provided their PWM pins do not conflict. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using.
+
 
 #### More than 16 Servos
 
@@ -127,8 +129,9 @@ SERVO_2 = 1
 SERVO_3 = 2
 SERVO_4 = 3
 NUM_SERVOS = 4
-TEMPERATURE_THRESHOLD = 70.0
+TEMPERATURE_THRESHOLD = 80.0
 ```
+
 
 ### Variables
 ```python
@@ -140,6 +143,7 @@ servos: list[Servo]
 # If init_servos was False
 servo_pins: tuple[Pin, Pin, Pin, Pin]
 ```
+
 
 ### Functions
 
