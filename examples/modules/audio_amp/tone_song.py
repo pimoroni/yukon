@@ -107,9 +107,9 @@ SONG = ("F6", "F6", "E6", "F6", "F5", "P", "F5", "P", "C6", "AS5", "A5", "C6", "
 
 
 # Constants
-NOTE_DURATION = 0.150           # The time (in seconds) to play each note for. Change this to make the song play faster or slower
-NOTE_VOLUME = 0.6               # The volume (between 0 and 1) to play the notes at
 I2S_ID = 0                      # The I2S instance to use for outputting audio
+NOTE_DURATION = 0.150           # The time (in seconds) to play each note for. Change this to make the song play faster or slower
+NOTE_VOLUME = 0.6               # The volume (between 0.0 and 1.0) to play the notes at
 
 # Variables
 yukon = Yukon()                 # Create a new Yukon object
@@ -168,6 +168,7 @@ try:
 
             amp.player.stop()
 
+        # Perform a single check of Yukon's internal voltage, current, and temperature sensors
         yukon.monitor_once()
 
 finally:
