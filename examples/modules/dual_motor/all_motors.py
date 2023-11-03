@@ -9,7 +9,6 @@ How to drive up to 12 motors from a set of Dual Motor Modules connected to Slots
 A wave pattern will be played on the attached motors.
 
 The MotorCluster controls the whole set of motors using PIO.
-It also staggers the updates of each motor to reduce peak current draw.
 """
 
 # Constants

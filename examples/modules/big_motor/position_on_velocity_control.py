@@ -1,3 +1,5 @@
+import math
+import random
 from pimoroni import PID, NORMAL_DIR  # , REVERSED_DIR
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT1 as SLOT
@@ -5,9 +7,7 @@ from pimoroni_yukon.modules import BigMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-A program to aid in the discovery and tuning of motor PID values for position control.
-It does this by commanding the motor to move repeatedly between two setpoint angles and
-plots the measured response.
+How to move a motor smoothly between random positions, with velocity limits, with the help of it's attached encoder and PID control.
 This uses a Big Motor + Encoder Module connected to Slot1.
 
 Press "Boot/User" to exit the program.
@@ -24,25 +24,33 @@ SPEED_SCALE = 3.4                       # The scaling to apply to the motor's sp
 
 UPDATES = 100                           # How many times to update the motor per second
 UPDATE_RATE = 1 / UPDATES
-PRINT_WINDOW = 0.25                     # The time (in seconds) after a new setpoint, to display print out motor values
-MOVEMENT_WINDOW = 2.0                   # The time (in seconds) between each new setpoint being set
-PRINT_DIVIDER = 1                       # How many of the updates should be printed (i.e. 2 would be every other update)
+TIME_FOR_EACH_MOVE = 1                  # The time to travel between each random value, in seconds
+UPDATES_PER_MOVE = TIME_FOR_EACH_MOVE * UPDATES
+PRINT_DIVIDER = 4                       # How many of the updates should be printed (i.e. 2 would be every other update)
 
 # Multipliers for the different printed values, so they appear nicely on the Thonny plotter
-SPD_PRINT_SCALE = 10                    # Driving Speed multipler
+ACC_PRINT_SCALE = 2                     # Acceleration multiplier
+SPD_PRINT_SCALE = 40                    # Driving Speed multipler
 
-POSITION_EXTENT = 90                    # How far from zero to move the motor, in degrees
+POSITION_EXTENT = 180                   # How far from zero to move the motor, in degrees
+MAX_SPEED = 1.0                         # The maximum speed to move the motor at, in revolutions per second
+INTERP_MODE = 0                         # The interpolating mode between setpoints. STEP (0), LINEAR (1), COSINE (2)
 
 # PID values
-POS_KP = 0.14                           # Position proportional (P) gain
+POS_KP = 0.035                          # Position proportional (P) gain
 POS_KI = 0.0                            # Position integral (I) gain
-POS_KD = 0.0022                         # Position derivative (D) gain
+POS_KD = 0.002                          # Position derivative (D) gain
+
+VEL_KP = 30.0                           # Velocity proportional (P) gain
+VEL_KI = 0.0                            # Velocity integral (I) gain
+VEL_KD = 0.4                            # Velocity derivative (D) gain
 
 
 # Variables
 yukon = Yukon()                                     # Create a new Yukon object
 module = BigMotorModule(counts_per_rev=MOTOR_CPR)   # Create a BigMotorModule object
 pos_pid = PID(POS_KP, POS_KI, POS_KD, UPDATE_RATE)  # Create a PID object for position control
+vel_pid = PID(VEL_KP, VEL_KI, VEL_KD, UPDATE_RATE)  # Create a PID object for velocity control
 update = 0
 print_count = 0
 
@@ -61,7 +69,9 @@ try:
     module.enable()                         # Enable the motor driver on the BigMotorModule
     module.motor.enable()                   # Enable the motor to get started
 
-    pos_pid.setpoint = POSITION_EXTENT      # Set the initial setpoint position
+    # Set the initial value and create a random end value between the extents
+    start_value = 0.0
+    end_value = random.uniform(-POSITION_EXTENT, POSITION_EXTENT)
 
     current_time = ticks_ms()               # Record the start time of the program loop
 
@@ -70,16 +80,38 @@ try:
 
         capture = module.encoder.capture()  # Capture the state of the encoder
 
+        # Calculate how far along this movement to be
+        percent_along = min(update / UPDATES_PER_MOVE, 1.0)
+
+        if INTERP_MODE == 0:
+            # Move the motor instantly to the end value
+            pos_pid.setpoint = end_value
+        elif INTERP_MODE == 2:
+            # Move the motor between values using cosine
+            pos_pid.setpoint = (((-math.cos(percent_along * math.pi) + 1.0) / 2.0) * (end_value - start_value)) + start_value
+        else:
+            # Move the motor linearly between values
+            pos_pid.setpoint = (percent_along * (end_value - start_value)) + start_value
+
         # Calculate the velocity to move the motor closer to the position setpoint
         vel = pos_pid.calculate(capture.degrees, capture.degrees_per_second)
 
-        module.motor.speed(vel)             # Set the new motor driving speed
+        # Limit the velocity between user defined limits, and set it as the new setpoint of the velocity PID
+        vel_pid.setpoint = max(min(vel, MAX_SPEED), -MAX_SPEED)
 
-        # Print out the current motor values and their setpoints,
-        # but only for the first few updates and only every multiple
-        if update < (PRINT_WINDOW * UPDATES) and print_count == 0:
+        # Calculate the acceleration to apply to the motor to move it closer to the velocity setpoint
+        accel = vel_pid.calculate(capture.revolutions_per_second)
+
+        # Accelerate or decelerate the motor
+        module.motor.speed(module.motor.speed() + (accel * UPDATE_RATE))
+
+        # Print out the current motor values and their setpoints, but only on every multiple
+        if print_count == 0:
             print("Pos =", capture.degrees, end=", ")
             print("Pos SP =", pos_pid.setpoint, end=", ")
+            print("Vel =", capture.revolutions_per_second * SPD_PRINT_SCALE, end=", ")
+            print("Vel SP =", vel_pid.setpoint * SPD_PRINT_SCALE, end=", ")
+            print("Accel =", accel * ACC_PRINT_SCALE, end=", ")
             print("Speed =", module.motor.speed() * SPD_PRINT_SCALE)
 
         # Increment the print count, and wrap it
@@ -87,12 +119,13 @@ try:
 
         update += 1     # Move along in time
 
-        # Have we reached the end of this time window?
-        if update >= (MOVEMENT_WINDOW * UPDATES):
+        # Have we reached the end of this movement?
+        if update >= UPDATES_PER_MOVE:
             update = 0  # Reset the counter
 
-            # Set the new position setpoint to be the inverse of the current setpoint
-            pos_pid.setpoint = 0.0 - pos_pid.setpoint
+            # Set the start as the last end and create a new random end value
+            start_value = end_value
+            end_value = random.uniform(-POSITION_EXTENT, POSITION_EXTENT)
 
         # Advance the current time by a number of seconds
         current_time = ticks_add(current_time, int(1000 * UPDATE_RATE))

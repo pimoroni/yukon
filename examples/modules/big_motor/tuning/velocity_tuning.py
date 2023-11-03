@@ -5,8 +5,8 @@ from pimoroni_yukon.modules import BigMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-A program to aid in the discovery and tuning of motor PID values for position control.
-It does this by commanding the motor to move repeatedly between two setpoint angles and
+A program to aid in the discovery and tuning of motor PID values for velocity control.
+It does this by commanding the motor to drive repeatedly between two setpoint speeds and
 plots the measured response.
 This uses a Big Motor + Encoder Module connected to Slot1.
 
@@ -29,20 +29,20 @@ MOVEMENT_WINDOW = 2.0                   # The time (in seconds) between each new
 PRINT_DIVIDER = 1                       # How many of the updates should be printed (i.e. 2 would be every other update)
 
 # Multipliers for the different printed values, so they appear nicely on the Thonny plotter
-SPD_PRINT_SCALE = 10                    # Driving Speed multipler
+ACC_PRINT_SCALE = 0.01                  # Acceleration multiplier
 
-POSITION_EXTENT = 90                    # How far from zero to move the motor, in degrees
+VELOCITY_EXTENT = 1                     # How far from zero to drive the motor at, in revolutions per second
 
 # PID values
-POS_KP = 0.14                           # Position proportional (P) gain
-POS_KI = 0.0                            # Position integral (I) gain
-POS_KD = 0.0022                         # Position derivative (D) gain
+VEL_KP = 30.0                           # Velocity proportional (P) gain
+VEL_KI = 0.0                            # Velocity integral (I) gain
+VEL_KD = 0.4                            # Velocity derivative (D) gain
 
 
 # Variables
 yukon = Yukon()                                     # Create a new Yukon object
 module = BigMotorModule(counts_per_rev=MOTOR_CPR)   # Create a BigMotorModule object
-pos_pid = PID(POS_KP, POS_KI, POS_KD, UPDATE_RATE)  # Create a PID object for position control
+vel_pid = PID(VEL_KP, VEL_KI, VEL_KD, UPDATE_RATE)  # Create a PID object for velocity control
 update = 0
 print_count = 0
 
@@ -61,7 +61,7 @@ try:
     module.enable()                         # Enable the motor driver on the BigMotorModule
     module.motor.enable()                   # Enable the motor to get started
 
-    pos_pid.setpoint = POSITION_EXTENT      # Set the initial setpoint position
+    vel_pid.setpoint = VELOCITY_EXTENT      # Set the initial setpoint velocity
 
     current_time = ticks_ms()               # Record the start time of the program loop
 
@@ -70,17 +70,19 @@ try:
 
         capture = module.encoder.capture()  # Capture the state of the encoder
 
-        # Calculate the velocity to move the motor closer to the position setpoint
-        vel = pos_pid.calculate(capture.degrees, capture.degrees_per_second)
+        # Calculate the acceleration to apply to the motor to move it closer to the velocity setpoint
+        accel = vel_pid.calculate(capture.revolutions_per_second)
 
-        module.motor.speed(vel)             # Set the new motor driving speed
+        # Accelerate or decelerate the motor
+        module.motor.speed(module.motor.speed() + (accel * UPDATE_RATE))
 
         # Print out the current motor values and their setpoints,
         # but only for the first few updates and only every multiple
         if update < (PRINT_WINDOW * UPDATES) and print_count == 0:
-            print("Pos =", capture.degrees, end=", ")
-            print("Pos SP =", pos_pid.setpoint, end=", ")
-            print("Speed =", module.motor.speed() * SPD_PRINT_SCALE)
+            print("Vel =", capture.revolutions_per_second, end=", ")
+            print("Vel SP =", vel_pid.setpoint, end=", ")
+            print("Accel =", accel * ACC_PRINT_SCALE, end=", ")
+            print("Speed =", module.motor.speed())
 
         # Increment the print count, and wrap it
         print_count = (print_count + 1) % PRINT_DIVIDER
@@ -91,8 +93,8 @@ try:
         if update >= (MOVEMENT_WINDOW * UPDATES):
             update = 0  # Reset the counter
 
-            # Set the new position setpoint to be the inverse of the current setpoint
-            pos_pid.setpoint = 0.0 - pos_pid.setpoint
+            # Set the new velocity setpoint to be the inverse of the current setpoint
+            vel_pid.setpoint = 0.0 - vel_pid.setpoint
 
         # Advance the current time by a number of seconds
         current_time = ticks_add(current_time, int(1000 * UPDATE_RATE))
