@@ -5,6 +5,8 @@ from pimoroni_yukon import SLOT1 as SLOT
 
 """
 Read the IO pins of a single Yukon slot.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

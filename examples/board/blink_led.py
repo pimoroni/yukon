@@ -3,6 +3,8 @@ from pimoroni_yukon import Yukon
 
 """
 Blink one of Yukon's onboard LEDs.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

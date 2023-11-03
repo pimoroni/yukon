@@ -4,6 +4,8 @@ from pimoroni_yukon import Yukon
 Use Yukon's monitoring function to read the internal sensors.
 Power needs to be provided to the XT30 connector, otherwise
 the monitoring will raise an UnderVoltageError.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

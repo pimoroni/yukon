@@ -1,15 +1,29 @@
 # Yukon Micropython Module Examples <!-- omit in toc -->
 
 - [Audio Amp Module](#audio-amp-module)
+  - [Tone Song](#tone-song)
+  - [Wav Play](#wav-play)
 - [Bench Power Module](#bench-power-module)
   - [Single Power](#single-power)
   - [Multiple Powers](#multiple-powers)
   - [Controllable Power](#controllable-power)
 - [Big Motor + Encoder Module](#big-motor--encoder-module)
+  - [Single Motor](#single-motor)
+  - [Multiple Motors](#multiple-motors)
+  - [All Motors (No Encoders)](#all-motors-no-encoders)
+  - [Position Control](#position-control)
+  - [Velocity Control](#velocity-control)
+  - [Position on Velocity Control](#position-on-velocity-control)
+  - [Tuning](#tuning)
+    - [Motor Profiler](#motor-profiler)
+    - [Position Tuning](#position-tuning)
+    - [Velocity Tuning](#velocity-tuning)
+    - [Position on Velocity Tuning](#position-on-velocity-tuning)
 - [Dual Motor / Bipolar Stepper Module](#dual-motor--bipolar-stepper-module)
   - [Two Motors](#two-motors)
-  - [Multiple Motors](#multiple-motors)
+  - [Multiple Motors](#multiple-motors-1)
   - [All Motors](#all-motors)
+  - [Single Stepper](#single-stepper)
 - [Dual Switched Output Module](#dual-switched-output-module)
   - [Two Outputs](#two-outputs)
   - [Multiple Outputs](#multiple-outputs)
@@ -29,52 +43,142 @@
 
 ## Audio Amp Module
 
+### Tone Song
+[audio_amp/tone_song.py](audio_amp/tone_song.py)
+
+Play a sequence of tones out of an Audio Amp Module connected to Slot1.
+
+### Wav Play
+[audio_amp/wav_play.py](audio_amp/wav_play.py)
+
+Play wave files out of an Audio Amp Module connected to Slot1.
+
+
 ## Bench Power Module
 
 ### Single Power
 [bench_power/single_power.py](bench_power/single_power.py)
 
-How to control the variable output of a Bench Power Module connected to Slot1.
-Use the A and B buttons to increase and decrease the output voltage.
+Control the variable output of a Bench Power Module connected to Slot1.
 
 
 ### Multiple Powers
 [bench_power/multiple_powers.py](bench_power/multiple_powers.py)
 
-How to drive up to 4 variable outputs from a set of Bench Power Modules connected to Slots.
+Control up to 4 variable outputs from a set of Bench Power Modules connected to Slots.
 A wave pattern will be played on the attached outputs.
 
 
 ### Controllable Power
 [bench_power/controllable_power.py](bench_power/controllable_power.py)
 
-How to control the variable output of a Bench Power Module connected to Slot1.
+Control the variable output of a Bench Power Module connected to Slot1.
 A potentiometer on a Proto Module connected to Slot2 is used for input.
 
 
 ## Big Motor + Encoder Module
+
+### Single Motor
+[big_motor/single_motor.py](big_motor/single_motor.py)
+
+Drive a single motor from a Big Motor + Encoder Module connected to Slot1.
+A wave pattern will be played on the attached motor, and its speed printed out.
+
+
+### Multiple Motors
+[big_motor/multiple_motors.py](big_motor/multiple_motors.py)
+
+Drive up to 4 motors from a set of Big Motor + Encoder Modules connected to Slots.
+A wave pattern will be played on the attached motors, and their speeds printed out.
+
+
+### All Motors (No Encoders)
+[big_motor/all_motors_no_encoders.py](big_motor/all_motors_no_encoders.py)
+
+Drive up to 6 motors from a set of Big Motor + Encoder Modules connected to Slots, using a MotorCluster.
+A wave pattern will be played on the attached motors.
+
+
+### Position Control
+[big_motor/position_control.py](big_motor/position_control.py)
+
+Drive a motor smoothly between random positions, with the help of it's attached encoder and PID control.
+This uses a Big Motor + Encoder Module connected to Slot1.
+
+
+### Velocity Control
+[big_motor/velocity_control.py](big_motor/velocity_control.py)
+
+Drive a motor smoothly between random speeds, with the help of it's attached encoder and PID control.
+This uses a Big Motor + Encoder Module connected to Slot1.
+
+### Position on Velocity Control
+[big_motor/position_on_velocity_control.py](big_motor/position_on_velocity_control.py)
+
+Drive a motor smoothly between random positions, with velocity limits, with the help of it's attached encoder and PID control.
+This uses a Big Motor + Encoder Module connected to Slot1.
+
+
+### Tuning
+
+#### Motor Profiler
+[big_motor/tuning/motor_profiler.py](big_motor/tuning/motor_profiler.py)
+
+Profile the speed of a motor across its PWM duty cycle range using its attached encoder for feedback.
+This uses a Big Motor + Encoder Module connected to Slot1.
+
+
+#### Position Tuning
+[big_motor/tuning/position_tuning.py](big_motor/tuning/position_tuning.py)
+
+A program to aid in the discovery and tuning of motor PID values for position control.
+It does this by commanding the motor to move repeatedly between two setpoint angles and
+plots the measured response. This uses a Big Motor + Encoder Module connected to Slot1.
+
+
+#### Velocity Tuning
+[big_motor/tuning/velocity_tuning.py](big_motor/tuning/velocity_tuning.py)
+
+A program to aid in the discovery and tuning of motor PID values for velocity control.
+It does this by commanding the motor to drive repeatedly between two setpoint speeds and
+plots the measured response. This uses a Big Motor + Encoder Module connected to Slot1.
+
+#### Position on Velocity Tuning
+[big_motor/tuning/position_on_velocity_tuning.py](big_motor/tuning/position_on_velocity_tuning.py)
+
+A program to aid in the discovery and tuning of motor PID values for position on velocity control.
+It does this by commanding the motor to move repeatedly between two setpoint angles and plots
+the measured response. This uses a Big Motor + Encoder Module connected to Slot1.
+
 
 ## Dual Motor / Bipolar Stepper Module
 
 ### Two Motors
 [dual_motor/two_motors.py](dual_motor/two_motors.py)
 
-How to drive up to 2 motors from a Dual Motor Module connected to Slot1.
+Drive up to 2 motors from a Dual Motor Module connected to Slot1.
 A wave pattern will be played on the attached motors.
 
 
 ### Multiple Motors
 [dual_motor/multiple_motors.py](dual_motor/multiple_motors.py)
 
-How to drive up to 8 motors from a set of Dual Motor Module connected to Slots.
+Drive up to 8 motors from a set of Dual Motor Modules connected to Slots.
 A wave pattern will be played on the attached motors.
 
 
 ### All Motors
 [dual_motor/all_motors.py](dual_motor/all_motors.py)
 
-How to drive up to 12 motors from a set of Dual Motor Modules connected to Slots, using a MotorCluster.
+Drive up to 12 motors from a set of Dual Motor Modules connected to Slots, using a MotorCluster.
 A wave pattern will be played on the attached motors.
+
+
+### Single Stepper
+[dual_motor/single_stepper.py](dual_motor/single_stepper.py)
+
+Drive a stepper motor from a Dual Motor Module connected to Slot1.
+A sequence of movements will be played.
 
 
 ## Dual Switched Output Module
@@ -82,27 +186,26 @@ A wave pattern will be played on the attached motors.
 ### Two Outputs
 [dual_output/two_outputs.py](dual_output/two_outputs.py)
 
-How to control up to 2 powered outputs from a Dual Output Module connected to Slot1.
-Buttons 'A' and 'B' toggle the state of each output.
+Control up to 2 powered outputs from a Dual Output Module connected to Slot1.
 
 
 ### Multiple Outputs
 [dual_output/multiple_outputs.py](dual_output/multiple_outputs.py)
 
-How to drive up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
+Control up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
 A cycling pattern will be played on the attached outputs.
 
 
 ### Actioned Output
 [dual_output/actioned_output.py](dual_output/actioned_output.py)
 
-How to control a powered output from a Dual Output Module connected to Slot1, using a monitor action.
+Control a powered output from a Dual Output Module connected to Slot1, using a monitor action.
 
 
 ### PWM Output
 [dual_output/pwm_output.py](dual_output/pwm_output.py)
 
-How to control a powered output from a Dual Output Module connected to Slot1, using PWM.
+Control a powered output from a Dual Output Module connected to Slot1, using PWM.
 
 
 ## LED Strip Module
@@ -110,14 +213,14 @@ How to control a powered output from a Dual Output Module connected to Slot1, us
 ### Single Strip
 [led_strip/single_strip.py](led_strip/single_strip.py)
 
-How to drive a Neopixel or Dotstar LED strip with a LED Strip Module connected to Slot1.
+Drive a Neopixel or Dotstar LED strip with a LED Strip Module connected to Slot1.
 A cycling rainbow pattern will be played on the attached strip(s).
 
 
 ### Multiple Strips
 [led_strip/multiple_strips.py](led_strip/multiple_strips.py)
 
-How to drive multiple Neopixel or Dotstar LED strips with a set of LED Strip Modules connected to slots.
+Drive multiple Neopixel or Dotstar LED strips with a set of LED Strip Modules connected to slots.
 A cycling rainbow pattern will be played on the attached strips.
 
 
@@ -126,28 +229,28 @@ A cycling rainbow pattern will be played on the attached strips.
 ### Four Servos
 [quad_servo/four_servos.py](quad_servo/four_servos.py)
 
-How to drive up to four servos from a Quad Servo Module connected to Slot1.
+Drive up to four servos from a Quad Servo Module connected to Slot1.
 A wave pattern will be played on the attached servos.
 
 
 ### Multiple Servos
 [quad_servo/multiple_servos.py](quad_servo/multiple_servos.py)
 
-How to drive up to 16 servos from a set of Quad Servo Modules connected to Slots.
+Drive up to 16 servos from a set of Quad Servo Modules connected to Slots.
 A wave pattern will be played on the attached servos.
 
 
 ### All Servos
 [quad_servo/all_servos.py](quad_servo/all_servos.py)
 
-How to drive up to 24 servos from a set of Quad Servo Modules connected to Slots, using a ServoCluster.
+Drive up to 24 servos from a set of Quad Servo Modules connected to Slots, using a ServoCluster.
 A wave pattern will be played on the attached servos.
 
 
 ### Servo Feedback
 [quad_servo/servo_feedback.py](quad_servo/servo_feedback.py)
 
-How to read the analog inputs on Quad Servo Direct modules connected to Slots.
+Read the analog inputs of Quad Servo Direct modules connected to Slots.
 
 
 ## Serial Servo Module

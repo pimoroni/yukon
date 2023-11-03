@@ -4,8 +4,10 @@ from pimoroni_yukon.modules import BenchPowerModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 4 variable outputs from a set of Bench Power Modules connected to Slots.
+Control up to 4 variable outputs from a set of Bench Power Modules connected to Slots.
 A wave pattern will be played on the attached outputs.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

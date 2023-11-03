@@ -5,8 +5,10 @@ from pimoroni_yukon.modules import BigMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive a single motor from a Big Motor + Encoder Module connected to Slot1.
+Drive a single motor from a Big Motor + Encoder Module connected to Slot1.
 A wave pattern will be played on the attached motor, and its speed printed out.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

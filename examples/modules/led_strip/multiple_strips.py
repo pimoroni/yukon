@@ -3,8 +3,10 @@ from pimoroni_yukon.modules import LEDStripModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive multiple Neopixel or Dotstar LED strips with a set of LED Strip Modules connected to slots.
+Drive multiple Neopixel or Dotstar LED strips with a set of LED Strip Modules connected to slots.
 A cycling rainbow pattern will be played on the attached strips.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

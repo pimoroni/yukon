@@ -5,6 +5,8 @@ from breakout_bme280 import BreakoutBME280
 
 """
 Read a BME280 sensor attached to the Expansion header.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

@@ -5,8 +5,10 @@ from pimoroni_yukon.timing import ticks_ms, ticks_add
 from motor import MotorCluster
 
 """
-How to drive up to 6 motors from a set of Big Motor + Encoder Modules connected to Slots, using a MotorCluster.
+Drive up to 6 motors from a set of Big Motor + Encoder Modules connected to Slots, using a MotorCluster.
 A wave pattern will be played on the attached motors.
+
+Press "Boot/User" to exit the program.
 
 The MotorCluster controls the whole set of motors using PIO.
 
@@ -34,6 +36,7 @@ def speed_from_index(index, offset=0.0):
     phase = (((index * WAVE_SCALE) / BigMotorModule.NUM_MOTORS) + offset) * math.pi * 2
     speed = math.sin(phase) * SPEED_EXTENT
     return speed
+
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:

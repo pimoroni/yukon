@@ -4,8 +4,10 @@ from pimoroni_yukon.modules import DualOutputModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
+Control up to 12 powered outputs from a set of Dual Output Modules connected to Slots.
 A cycling pattern will be played on the attached outputs.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

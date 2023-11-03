@@ -3,7 +3,10 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import AudioAmpModule
 
 """
-How to play a sequence of tones out of an Audio Amp Module connected to Slot1.
+Play a sequence of tones out of an Audio Amp Module connected to Slot1.
+
+Press "A" to start or stop the tone song.
+Press "Boot/User" to exit the program.
 """
 
 # This handy list converts notes into frequencies, which you can use with the inventor.play_tone function

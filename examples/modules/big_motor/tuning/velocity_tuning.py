@@ -7,8 +7,7 @@ from pimoroni_yukon.timing import ticks_ms, ticks_add
 """
 A program to aid in the discovery and tuning of motor PID values for velocity control.
 It does this by commanding the motor to drive repeatedly between two setpoint speeds and
-plots the measured response.
-This uses a Big Motor + Encoder Module connected to Slot1.
+plots the measured response. This uses a Big Motor + Encoder Module connected to Slot1.
 
 Press "Boot/User" to exit the program.
 """

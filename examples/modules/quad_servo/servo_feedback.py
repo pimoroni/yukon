@@ -2,7 +2,9 @@ from pimoroni_yukon import Yukon
 from pimoroni_yukon.modules import QuadServoDirectModule
 
 """
-How to read the analog inputs on Quad Servo Direct modules connected to Slots.
+Read the analog inputs of Quad Servo Direct modules connected to Slots.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

@@ -5,8 +5,10 @@ from pimoroni_yukon.timing import ticks_ms, ticks_add
 from servo import ServoCluster
 
 """
-How to drive up to 24 servos from a set of Quad Servo Modules connected to Slots, using a ServoCluster.
+Drive up to 24 servos from a set of Quad Servo Modules connected to Slots, using a ServoCluster.
 A wave pattern will be played on the attached servos.
+
+Press "Boot/User" to exit the program.
 
 The ServoCluster controls the whole set of servos using PIO.
 It also staggers the updates of each servo to reduce peak current draw.

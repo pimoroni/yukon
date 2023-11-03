@@ -3,6 +3,8 @@ from pimoroni_yukon import Yukon
 
 """
 Read Yukon's onboard Buttons.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

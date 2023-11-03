@@ -4,9 +4,10 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import BigMotorModule
 
 """
-A program that profiles the speed of a motor across its PWM duty cycle range using the attached encoder for feedback.
-Note that the returned readings will only be valid for a single input voltage.
+Profile the speed of a motor across its PWM duty cycle range using its attached encoder for feedback.
 This uses a Big Motor + Encoder Module connected to Slot1.
+
+Note that the returned readings will only be valid for a single input voltage.
 """
 
 # Constants

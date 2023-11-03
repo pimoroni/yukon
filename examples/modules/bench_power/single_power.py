@@ -3,8 +3,11 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import BenchPowerModule
 
 """
-How to control the variable output of a Bench Power Module connected to Slot1.
-Use the A and B buttons to increase and decrease the output voltage.
+Control the variable output of a Bench Power Module connected to Slot1.
+
+Press "A" to increase the output voltage.
+Press "B" to decrease the output voltage.
+Press "Boot/User" to exit the program.
 """
 
 # Constants

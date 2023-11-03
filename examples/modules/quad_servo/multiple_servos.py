@@ -4,8 +4,10 @@ from pimoroni_yukon.modules import QuadServoDirectModule, QuadServoRegModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 16 servos from a set of Quad Servo Modules connected to Slots.
+Drive up to 16 servos from a set of Quad Servo Modules connected to Slots.
 A wave pattern will be played on the attached servos.
+
+Press "Boot/User" to exit the program.
 
 To use more servos, or to reduce peak current draw, look at the all_servos.py example.
 """

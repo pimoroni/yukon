@@ -4,8 +4,10 @@ from pimoroni_yukon.modules import DualMotorModule
 from pimoroni_yukon.extras.stepper import OkayStepper
 
 """
-How to drive a stepper motor from a Dual Motor Module connected to Slot1.
+Drive a stepper motor from a Dual Motor Module connected to Slot1.
 A sequence of movements will be played.
+
+Press "Boot/User" to exit the program.
 """
 
 # Put your movements here!

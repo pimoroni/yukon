@@ -7,7 +7,7 @@ from pimoroni_yukon.modules import BigMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive a motor smoothly between random positions, with the help of it's attached encoder and PID control.
+Drive a motor smoothly between random positions, with the help of it's attached encoder and PID control.
 This uses a Big Motor + Encoder Module connected to Slot1.
 
 Press "Boot/User" to exit the program.

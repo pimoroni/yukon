@@ -5,8 +5,10 @@ from pimoroni_yukon.modules import DualMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 2 motors from a Dual Motor Module connected to Slot1.
+Drive up to 2 motors from a Dual Motor Module connected to Slot1.
 A wave pattern will be played on the attached motors.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

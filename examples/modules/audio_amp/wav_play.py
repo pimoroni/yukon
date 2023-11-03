@@ -3,7 +3,11 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import AudioAmpModule
 
 """
-How to play wave files out of an Audio Amp Module connected to Slot1.
+Play wave files out of an Audio Amp Module connected to Slot1.
+
+Press "A" to start the first WAV file, or stop if anything is already playing.
+Press "B" to start the second WAV file, or stop if anything is already playing.
+Press "Boot/User" to exit the program.
 """
 
 # Constants

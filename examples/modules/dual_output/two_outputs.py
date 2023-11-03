@@ -3,8 +3,11 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import DualOutputModule
 
 """
-How to control up to 2 powered outputs from a Dual Output Module connected to Slot1.
-Buttons 'A' and 'B' toggle the state of each output.
+Control up to 2 powered outputs from a Dual Output Module connected to Slot1.
+
+Press "A" to toggle the state of Output 1.
+Press "B" to toggle the state of Output 2.
+Press "Boot/User" to exit the program.
 """
 
 # Constants

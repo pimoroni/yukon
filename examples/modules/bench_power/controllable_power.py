@@ -5,8 +5,10 @@ from pimoroni_yukon.modules import BenchPowerModule, ProtoPotModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to control the variable output of a Bench Power Module connected to Slot1.
+Control the variable output of a Bench Power Module connected to Slot1.
 A potentiometer on a Proto Module connected to Slot2 is used for input.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

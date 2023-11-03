@@ -4,7 +4,9 @@ from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import DualOutputModule
 
 """
-How to control a powered output from a Dual Output Module connected to Slot1, using PWM.
+Control a powered output from a Dual Output Module connected to Slot1, using PWM.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants

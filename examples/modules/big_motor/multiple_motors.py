@@ -4,8 +4,10 @@ from pimoroni_yukon.modules import BigMotorModule
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-How to drive up to 4 motors from a set of Big Motor + Encoder Modules connected to Slots.
+Drive up to 4 motors from a set of Big Motor + Encoder Modules connected to Slots.
 A wave pattern will be played on the attached motors, and their speeds printed out.
+
+Press "Boot/User" to exit the program.
 
 To use more motors, look at the all_motors_no_encoders.py example.
 """

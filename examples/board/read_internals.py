@@ -3,6 +3,8 @@ from pimoroni_yukon import Yukon
 
 """
 Read the internal sensors of Yukon.
+
+Press "Boot/User" to exit the program.
 """
 
 # Constants
