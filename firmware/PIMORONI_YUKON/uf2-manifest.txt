@@ -1,5 +1,6 @@
 ../*.py
 ../lib/*.py
 ../lib/pimoroni_yukon/*.py
+../lib/pimoroni_yukon/extras/*.py
 ../lib/pimoroni_yukon/modules/*.py
 ../lib/pimoroni_yukon/protocols/*.py
