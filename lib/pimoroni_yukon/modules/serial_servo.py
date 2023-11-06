@@ -8,10 +8,28 @@ from ucollections import OrderedDict
 from pimoroni_yukon.errors import OverTemperatureError
 
 
+class Duplexer:
+    def __init__(self, tx_to_data, rx_to_data, active_low=False):
+        self.__tx_to_data_en = tx_to_data
+        self.__data_to_rx_en = rx_to_data
+        self.__active_low = active_low
+
+    def reset(self):
+        self.__tx_to_data_en.init(Pin.OUT, value=self.__active_low)  # Active low
+        self.__data_to_rx_en.init(Pin.OUT, value=self.__active_low)  # Active low
+
+    def send_on_data(self):
+        self.__data_to_rx_en.value(self.__active_low)
+        self.__tx_to_data_en.value(not self.__active_low)
+
+    def receive_on_data(self):
+        self.__tx_to_data_en.value(self.__active_low)
+        self.__data_to_rx_en.value(not self.__active_low)
+
+
 class SerialServoModule(YukonModule):
     NAME = "Serial Bus Servo"
     DEFAULT_BAUDRATE = 115200
-    TEMPERATURE_THRESHOLD = 50.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
@@ -33,9 +51,7 @@ class SerialServoModule(YukonModule):
         except ValueError as e:
             raise type(e)("UART perhiperal already in use. Check that a module in another slot does not share the same UART perhiperal") from None
 
-        # Create the direction pin objects
-        self.__tx_to_data_en = slot.FAST3
-        self.__data_to_rx_en = slot.FAST4
+        self.duplexer = Duplexer(tx_to_data=slot.FAST3, rx_to_data=slot.FAST4, active_low=True)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
@@ -44,50 +60,4 @@ class SerialServoModule(YukonModule):
         while self.uart.any():
             self.uart.read()
 
-        self.__tx_to_data_en.init(Pin.OUT, value=True)  # Active low
-        self.__data_to_rx_en.init(Pin.OUT, value=True)  # Active low
-
-    def send_on_data(self):
-        self.__data_to_rx_en.value(True)
-        self.__tx_to_data_en.value(False)
-
-    def receive_on_data(self):
-        self.__tx_to_data_en.value(True)
-        self.__data_to_rx_en.value(False)
-
-    def read_temperature(self):
-        return self.__read_adc2_as_temp()
-
-    def monitor(self):
-        temperature = self.read_temperature()
-        if temperature > self.TEMPERATURE_THRESHOLD:
-            raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the limit of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
-
-        # Run some user action based on the latest readings
-        if self.__monitor_action_callback is not None:
-            self.__monitor_action_callback(temperature)
-
-        self.__max_temperature = max(temperature, self.__max_temperature)
-        self.__min_temperature = min(temperature, self.__min_temperature)
-        self.__avg_temperature += temperature
-
-        self.__count_avg += 1
-
-    def get_readings(self):
-        return OrderedDict({
-            "T_max": self.__max_temperature,
-            "T_min": self.__min_temperature,
-            "T_avg": self.__avg_temperature
-        })
-
-    def process_readings(self):
-        if self.__count_avg > 0:
-            self.__avg_temperature /= self.__count_avg
-            self.__count_avg = 0    # Clear the count to prevent process readings acting more than once
-
-    def clear_readings(self):
-        self.__max_temperature = float('-inf')
-        self.__min_temperature = float('inf')
-        self.__avg_temperature = 0
-
-        self.__count_avg = 0
+        self.duplexer.reset()

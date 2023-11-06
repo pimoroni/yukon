@@ -44,6 +44,8 @@ SERVO_LED_CTRL_READ = Command(34, 3)
 SERVO_LED_ERROR_WRITE = Command(35, 4)
 SERVO_LED_ERROR_READ = Command(36, 3)
 
+BROADCAST_ID = 0xFE
+
 
 def CheckSum(buffer):
     checksum = 0
@@ -65,7 +67,7 @@ def AppendCheckSum(buffer):
     buffer[last] = (~checksum) & 0xFF
 
 
-def SerialServoMove(uart, id, position, time):
+def SerialServoMove(uart, duplexer, id, position, time):
     if position < 0:
         position = 0
     if position > 1000:
@@ -84,7 +86,7 @@ def SerialServoMove(uart, id, position, time):
     uart.write(buffer)
 
 
-def SerialServoStopMove(uart, id):
+def SerialServoStopMove(uart, duplexer, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_MOVE_STOP.length)
     struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -96,7 +98,7 @@ def SerialServoStopMove(uart, id):
     uart.write(buffer)
 
 
-def SerialServoSetID(uart, old_id, new_id):
+def SerialServoSetID(uart, duplexer, old_id, new_id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_ID_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -109,7 +111,7 @@ def SerialServoSetID(uart, old_id, new_id):
     uart.write(buffer)
 
 
-def SerialServoSetMode(uart, id, mode, speed):
+def SerialServoSetMode(uart, duplexer, id, mode, speed):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_OR_MOTOR_MODE_WRITE.length)
     struct.pack_into("<BBBBBBBH", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -124,7 +126,7 @@ def SerialServoSetMode(uart, id, mode, speed):
     uart.write(buffer)
 
 
-def SerialServoLoad(uart, id):
+def SerialServoLoad(uart, duplexer, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -137,7 +139,7 @@ def SerialServoLoad(uart, id):
     uart.write(buffer)
 
 
-def SerialServoUnload(uart, id):
+def SerialServoUnload(uart, duplexer, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -150,7 +152,7 @@ def SerialServoUnload(uart, id):
     uart.write(buffer)
 
 
-def SerialServoActivateLED(uart, id):
+def SerialServoActivateLED(uart, duplexer, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -164,7 +166,7 @@ def SerialServoActivateLED(uart, id):
     uart.write(buffer)
 
 
-def SerialServoDeactivateLED(uart, id):
+def SerialServoDeactivateLED(uart, duplexer, id):
     buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
     struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -178,7 +180,7 @@ def SerialServoDeactivateLED(uart, id):
     uart.write(buffer)
 
 
-def SerialServoReceiveHandle(uart):
+def SerialServoReceiveHandle(uart, duplexer):
     frameStarted = False
     frameCount = 0
     dataCount = 0
@@ -220,7 +222,7 @@ def SerialServoReceiveHandle(uart):
     return None
 
 
-def WaitForReceive(uart, id, timeout):
+def WaitForReceive(uart, duplexer, id, timeout):
     ms = 1000.0 * timeout + 0.5
     end_ms = ticks_add(ticks_ms(), int(ms))
 
@@ -230,8 +232,8 @@ def WaitForReceive(uart, id, timeout):
             raise TimeoutError(f"Serial servo #{id} did not reply within the set time")
 
 
-def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
-    send_func()
+def SerialServoReadTemperature(uart, duplexer, id, timeout=1.0):
+    duplexer.send_on_data()
 
     ret = 0
 
@@ -251,22 +253,22 @@ def SerialServoReadTemperature(uart, send_func, rec_func, id, timeout=1.0):
     time.sleep_us(500)
 
     try:
-        rec_func()
-        WaitForReceive(uart, id, timeout)
+        duplexer.receive_on_data()
+        WaitForReceive(uart, duplexer, id, timeout)
 
-        returned_buffer = SerialServoReceiveHandle(uart)
+        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
         if returned_buffer is not None:
             ret = struct.unpack("<B", returned_buffer)[0]
         else:
             ret = -1
     finally:
-        send_func()
+        duplexer.send_on_data()
 
     return ret
 
 
-def SerialServoReadID(uart, send_func, rec_func, id, timeout=1.0):
-    send_func()
+def SerialServoReadID(uart, duplexer, id, timeout=1.0):
+    duplexer.send_on_data()
 
     ret = 0
 
@@ -286,22 +288,22 @@ def SerialServoReadID(uart, send_func, rec_func, id, timeout=1.0):
     time.sleep_us(500)
 
     try:
-        rec_func()
-        WaitForReceive(uart, id, timeout)
+        duplexer.receive_on_data()
+        WaitForReceive(uart, duplexer, id, timeout)
 
-        returned_buffer = SerialServoReceiveHandle(uart)
+        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
         if returned_buffer is not None:
             ret = struct.unpack("<B", returned_buffer)[0]
         else:
             ret = -1
     finally:
-        send_func()
+        duplexer.send_on_data()
 
     return ret
 
 
-def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
-    send_func()
+def SerialServoReadPosition(uart, duplexer, id, timeout=1.0):
+    duplexer.send_on_data()
 
     ret = 0
 
@@ -321,22 +323,22 @@ def SerialServoReadPosition(uart, send_func, rec_func, id, timeout=1.0):
     time.sleep_us(500)
 
     try:
-        rec_func()
-        WaitForReceive(uart, id, timeout)
+        duplexer.receive_on_data()
+        WaitForReceive(uart, duplexer, id, timeout)
 
-        returned_buffer = SerialServoReceiveHandle(uart)
+        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
         if returned_buffer is not None:
             ret = struct.unpack("<H", returned_buffer)[0]
         else:
             ret = -1
     finally:
-        send_func()
+        duplexer.send_on_data()
 
     return ret
 
 
-def SerialServoReadVin(uart, send_func, rec_func, id, timeout=1.0):
-    send_func()
+def SerialServoReadVin(uart, duplexer, id, timeout=1.0):
+    duplexer.send_on_data()
 
     ret = 0
 
@@ -356,15 +358,318 @@ def SerialServoReadVin(uart, send_func, rec_func, id, timeout=1.0):
     time.sleep_us(500)
 
     try:
-        rec_func()
-        WaitForReceive(uart, id, timeout)
+        duplexer.receive_on_data()
+        WaitForReceive(uart, duplexer, id, timeout)
 
-        returned_buffer = SerialServoReceiveHandle(uart)
+        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
         if returned_buffer is not None:
             ret = struct.unpack("<H", returned_buffer)[0]
         else:
             ret = -2048
     finally:
-        send_func()
+        duplexer.send_on_data()
 
     return ret
+
+from machine import Pin
+
+class LXServo:
+    def __init__(self, id, uart, duplexer, debug_pin=None):
+        if id == BROADCAST_ID:
+            raise ValueError("Cannot create an LXServo with the broadcast id. use the `LXServo.broadcast_` functions instead.")
+
+        self.__id = id
+        self.__uart = uart
+        self.__duplexer = duplexer
+
+        self.__debug_pin = debug_pin
+        if self.__debug_pin is not None:
+            self.__debug_pin.init(Pin.OUT)
+
+    @property
+    def id(self):
+        return self.__id
+
+    @staticmethod
+    def detect(id, uart, duplexer, timeout=1.0):
+        try:
+            SerialServoReadID(uart, duplexer, id, timeout)
+            return True
+        except TimeoutError:
+            return False
+
+    def move(self, angle, duration):
+        position = int(((angle / 90) * 360) + 500)
+        position = min(max(position, 0), 1000)
+
+        ms = int(1000.0 * duration + 0.5)
+        if ms < 0 or ms > 30000:
+            raise ValueError("duration out of range. Expected 0.0s to 30.0s")
+
+        self.__send(SERVO_MOVE_TIME_WRITE, "HH", position, ms)
+
+    def read_move(self, timeout=1.0):
+        self.__send(SERVO_MOVE_TIME_READ)
+        self.__wait_for_send()
+        # TODO
+        return self.__receive("HH", timeout)
+
+    def queue_move(self, position, time):
+        if position < 0:
+            position = 0
+        if position > 1000:
+            position = 1000
+
+        # TODO
+        self.__send(SERVO_MOVE_TIME_WAIT_WRITE, "HH", position, time)
+
+    def read_queued(self, timeout=1.0):
+        self.__send(SERVO_MOVE_TIME_WAIT_READ)
+        self.__wait_for_send()
+        # TODO
+        return self.__receive("HH", timeout)
+
+    def start_queued(self):
+        self.__send(SERVO_MOVE_START)
+
+    def stop(self):
+        self.__send(SERVO_MOVE_STOP)
+
+    def set_id(self, new_id):
+        self.__send(SERVO_ID_WRITE, "B", new_id)
+        self.__id = new_id
+
+    def read_id(self, timeout=1.0):
+        self.__send(SERVO_ID_READ)
+        self.__wait_for_send()
+        # TODO
+        return self.__receive("B", timeout)
+
+    def adjust_angle_offset(self, amount):
+        # TODO
+        self.__send(SERVO_ANGLE_OFFSET_ADJUST, "H", amount)
+
+    def set_angle_offset(self, new_offset):
+        # TODO
+        self.__send(SERVO_ANGLE_OFFSET_WRITE, "H", new_offset)
+
+    def read_angle_offset(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_ANGLE_OFFSET_READ)
+        self.__wait_for_send()
+        return self.__receive("B", timeout)
+
+    def set_angle_limit(self, new_limit):
+        # TODO
+        self.__send(SERVO_ANGLE_LIMIT_WRITE, "H", new_limit)
+
+    def read_angle_limit(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_ANGLE_LIMIT_READ)
+        self.__wait_for_send()
+        return self.__receive("B", timeout)
+
+    def set_voltage_limit(self, new_limit):
+        # TODO
+        self.__send(SERVO_VIN_LIMIT_WRITE, "H", new_limit)
+
+    def read_voltage_limit(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_VIN_LIMIT_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def set_temperature_limit(self, new_limit):
+        # TODO
+        self.__send(SERVO_TEMP_MAX_LIMIT_WRITE, "H", new_limit)
+
+    def read_temperature_limit(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_TEMP_MAX_LIMIT_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def read_temperature(self, timeout=1.0):
+        self.__send(SERVO_TEMP_READ)
+        self.__wait_for_send()
+        return self.__receive("B", timeout)
+
+    def read_voltage(self, timeout=1.0):
+        self.__send(SERVO_VIN_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def read_position(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_POS_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def set_mode(self, mode, speed):
+        # TODO
+        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBH", mode, 0, speed)
+
+    def read_mode(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_OR_MOTOR_MODE_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def load(self):
+        # TODO
+        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 1)
+
+    def unload(self):
+        # TODO
+        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 0)
+
+    def read_loaded(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_LOAD_OR_UNLOAD_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def led_on(self):
+        # TODO
+        self.__send(SERVO_LED_CTRL_WRITE, "B", 1)
+
+    def led_off(self):
+        # TODO
+        self.__send(SERVO_LED_CTRL_WRITE, "B", 0)
+
+    def read_led(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_LED_CTRL_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    def set_led_error(self, value):
+        # TODO
+        self.__send(SERVO_LED_ERROR_WRITE, "B", 1)
+
+    def read_led_error(self, timeout=1.0):
+        # TODO
+        self.__send(SERVO_LED_ERROR_READ)
+        self.__wait_for_send()
+        return self.__receive("H", timeout)
+
+    @staticmethod
+    def __checksum(buffer):
+        checksum = 0
+        length = buffer[FRAME_LENGTH_INDEX]
+        last = length + 2
+        for i in range(2, last):
+            checksum += buffer[i]
+
+        return (~checksum) & 0xFF
+
+    def __send(self, command, fmt="", *data):
+        if self.__debug_pin is not None:
+            self.__debug_pin.on()
+
+        buffer = bytearray(FRAME_HEADER_LENGTH + command.length)
+        struct.pack_into("<BBBBB" + fmt + "B", buffer, 0,  # fmt, buffer, offset
+                        FRAME_HEADER,
+                        FRAME_HEADER,
+                        self.__id,
+                        command.length,
+                        command.value,
+                        *data,
+                        0)
+
+        if self.__debug_pin is not None:
+            self.__debug_pin.off()
+
+        buffer[-1] = LXServo.__checksum(buffer)
+
+        # Switch to sending data
+        self.__duplexer.send_on_data()
+
+        # Clear out the receive buffer since we are now in send mode
+        while self.__uart.any():
+            self.__uart.read()
+
+        # Write out the previously generated buffer
+        self.__uart.write(buffer)
+
+    def __wait_for_send(self):
+        # Wait for all the data to be sent to the buffer
+        while not self.__uart.txdone():
+            pass
+
+        # Wait a short time to let the final bits finish transmitting
+        time.sleep_us(1000000 // 115200)
+
+
+    def __handle_receive(self):
+        frameStarted = False
+        frameCount = 0
+        dataCount = 0
+        dataLength = 2
+        rxBuf = 0
+        recvBuf = bytearray(32)
+
+        while self.__uart.any() > 0:
+            if self.__debug_pin is not None:
+                self.__debug_pin.on()
+            rxBuf = self.__uart.read(1)[0]
+            if self.__debug_pin is not None:
+                self.__debug_pin.off()
+            # print(hex(rxBuf), end=", ")
+
+            if not frameStarted:
+                if rxBuf == FRAME_HEADER:
+                    frameCount += 1
+                    if frameCount == 2:
+                        frameCount = 0
+                        frameStarted = True
+                        dataCount = 1
+                else:
+                    frameStarted = False
+                    dataCount = 0
+                    frameCount = 0
+
+            if frameStarted:
+                recvBuf[dataCount] = rxBuf
+                if dataCount == 3:
+                    dataLength = recvBuf[dataCount]
+                    if dataLength < 3 or dataCount > 7:
+                        dataLength = 2
+                        frameStarted = False
+                dataCount += 1
+                if dataCount == dataLength + 3:
+                    if LXServo.__checksum(recvBuf) == recvBuf[dataCount - 1]:
+                        # print("Check SUM OK!!", end="\n\n")
+                        frameStarted = False
+                        return recvBuf[5:5 + dataLength - 3]
+            time.sleep_us(100)
+
+        return None
+
+    def __wait_for_receive(self, timeout):
+        ms = 1000.0 * timeout + 0.5
+        end_ms = ticks_add(ticks_ms(), int(ms))
+
+        while self.__uart.any() == 0:
+            remaining_ms = ticks_diff(end_ms, ticks_ms())
+            if remaining_ms <= 0:
+                self.__duplexer.send_on_data()
+                raise TimeoutError(f"Serial servo #{self.__id} did not reply within the set time")
+
+    def __receive(self, fmt="", timeout=1.0):
+        try:
+            self.__duplexer.receive_on_data()
+            self.__wait_for_receive(timeout)
+
+            returned_buffer = self.__handle_receive()
+            if returned_buffer is not None:
+                if len(fmt) == 1:
+                    ret = struct.unpack("<" + fmt, returned_buffer)[0]
+                else:
+                    ret = struct.unpack("<" + fmt, returned_buffer)
+            else:
+                ret = None
+        finally:
+            self.__duplexer.send_on_data()
+
+        return ret
