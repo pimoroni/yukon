@@ -4,8 +4,6 @@
 
 from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
 from machine import Pin, UART
-from ucollections import OrderedDict
-from pimoroni_yukon.errors import OverTemperatureError
 
 
 class Duplexer:
