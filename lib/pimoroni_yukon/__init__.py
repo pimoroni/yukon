@@ -469,6 +469,16 @@ class Yukon:
 
         self.__leds[switch].value(value)
 
+    def is_led_on(self, switch):
+        if switch is self.SWITCH_A_NAME:
+            switch = self.SWITCH_A
+        elif switch is self.SWITCH_B_NAME:
+            switch = self.SWITCH_B
+        elif switch < 0 or switch > 1:
+            raise ValueError("switch out of range. Expected 'A' or 'B', or SWITCH_A (0) or SWITCH_B (1)")
+
+        return self.__leds[switch].value() == 1
+
     def enable_main_output(self):
         if self.is_main_output_enabled() is False:
             logging.info("> Checking input voltage ...")
