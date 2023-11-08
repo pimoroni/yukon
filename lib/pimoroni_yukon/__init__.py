@@ -116,7 +116,7 @@ class Yukon:
 
     DEFAULT_VOLTAGE_LIMIT = 17.2
     VOLTAGE_LOWER_LIMIT = 4.8
-    VOLTAGE_ZERO_LEVEL = 0.05
+    VOLTAGE_ZERO_LEVEL = 0.2
     VOLTAGE_SHORT_LEVEL = 0.5
     DEFAULT_CURRENT_LIMIT = 20
     DEFAULT_TEMPERATURE_LIMIT = 80
@@ -493,7 +493,7 @@ class Yukon:
                 raise UnderVoltageError("[Yukon] No input voltage detected! Make sure power is being provided to the XT-30 (yellow) connector")
 
             if voltage_in < self.VOLTAGE_LOWER_LIMIT:
-                raise UnderVoltageError(f"[Yukon] Input voltage below minimum operating level of {self.VOLTAGE_LOWER_LIMIT}V! Aborting enable output")
+                raise UnderVoltageError(f"[Yukon] Input voltage of {voltage_in}V below minimum operating level of {self.VOLTAGE_LOWER_LIMIT}V! Aborting enable output")
 
             start = time.ticks_us()
 
