@@ -7,7 +7,7 @@ from machine import Pin
 from ucollections import OrderedDict
 from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
 from pimoroni_yukon.errors import OverTemperatureError
-from pimoroni_yukon.extras.player import WavPlayer
+from pimoroni_yukon.devices.audio import WavPlayer
 
 # PAGE 0 Regs
 PAGE = 0x00             # Device Page Section 8.9.5

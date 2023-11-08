@@ -10,6 +10,13 @@ from pimoroni_yukon.errors import TimeoutError
 import pimoroni_yukon.logging as logging
 from ucollections import namedtuple
 
+"""
+Classes and functions for controlling LewanSoul/HiWonder
+LX servos (tested on LX-16A and LX-224HV) via Yukon's
+Serial Bus Servo module.
+"""
+
+
 Command = namedtuple("Command", ("value", "length"))
 
 # LX Servo Protocol
@@ -69,7 +76,7 @@ def checksum(buffer):
 def send(id, uart, duplexer, command, fmt="", *data):
     # Create a buffer of the correct length
     buffer = bytearray(FRAME_HEADER_LENGTH + command.length)
-    
+
     # Populate the buffer with the required header values and command data
     struct.pack_into("<BBBBB" + fmt + "B", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
@@ -119,7 +126,7 @@ def handle_receive(uart):
             # Only look for header bytes
             if rx_byte == FRAME_HEADER:
                 header_count += 1
-                
+
                 # Have to header bytes been received?
                 if header_count == 2:
                     header_count = 0
@@ -133,7 +140,7 @@ def handle_receive(uart):
         # Are we inside the frame?
         if frame_started:
             rx_buffer[data_count] = rx_byte  # Add the byte to the buffer
-            
+
             # Extract the frame length from the data, exiting if it contradicts
             if data_count == 3:
                 data_length = rx_buffer[data_count]
@@ -142,7 +149,7 @@ def handle_receive(uart):
                     frame_started = False
 
             data_count += 1
-            
+
             # Have we reached the expected end of the received data?
             if data_count == data_length + 3:
                 # Does the checksum we calculate match what was received?
@@ -167,7 +174,7 @@ def receive(id, uart, duplexer, timeout, fmt=""):
     # Wait for data to start coming in
     while uart.any() == 0:
         remaining_ms = ticks_diff(end_ms, ticks_ms())
-        
+
         # Has the timeout been reached?
         if remaining_ms <= 0:
             duplexer.send_on_data()     # Switch back to send mode before throwing the error
@@ -175,12 +182,12 @@ def receive(id, uart, duplexer, timeout, fmt=""):
 
     # Handle the received data
     data_buffer = handle_receive(uart)
-    
+
     # Was valid data received?
     data = None
     if data_buffer is not None:
         data = struct.unpack("<" + fmt, data_buffer)
-        
+
         # If there is only one piece of data expected, extract it
         if len(fmt) == 1:
             data = data[0]

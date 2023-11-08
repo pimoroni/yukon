@@ -1,7 +1,7 @@
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT1 as SLOT
 from pimoroni_yukon.modules import DualMotorModule
-from pimoroni_yukon.extras.stepper import OkayStepper
+from pimoroni_yukon.devices.stepper import OkayStepper
 
 """
 Drive a stepper motor from a Dual Motor Module connected to Slot1.
