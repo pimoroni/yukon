@@ -218,6 +218,7 @@ verify_and_initialise(allow_unregistered : bool | int | SLOT | list | tuple,
 ## Interaction ##
 is_pressed(switch : int | string) -> bool
 is_boot_pressed() -> bool
+is_led_on(switch: int | string) -> bool
 set_led(switch : int | string, value : bool) -> None
 
 ## Power Control ##

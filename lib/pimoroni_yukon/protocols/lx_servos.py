@@ -17,6 +17,7 @@ FRAME_HEADER = 0x55
 FRAME_HEADER_LENGTH = 3
 FRAME_LENGTH_INDEX = 3
 BROADCAST_ID = 0xFE
+BAUD_RATE = 115200
 
 SERVO_MOVE_TIME_WRITE = Command(1, 7)
 SERVO_MOVE_TIME_READ = Command(2, 3)
@@ -48,7 +49,7 @@ SERVO_LED_ERROR_WRITE = Command(35, 4)
 SERVO_LED_ERROR_READ = Command(36, 3)
 
 
-def CheckSum(buffer):
+def checksum(buffer):
     checksum = 0
     length = buffer[FRAME_LENGTH_INDEX]
     last = length + 2
@@ -58,130 +59,51 @@ def CheckSum(buffer):
     return (~checksum) & 0xFF
 
 
-def AppendCheckSum(buffer):
-    checksum = 0
-    length = buffer[FRAME_LENGTH_INDEX]
-    last = length + 2
-    for i in range(2, last):
-        checksum += buffer[i]
-
-    buffer[last] = (~checksum) & 0xFF
-
-
-def SerialServoMove(uart, duplexer, id, position, time):
-    if position < 0:
-        position = 0
-    if position > 1000:
-        position = 1000
-
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_MOVE_TIME_WRITE.length)
-    struct.pack_into("<BBBBBHH", buffer, 0,  # fmt, buffer, offset
+def send(id, uart, duplexer, command, fmt="", *data):
+    buffer = bytearray(FRAME_HEADER_LENGTH + command.length)
+    struct.pack_into("<BBBBB" + fmt + "B", buffer, 0,  # fmt, buffer, offset
                      FRAME_HEADER,
                      FRAME_HEADER,
                      id,
-                     SERVO_MOVE_TIME_WRITE.length,
-                     SERVO_MOVE_TIME_WRITE.value,
-                     position,
-                     time)
-    AppendCheckSum(buffer)
-    uart.write(buffer)
-
-
-def SerialServoStopMove(uart, duplexer, id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_MOVE_STOP.length)
-    struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_MOVE_STOP.length,
-                     SERVO_MOVE_STOP.value)
-    AppendCheckSum(buffer)
-    uart.write(buffer)
-
-
-def SerialServoSetID(uart, duplexer, old_id, new_id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_ID_WRITE.length)
-    struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     old_id,
-                     SERVO_ID_WRITE.length,
-                     SERVO_ID_WRITE.value,
-                     new_id)
-    AppendCheckSum(buffer)
-    uart.write(buffer)
-
-
-def SerialServoSetMode(uart, duplexer, id, mode, speed):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_OR_MOTOR_MODE_WRITE.length)
-    struct.pack_into("<BBBBBBBH", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_OR_MOTOR_MODE_WRITE.length,
-                     SERVO_OR_MOTOR_MODE_WRITE.value,
-                     mode,
-                     0,
-                     speed)
-    AppendCheckSum(buffer)
-    uart.write(buffer)
-
-
-def SerialServoLoad(uart, duplexer, id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
-    struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_LOAD_OR_UNLOAD_WRITE.length,
-                     SERVO_LOAD_OR_UNLOAD_WRITE.value,
-                     1)
-    AppendCheckSum(buffer)
-    uart.write(buffer)
-
-
-def SerialServoUnload(uart, duplexer, id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LOAD_OR_UNLOAD_WRITE.length)
-    struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_LOAD_OR_UNLOAD_WRITE.length,
-                     SERVO_LOAD_OR_UNLOAD_WRITE.value,
+                     command.length,
+                     command.value,
+                     *data,
                      0)
-    AppendCheckSum(buffer)
+
+    buffer[-1] = checksum(buffer)
+
+    # Switch to sending data
+    duplexer.send_on_data()
+
+    # Clear out the receive buffer since we are now in send mode
+    while uart.any():
+        uart.read()
+
+    # Write out the previously generated buffer
     uart.write(buffer)
 
 
-def SerialServoActivateLED(uart, duplexer, id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
-    struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_LED_CTRL_WRITE.length,
-                     SERVO_LED_CTRL_WRITE.value,
-                     1)
-    AppendCheckSum(buffer)
+def wait_for_send(uart):
+    # Wait for all the data to be sent from the buffer
+    while not uart.txdone():
+        pass
 
-    uart.write(buffer)
+    # Wait a short time to let the final bits finish transmitting
+    time.sleep_us(1000000 // BAUD_RATE)
 
 
-def SerialServoDeactivateLED(uart, duplexer, id):
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_LED_CTRL_WRITE.length)
-    struct.pack_into("<BBBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_LED_CTRL_WRITE.length,
-                     SERVO_LED_CTRL_WRITE.value,
-                     0)
-    AppendCheckSum(buffer)
+def wait_for_receive(id, uart, duplexer, timeout):
+    ms = 1000.0 * timeout + 0.5
+    end_ms = ticks_add(ticks_ms(), int(ms))
 
-    uart.write(buffer)
+    while uart.any() == 0:
+        remaining_ms = ticks_diff(end_ms, ticks_ms())
+        if remaining_ms <= 0:
+            duplexer.send_on_data()
+            raise TimeoutError(f"Serial servo #{id} did not reply within the expected time")
 
 
-def SerialServoReceiveHandle(uart, duplexer):
+def handle_receive(uart):
     frameStarted = False
     frameCount = 0
     dataCount = 0
@@ -192,7 +114,7 @@ def SerialServoReceiveHandle(uart, duplexer):
     while uart.any() > 0:
         rxBuf = uart.read(1)[0]
         # print(hex(rxBuf), end=", ")
-        time.sleep_us(100)
+
         if not frameStarted:
             if rxBuf == FRAME_HEADER:
                 frameCount += 1
@@ -214,159 +136,30 @@ def SerialServoReceiveHandle(uart, duplexer):
                     frameStarted = False
             dataCount += 1
             if dataCount == dataLength + 3:
-                if CheckSum(recvBuf) == recvBuf[dataCount - 1]:
+                if checksum(recvBuf) == recvBuf[dataCount - 1]:
                     # print("Check SUM OK!!", end="\n\n")
                     frameStarted = False
                     return recvBuf[5:5 + dataLength - 3]
+        time.sleep_us(100)
 
-    # print()
     return None
 
 
-def WaitForReceive(uart, duplexer, id, timeout):
-    ms = 1000.0 * timeout + 0.5
-    end_ms = ticks_add(ticks_ms(), int(ms))
-
-    while uart.any() == 0:
-        remaining_ms = ticks_diff(end_ms, ticks_ms())
-        if remaining_ms <= 0:
-            raise TimeoutError(f"Serial servo #{id} did not reply within the set time")
-
-
-def SerialServoReadTemperature(uart, duplexer, id, timeout=1.0):
-    duplexer.send_on_data()
-
-    ret = 0
-
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_TEMP_READ.length)
-    struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_TEMP_READ.length,
-                     SERVO_TEMP_READ.value)
-    AppendCheckSum(buffer)
-
-    while uart.any():
-        uart.read()
-
-    uart.write(buffer)
-    time.sleep_us(500)
+def receive(id, uart, duplexer, timeout, fmt=""):
+    wait_for_send(uart)
 
     try:
         duplexer.receive_on_data()
-        WaitForReceive(uart, duplexer, id, timeout)
+        wait_for_receive(id, uart, duplexer, timeout)
 
-        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
+        returned_buffer = handle_receive(uart)
         if returned_buffer is not None:
-            ret = struct.unpack("<B", returned_buffer)[0]
+            if len(fmt) == 1:
+                ret = struct.unpack("<" + fmt, returned_buffer)[0]
+            else:
+                ret = struct.unpack("<" + fmt, returned_buffer)
         else:
-            ret = -1
-    finally:
-        duplexer.send_on_data()
-
-    return ret
-
-
-def SerialServoReadID(uart, duplexer, id, timeout=1.0):
-    duplexer.send_on_data()
-
-    ret = 0
-
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_ID_READ.length)
-    struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_ID_READ.length,
-                     SERVO_ID_READ.value)
-    AppendCheckSum(buffer)
-
-    while uart.any():
-        uart.read()
-
-    uart.write(buffer)
-    time.sleep_us(500)
-
-    try:
-        duplexer.receive_on_data()
-        WaitForReceive(uart, duplexer, id, timeout)
-
-        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
-        if returned_buffer is not None:
-            ret = struct.unpack("<B", returned_buffer)[0]
-        else:
-            ret = -1
-    finally:
-        duplexer.send_on_data()
-
-    return ret
-
-
-def SerialServoReadPosition(uart, duplexer, id, timeout=1.0):
-    duplexer.send_on_data()
-
-    ret = 0
-
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_POS_READ.length)
-    struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_POS_READ.length,
-                     SERVO_POS_READ.value)
-    AppendCheckSum(buffer)
-
-    while uart.any():
-        uart.read()
-
-    uart.write(buffer)
-    time.sleep_us(500)
-
-    try:
-        duplexer.receive_on_data()
-        WaitForReceive(uart, duplexer, id, timeout)
-
-        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
-        if returned_buffer is not None:
-            ret = struct.unpack("<H", returned_buffer)[0]
-        else:
-            ret = -1
-    finally:
-        duplexer.send_on_data()
-
-    return ret
-
-
-def SerialServoReadVin(uart, duplexer, id, timeout=1.0):
-    duplexer.send_on_data()
-
-    ret = 0
-
-    buffer = bytearray(FRAME_HEADER_LENGTH + SERVO_VIN_READ.length)
-    struct.pack_into("<BBBBB", buffer, 0,  # fmt, buffer, offset
-                     FRAME_HEADER,
-                     FRAME_HEADER,
-                     id,
-                     SERVO_VIN_READ.length,
-                     SERVO_VIN_READ.value)
-    AppendCheckSum(buffer)
-
-    while uart.any():
-        uart.read()
-
-    uart.write(buffer)
-    time.sleep_us(500)
-
-    try:
-        duplexer.receive_on_data()
-        WaitForReceive(uart, duplexer, id, timeout)
-
-        returned_buffer = SerialServoReceiveHandle(uart, duplexer)
-        if returned_buffer is not None:
-            ret = struct.unpack("<H", returned_buffer)[0]
-        else:
-            ret = -2048
+            ret = None
     finally:
         duplexer.send_on_data()
 
@@ -382,36 +175,30 @@ class LXServo:
     OVER_VOLTAGE = 0b010
     OVER_LOADED = 0b100
 
-    def __init__(self, id, uart, duplexer, debug_pin=None):
+    def __init__(self, id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT, debug_pin=None):
         if id < 0 or id > BROADCAST_ID:
             raise ValueError(f"id out of range. Expected 0 to {BROADCAST_ID}")
+
+        if timeout <= 0:
+            raise ValueError("timeout out or range. Expected greater than 0")
 
         self.__id = id
         self.__uart = uart
         self.__duplexer = duplexer
+        self.__timeout = timeout
 
         self.__debug_pin = debug_pin
         if self.__debug_pin is not None:
             self.__debug_pin.init(Pin.OUT)
 
-        if self.__id == BROADCAST_ID:
-            self.__switch_to_servo_mode()
-        else:
+        if self.__id != BROADCAST_ID:
             logging.info(self.__message_header() + "Searching for servo ... ", end="")
 
-            self.__send(SERVO_ID_READ)
-            self.__wait_for_send()
-            try:
-                self.__receive("B", LXServo.DEFAULT_READ_TIMEOUT)
-            except TimeoutError:
-                raise RuntimeError(self.__message_header() + "Cannot find servo") from None
+            self.verify_id()
 
             logging.info("found")
 
-            self.__read_mode_and_speed(LXServo.DEFAULT_READ_TIMEOUT)
-
-    def __message_header(self):
-        return f"[Servo{self.__id}] "
+            self.__mode = self.__read_mode_and_speed()[0]
 
     @property
     def id(self):
@@ -419,14 +206,69 @@ class LXServo:
 
     @staticmethod
     def detect(id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT):
+        if id == BROADCAST_ID:
+            raise ValueError("cannot detect using the broadcast ID")
+
+        send(id, uart, duplexer, SERVO_ID_READ)
         try:
-            SerialServoReadID(uart, duplexer, id, timeout)
+            received = receive(id, uart, duplexer, timeout, "B")
+            if received != id:
+                raise RuntimeError(f"Serial servo #{id} incorrectly reported its ID as {received}")
             return True
         except TimeoutError:
             return False
 
+    def verify_id(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot verify the ID when broadcasting")
+
+        self.__send(SERVO_ID_READ)
+        try:
+            received = self.__receive("B")
+            if received != self.__id:
+                raise RuntimeError(self.__message_header() + f"Incorrectly reported its ID as {received}")
+        except TimeoutError:
+            raise RuntimeError(self.__message_header() + "Cannot find servo") from None
+
+    def change_id(self, new_id):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot change ID when broadcasting")
+
+        if new_id < 0 or new_id >= BROADCAST_ID:
+            raise ValueError(f"id out of range. Expected 0 to {BROADCAST_ID - 1}")
+
+        logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
+
+        self.__send(SERVO_ID_WRITE, "B", new_id)
+        self.__id = new_id
+
+        self.verify_id()
+
+        logging.info("success")
+
+    # Power Control
+    def enable(self):
+        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 1)
+
+    def disable(self):
+        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 0)
+
+    def is_enabled(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the enabled state when broadcasting")
+
+        self.__send(SERVO_LOAD_OR_UNLOAD_READ)
+        return self.__receive("B") == 1
+
+    # Movement Control
+    def mode(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the mode when broadcasting")
+
+        return self.__read_mode_and_speed()[0]
+
     def move_to(self, angle, duration):
-        if self.__mode != LXServo.SERVO_MODE:
+        if self.__id == BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
             self.__switch_to_servo_mode()
 
         position = int(((angle / 90) * 360) + 500)
@@ -438,18 +280,6 @@ class LXServo:
 
         self.__send(SERVO_MOVE_TIME_WRITE, "HH", position, ms)
 
-    def read_move(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_MOVE_TIME_READ)
-        self.__wait_for_send()
-
-        received = self.__receive("HH", timeout)
-        if received is None:
-            return (float("NAN"), float("NAN"))
-
-        angle = ((received[0] - 500) / 360) * 90
-        duration = received[1] / 1000.0
-        return angle, duration
-
     def queue_move(self, angle, duration):
         position = int(((angle / 90) * 360) + 500)
         position = min(max(position, 0), 1000)
@@ -460,26 +290,38 @@ class LXServo:
 
         self.__send(SERVO_MOVE_TIME_WAIT_WRITE, "HH", position, ms)
 
-    # Does not appear to be implemented on the LX-16A
-    """
-    def read_queued(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_MOVE_TIME_WAIT_READ)
-        self.__wait_for_send()
+    def start_queued(self):
+        if self.__id == BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
+            self.__switch_to_servo_mode()
 
-        received = self.__receive("HH", timeout)
+        self.__send(SERVO_MOVE_START)
+
+    def drive_at(self, speed):
+        value = int(speed * 1000)
+        value = min(max(value, -1000), 1000)
+        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.MOTOR_MODE, 0, value)
+
+        if self.__id != BROADCAST_ID:
+            self.__mode = LXServo.MOTOR_MODE
+
+    def last_move(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the last move when broadcasting")
+
+        self.__send(SERVO_MOVE_TIME_READ)
+        received = self.__receive("HH")
         if received is None:
             return (float("NAN"), float("NAN"))
 
         angle = ((received[0] - 500) / 360) * 90
         duration = received[1] / 1000.0
         return angle, duration
-    """
 
-    def start_queued(self):
-        if self.__mode != LXServo.SERVO_MODE:
-            self.__switch_to_servo_mode()
+    def last_speed(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the last speed when broadcasting")
 
-        self.__send(SERVO_MOVE_START)
+        return self.__read_mode_and_speed()[1]
 
     def stop(self):
         if self.__id == BROADCAST_ID:
@@ -491,61 +333,75 @@ class LXServo:
             else:
                 self.drive_at(0.0)
 
-    def change_id(self, new_id, timeout=DEFAULT_READ_TIMEOUT):
+    # LED Control
+    def is_led_on(self):
         if self.__id == BROADCAST_ID:
-            raise ValueError("cannot change the broadcast address")
+            raise ValueError("cannot read the LED state when broadcasting")
 
-        if new_id < 0 or new_id >= BROADCAST_ID:
-            raise ValueError(f"id out of range. Expected 0 to {BROADCAST_ID - 1}")
+        self.__send(SERVO_LED_CTRL_READ)
+        return self.__receive("B") == 0  # LED state is inverted
 
-        logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
+    def set_led(self, value):
+        self.__send(SERVO_LED_CTRL_WRITE, "B", 0 if value else 1)  # LED state is inverted
 
-        self.__send(SERVO_ID_WRITE, "B", new_id)
-        self.__id = new_id
+    # Sensing
+    def read_angle(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the angle when broadcasting")
 
-        if self.read_id(timeout) != self.__id:
-            raise RuntimeError(self.__message_header() + "Cannot find servo")
+        self.__send(SERVO_POS_READ)
+        received = self.__receive("h")  # Angle reports full 360 degree range as signed
+        if received is None:
+            return float("NAN")
 
-        logging.info("success")
+        return ((received - 500) / 360) * 90
 
-    def read_id(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_ID_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout)
+    def read_voltage(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the voltage when broadcasting")
 
-    def apply_angle_offset(self, new_offset):
-        offset = int((new_offset / 90) * 360)
-        offset = min(max(offset, -125), 125)
+        self.__send(SERVO_VIN_READ)
+        received = self.__receive("H")
+        if received is None:
+            return float("NAN")
 
-        self.__send(SERVO_ANGLE_OFFSET_ADJUST, "b", offset)
+        return received / 1000
 
-    def save_angle_offset(self):
-        self.__send(SERVO_ANGLE_OFFSET_WRITE)
+    def read_temperature(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the temperature when broadcasting")
 
-    def read_angle_offset(self, timeout=DEFAULT_READ_TIMEOUT):
+        self.__send(SERVO_TEMP_READ)
+        return self.__receive("B")
+
+    # Angle Settings
+    def angle_offset(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the angle offset when broadcasting")
+
         self.__send(SERVO_ANGLE_OFFSET_READ)
-        self.__wait_for_send()
-
-        received = self.__receive("b", timeout)
+        received = self.__receive("b")
         if received is None:
             return float("NAN")
 
         return (received / 360) * 90
 
-    def set_angle_limits(self, new_lower_limit, new_upper_limit):
-        lower_position = int(((new_lower_limit / 90) * 360) + 500)
-        lower_position = max(lower_position, 0)
-        upper_position = int(((new_upper_limit / 90) * 360) + 500)
-        upper_position = min(max(upper_position, 0), 1000)
-        lower_position = min(lower_position, upper_position)
+    def try_angle_offset(self, offset):
+        int_offset = int((offset / 90) * 360)
+        int_offset = min(max(int_offset, -125), 125)
 
-        self.__send(SERVO_ANGLE_LIMIT_WRITE, "HH", lower_position, upper_position)
+        self.__send(SERVO_ANGLE_OFFSET_ADJUST, "b", int_offset)
 
-    def read_angle_limits(self, timeout=DEFAULT_READ_TIMEOUT):
+    def save_angle_offset(self):
+        self.__send(SERVO_ANGLE_OFFSET_WRITE)
+
+    # Limit Settings
+    def angle_limits(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the angle limits when broadcasting")
+
         self.__send(SERVO_ANGLE_LIMIT_READ)
-        self.__wait_for_send()
-
-        received = self.__receive("HH", timeout)
+        received = self.__receive("HH")
         if received is None:
             return (float("NAN"), float("NAN"))
 
@@ -553,20 +409,12 @@ class LXServo:
         upper_limit = ((received[1] - 500) / 360) * 90
         return lower_limit, upper_limit
 
-    def set_voltage_limits(self, new_lower_limit, new_upper_limit):
-        lower_millivolts = int(new_lower_limit * 1000)
-        lower_millivolts = max(lower_millivolts, 4500)
-        upper_millivolts = int(new_upper_limit * 1000)
-        upper_millivolts = min(max(upper_millivolts, 4500), 14000)  # Servos from factor had 14V set
-        lower_millivolts = min(lower_millivolts, upper_millivolts)
+    def voltage_limits(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the voltage limits when broadcasting")
 
-        self.__send(SERVO_VIN_LIMIT_WRITE, "HH", lower_millivolts, upper_millivolts)
-
-    def read_voltage_limits(self, timeout=DEFAULT_READ_TIMEOUT):
         self.__send(SERVO_VIN_LIMIT_READ)
-        self.__wait_for_send()
-
-        received = self.__receive("HH", timeout)
+        received = self.__receive("HH")
         if received is None:
             return (float("NAN"), float("NAN"))
 
@@ -574,225 +422,85 @@ class LXServo:
         upper_limit = received[1] / 1000
         return lower_limit, upper_limit
 
-    def set_max_temperature_limit(self, new_upper_limit):
-        new_upper_limit = min(max(new_upper_limit, 50), 100)
-        self.__send(SERVO_TEMP_MAX_LIMIT_WRITE, "B", new_upper_limit)
+    def temperature_limit(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the temperature limit when broadcasting")
 
-    def read_max_temperature_limit(self, timeout=DEFAULT_READ_TIMEOUT):
         self.__send(SERVO_TEMP_MAX_LIMIT_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout)
+        return self.__receive("B")
 
-    def read_temperature(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_TEMP_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout)
+    def set_angle_limits(self, lower, upper):
+        lower_pos = int(((lower / 90) * 360) + 500)
+        lower_pos = max(lower_pos, 0)
+        upper_pos = int(((upper / 90) * 360) + 500)
+        upper_pos = min(max(upper_pos, 0), 1000)
+        lower_pos = min(lower_pos, upper_pos)
 
-    def read_voltage(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_VIN_READ)
-        self.__wait_for_send()
+        self.__send(SERVO_ANGLE_LIMIT_WRITE, "HH", lower_pos, upper_pos)
 
-        received = self.__receive("H", timeout)
-        if received is None:
-            return float("NAN")
+    def set_voltage_limits(self, lower, upper):
+        lower_mv = int(lower * 1000)
+        lower_mv = max(lower_mv, 4500)
+        upper_mv = int(upper * 1000)
+        upper_mv = min(max(upper_mv, 4500), 14000)  # Servos from factor had 14V set
+        lower_mv = min(lower_mv, upper_mv)
 
-        return received / 1000
+        self.__send(SERVO_VIN_LIMIT_WRITE, "HH", lower_mv, upper_mv)
 
-    def read_angle(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_POS_READ)
-        self.__wait_for_send()
+    def set_temperature_limit(self, limit):
+        limit = min(max(limit, 50), 100)
+        self.__send(SERVO_TEMP_MAX_LIMIT_WRITE, "B", limit)
 
-        received = self.__receive("h", timeout)  # Angle reports full 360 degree range as signed
-        if received is None:
-            return float("NAN")
+    # Fault Settings
+    def fault_config(self):
+        if self.__id == BROADCAST_ID:
+            raise ValueError("cannot read the fault configuration when broadcasting")
 
-        return ((received - 500) / 360) * 90
-
-    def drive_at(self, speed):
-        value = int(speed * 1000)
-        value = min(max(value, -1000), 1000)
-        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.MOTOR_MODE, 0, value)
-        self.__mode = LXServo.MOTOR_MODE
-
-    def __switch_to_motor_mode(self):
-        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.MOTOR_MODE, 0, 0)
-        self.__mode = LXServo.MOTOR_MODE
-
-    def __switch_to_servo_mode(self):
-        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.SERVO_MODE, 0, 0)
-        self.__mode = LXServo.SERVO_MODE
-
-    def __read_mode_and_speed(self, timeout):
-        self.__send(SERVO_OR_MOTOR_MODE_READ)
-        self.__wait_for_send()
-
-        received = self.__receive("BBh", timeout)
-        if received is None:
-            return (float("NAN"), float("NAN"))
-
-        self.__mode = LXServo.MOTOR_MODE if received[0] == 1 else LXServo.SERVO_MODE
-        return self.__mode, received[2] / 1000
-
-    def read_mode(self, timeout=DEFAULT_READ_TIMEOUT):
-        return self.__read_mode_and_speed(timeout)[0]
-
-    def read_speed(self, timeout=DEFAULT_READ_TIMEOUT):
-        return self.__read_mode_and_speed(timeout)[1]
-
-    def enable(self):
-        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 1)
-
-    def disable(self):
-        self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 0)
-
-    def is_enabled(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_LOAD_OR_UNLOAD_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout) == 1
-
-    def set_led(self, value):
-        self.__send(SERVO_LED_CTRL_WRITE, "B", 0 if value else 1)  # LED state is inverted
-
-    def is_led_on(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_LED_CTRL_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout) == 0  # LED state is inverted
+        self.__send(SERVO_LED_ERROR_READ)
+        return self.__receive("B")
 
     def configure_faults(self, conditions):
         conditions &= LXServo.OVER_TEMPERATURE | LXServo.OVER_VOLTAGE | LXServo.OVER_LOADED
         self.__send(SERVO_LED_ERROR_WRITE, "B", conditions)
 
-    def read_fault_config(self, timeout=DEFAULT_READ_TIMEOUT):
-        self.__send(SERVO_LED_ERROR_READ)
-        self.__wait_for_send()
-        return self.__receive("B", timeout)
+    def __switch_to_servo_mode(self):
+        self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.SERVO_MODE, 0, 0)
 
-    @staticmethod
-    def __checksum(buffer):
-        checksum = 0
-        length = buffer[FRAME_LENGTH_INDEX]
-        last = length + 2
-        for i in range(2, last):
-            checksum += buffer[i]
+        if self.__id != BROADCAST_ID:
+            self.__mode = LXServo.SERVO_MODE
 
-        return (~checksum) & 0xFF
+    def __read_mode_and_speed(self):
+        self.__send(SERVO_OR_MOTOR_MODE_READ)
+        received = self.__receive("BBh")
+        if received is None:
+            return (float("NAN"), float("NAN"))
+
+        mode = LXServo.MOTOR_MODE if received[0] == 1 else LXServo.SERVO_MODE
+        return mode, received[2] / 1000
 
     def __send(self, command, fmt="", *data):
-        if self.__debug_pin is not None:
-            self.__debug_pin.on()
+        send(self.__id, self.__uart, self.__duplexer, command, fmt, *data)
 
-        buffer = bytearray(FRAME_HEADER_LENGTH + command.length)
-        struct.pack_into("<BBBBB" + fmt + "B", buffer, 0,  # fmt, buffer, offset
-                         FRAME_HEADER,
-                         FRAME_HEADER,
-                         self.__id,
-                         command.length,
-                         command.value,
-                         *data,
-                         0)
+    def __receive(self, fmt=""):
+        receive(self.__id, self.__uart, self.__duplexer, self.__timeout, fmt)
 
-        if self.__debug_pin is not None:
-            self.__debug_pin.off()
-
-        buffer[-1] = LXServo.__checksum(buffer)
-
-        # Switch to sending data
-        self.__duplexer.send_on_data()
-
-        # Clear out the receive buffer since we are now in send mode
-        while self.__uart.any():
-            self.__uart.read()
-
-        # Write out the previously generated buffer
-        self.__uart.write(buffer)
-
-    def __wait_for_send(self):
-        # Wait for all the data to be sent to the buffer
-        while not self.__uart.txdone():
-            pass
-
-        # Wait a short time to let the final bits finish transmitting
-        time.sleep_us(1000000 // 115200)
-
-    def __handle_receive(self):
-        frameStarted = False
-        frameCount = 0
-        dataCount = 0
-        dataLength = 2
-        rxBuf = 0
-        recvBuf = bytearray(32)
-
-        while self.__uart.any() > 0:
-            if self.__debug_pin is not None:
-                self.__debug_pin.on()
-            rxBuf = self.__uart.read(1)[0]
-            if self.__debug_pin is not None:
-                self.__debug_pin.off()
-            # print(hex(rxBuf), end=", ")
-
-            if not frameStarted:
-                if rxBuf == FRAME_HEADER:
-                    frameCount += 1
-                    if frameCount == 2:
-                        frameCount = 0
-                        frameStarted = True
-                        dataCount = 1
-                else:
-                    frameStarted = False
-                    dataCount = 0
-                    frameCount = 0
-
-            if frameStarted:
-                recvBuf[dataCount] = rxBuf
-                if dataCount == 3:
-                    dataLength = recvBuf[dataCount]
-                    if dataLength < 3 or dataCount > 7:
-                        dataLength = 2
-                        frameStarted = False
-                dataCount += 1
-                if dataCount == dataLength + 3:
-                    if LXServo.__checksum(recvBuf) == recvBuf[dataCount - 1]:
-                        # print("Check SUM OK!!", end="\n\n")
-                        frameStarted = False
-                        return recvBuf[5:5 + dataLength - 3]
-            time.sleep_us(100)
-
-        return None
-
-    def __wait_for_receive(self, timeout):
-        ms = 1000.0 * timeout + 0.5
-        end_ms = ticks_add(ticks_ms(), int(ms))
-
-        while self.__uart.any() == 0:
-            remaining_ms = ticks_diff(end_ms, ticks_ms())
-            if remaining_ms <= 0:
-                self.__duplexer.send_on_data()
-                raise TimeoutError(f"Serial servo #{self.__id} did not reply within the set time")
-
-    def __receive(self, fmt="", timeout=DEFAULT_READ_TIMEOUT):
-        try:
-            self.__duplexer.receive_on_data()
-            self.__wait_for_receive(timeout)
-
-            returned_buffer = self.__handle_receive()
-            if returned_buffer is not None:
-                if len(fmt) == 1:
-                    ret = struct.unpack("<" + fmt, returned_buffer)[0]
-                else:
-                    ret = struct.unpack("<" + fmt, returned_buffer)
-            else:
-                ret = None
-        finally:
-            self.__duplexer.send_on_data()
-
-        return ret
+    def __message_header(self):
+        return f"[Servo{self.__id}] "
 
 
 class LXServoBroadcaster:
 
-    def __init__(self, uart, duplexer, debug_pin=None):
-        self.__servo = LXServo(BROADCAST_ID, uart, duplexer, debug_pin)
+    def __init__(self, uart, duplexer, timeout=LXServo.DEFAULT_READ_TIMEOUT, debug_pin=None):
+        self.__servo = LXServo(BROADCAST_ID, uart, duplexer, timeout, debug_pin)
 
+    # Power Control
+    def enable_all(self):
+        self.__servo.enable()
+
+    def disable_all(self):
+        self.__servo.disable()
+
+    # Movement Control
     def move_all_to(self, angle, duration):
         self.__servo.move_to(angle, duration)
 
@@ -802,35 +510,33 @@ class LXServoBroadcaster:
     def start_all_queued(self):
         self.__servo.start_queued()
 
+    def drive_all_at(self, speed):
+        self.__servo.drive_at(speed)
+
     def stop_all(self):
         self.__servo.stop()
 
-    def apply_all_angle_offsets(self, new_offset):
-        self.__servo.apply_angle_offset(new_offset)
+    # LED Control
+    def set_all_leds(self, value):
+        self.__servo.set_led(value)
+
+    # Angle Settings
+    def try_all_angle_offsets(self, offset):
+        self.__servo.try_angle_offset(offset)
 
     def save_all_angle_offsets(self):
         self.__servo.save_angle_offset()
 
-    def set_all_angle_limits(self, new_lower_limit, new_upper_limit):
-        self.__servo.set_angle_limits(new_lower_limit, new_upper_limit)
+    # Limit Settings
+    def set_all_angle_limits(self, lower, upper):
+        self.__servo.set_angle_limits(lower, upper)
 
-    def set_all_voltage_limits(self, new_lower_limit, new_upper_limit):
-        self.__servo.set_voltage_limits(new_lower_limit, new_upper_limit)
+    def set_all_voltage_limits(self, lower, upper):
+        self.__servo.set_voltage_limits(lower, upper)
 
-    def set_all_max_temperature_limit(self, new_upper_limit):
-        self.__servo.set_max_temperature_limit(new_upper_limit)
+    def set_all_temperature_limits(self, upper):
+        self.__servo.set_temperature_limit(upper)
 
-    def drive_all_at(self, speed):
-        self.__servo.drive_at(speed)
-
-    def enable_all(self):
-        self.__servo.enable()
-
-    def disable_all(self):
-        self.__servo.disable()
-
-    def set_all_leds(self, value):
-        self.__servo.set_led(value)
-
+    # Fault Settings
     def configure_all_faults(self, conditions):
         self.__servo.configure_faults(conditions)

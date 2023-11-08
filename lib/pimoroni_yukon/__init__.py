@@ -459,16 +459,6 @@ class Yukon:
     def is_boot_pressed(self):
         return self.__sw_boot.value() != 1
 
-    def set_led(self, switch, value):
-        if switch is self.SWITCH_A_NAME:
-            switch = self.SWITCH_A
-        elif switch is self.SWITCH_B_NAME:
-            switch = self.SWITCH_B
-        elif switch < 0 or switch > 1:
-            raise ValueError("switch out of range. Expected 'A' or 'B', or SWITCH_A (0) or SWITCH_B (1)")
-
-        self.__leds[switch].value(value)
-
     def is_led_on(self, switch):
         if switch is self.SWITCH_A_NAME:
             switch = self.SWITCH_A
@@ -478,6 +468,16 @@ class Yukon:
             raise ValueError("switch out of range. Expected 'A' or 'B', or SWITCH_A (0) or SWITCH_B (1)")
 
         return self.__leds[switch].value() == 1
+
+    def set_led(self, switch, value):
+        if switch is self.SWITCH_A_NAME:
+            switch = self.SWITCH_A
+        elif switch is self.SWITCH_B_NAME:
+            switch = self.SWITCH_B
+        elif switch < 0 or switch > 1:
+            raise ValueError("switch out of range. Expected 'A' or 'B', or SWITCH_A (0) or SWITCH_B (1)")
+
+        self.__leds[switch].value(value)
 
     def enable_main_output(self):
         if self.is_main_output_enabled() is False:
