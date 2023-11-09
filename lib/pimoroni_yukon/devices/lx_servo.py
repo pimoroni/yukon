@@ -23,7 +23,6 @@ Command = namedtuple("Command", ("value", "length"))
 FRAME_HEADER = 0x55
 FRAME_HEADER_LENGTH = 3
 FRAME_LENGTH_INDEX = 3
-BROADCAST_ID = 0xFE
 BAUD_RATE = 115200
 
 SERVO_MOVE_TIME_WRITE = Command(1, 7)
@@ -205,9 +204,11 @@ class LXServo:
     OVER_VOLTAGE = 0b010
     OVER_LOADED = 0b100
 
+    BROADCAST_ID = 0xFE
+
     def __init__(self, id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT, debug_pin=None):
-        if id < 0 or id > BROADCAST_ID:
-            raise ValueError(f"id out of range. Expected 0 to {BROADCAST_ID}")
+        if id < 0 or id > self.BROADCAST_ID:
+            raise ValueError(f"id out of range. Expected 0 to {self.BROADCAST_ID}")
 
         if timeout <= 0:
             raise ValueError("timeout out or range. Expected greater than 0")
@@ -221,7 +222,7 @@ class LXServo:
         if self.__debug_pin is not None:
             self.__debug_pin.init(Pin.OUT)
 
-        if self.__id != BROADCAST_ID:
+        if self.__id != self.BROADCAST_ID:
             logging.info(self.__message_header() + "Searching for servo ... ", end="")
 
             self.verify_id()
@@ -236,7 +237,7 @@ class LXServo:
 
     @staticmethod
     def detect(id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT):
-        if id == BROADCAST_ID:
+        if id == LXServo.BROADCAST_ID:
             raise ValueError("cannot detect using the broadcast ID")
 
         send(id, uart, duplexer, SERVO_ID_READ)
@@ -249,7 +250,7 @@ class LXServo:
             return False
 
     def verify_id(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot verify the ID when broadcasting")
 
         self.__send(SERVO_ID_READ)
@@ -261,11 +262,11 @@ class LXServo:
             raise RuntimeError(self.__message_header() + "Cannot find servo") from None
 
     def change_id(self, new_id):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot change ID when broadcasting")
 
-        if new_id < 0 or new_id >= BROADCAST_ID:
-            raise ValueError(f"id out of range. Expected 0 to {BROADCAST_ID - 1}")
+        if new_id < 0 or new_id >= self.BROADCAST_ID:
+            raise ValueError(f"id out of range. Expected 0 to {self.BROADCAST_ID - 1}")
 
         logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
 
@@ -284,7 +285,7 @@ class LXServo:
         self.__send(SERVO_LOAD_OR_UNLOAD_WRITE, "B", 0)
 
     def is_enabled(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the enabled state when broadcasting")
 
         self.__send(SERVO_LOAD_OR_UNLOAD_READ)
@@ -292,13 +293,13 @@ class LXServo:
 
     # Movement Control
     def mode(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the mode when broadcasting")
 
         return self.__read_mode_and_speed()[0]
 
     def move_to(self, angle, duration):
-        if self.__id == BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
+        if self.__id == self.BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
             self.__switch_to_servo_mode()
 
         position = int(((angle / 90) * 360) + 500)
@@ -321,7 +322,7 @@ class LXServo:
         self.__send(SERVO_MOVE_TIME_WAIT_WRITE, "HH", position, ms)
 
     def start_queued(self):
-        if self.__id == BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
+        if self.__id == self.BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
             self.__switch_to_servo_mode()
 
         self.__send(SERVO_MOVE_START)
@@ -331,11 +332,11 @@ class LXServo:
         value = min(max(value, -1000), 1000)
         self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.MOTOR_MODE, 0, value)
 
-        if self.__id != BROADCAST_ID:
+        if self.__id != self.BROADCAST_ID:
             self.__mode = LXServo.MOTOR_MODE
 
     def last_move(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the last move when broadcasting")
 
         self.__send(SERVO_MOVE_TIME_READ)
@@ -348,13 +349,13 @@ class LXServo:
         return angle, duration
 
     def last_speed(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the last speed when broadcasting")
 
         return self.__read_mode_and_speed()[1]
 
     def stop(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             self.__send(SERVO_MOVE_STOP)
             self.drive_at(0.0)
         else:
@@ -365,7 +366,7 @@ class LXServo:
 
     # LED Control
     def is_led_on(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the LED state when broadcasting")
 
         self.__send(SERVO_LED_CTRL_READ)
@@ -376,7 +377,7 @@ class LXServo:
 
     # Sensing
     def read_angle(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the angle when broadcasting")
 
         self.__send(SERVO_POS_READ)
@@ -387,7 +388,7 @@ class LXServo:
         return ((received - 500) / 360) * 90
 
     def read_voltage(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the voltage when broadcasting")
 
         self.__send(SERVO_VIN_READ)
@@ -398,7 +399,7 @@ class LXServo:
         return received / 1000
 
     def read_temperature(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the temperature when broadcasting")
 
         self.__send(SERVO_TEMP_READ)
@@ -406,7 +407,7 @@ class LXServo:
 
     # Angle Settings
     def angle_offset(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the angle offset when broadcasting")
 
         self.__send(SERVO_ANGLE_OFFSET_READ)
@@ -427,7 +428,7 @@ class LXServo:
 
     # Limit Settings
     def angle_limits(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the angle limits when broadcasting")
 
         self.__send(SERVO_ANGLE_LIMIT_READ)
@@ -440,7 +441,7 @@ class LXServo:
         return lower_limit, upper_limit
 
     def voltage_limits(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the voltage limits when broadcasting")
 
         self.__send(SERVO_VIN_LIMIT_READ)
@@ -453,7 +454,7 @@ class LXServo:
         return lower_limit, upper_limit
 
     def temperature_limit(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the temperature limit when broadcasting")
 
         self.__send(SERVO_TEMP_MAX_LIMIT_READ)
@@ -483,7 +484,7 @@ class LXServo:
 
     # Fault Settings
     def fault_config(self):
-        if self.__id == BROADCAST_ID:
+        if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the fault configuration when broadcasting")
 
         self.__send(SERVO_LED_ERROR_READ)
@@ -496,7 +497,7 @@ class LXServo:
     def __switch_to_servo_mode(self):
         self.__send(SERVO_OR_MOTOR_MODE_WRITE, "BBh", LXServo.SERVO_MODE, 0, 0)
 
-        if self.__id != BROADCAST_ID:
+        if self.__id != self.BROADCAST_ID:
             self.__mode = LXServo.SERVO_MODE
 
     def __read_mode_and_speed(self):
@@ -521,7 +522,7 @@ class LXServo:
 class LXServoBroadcaster:
 
     def __init__(self, uart, duplexer, timeout=LXServo.DEFAULT_READ_TIMEOUT, debug_pin=None):
-        self.__servo = LXServo(BROADCAST_ID, uart, duplexer, timeout, debug_pin)
+        self.__servo = LXServo(LXServo.BROADCAST_ID, uart, duplexer, timeout, debug_pin)
 
     # Power Control
     def enable_all(self):
