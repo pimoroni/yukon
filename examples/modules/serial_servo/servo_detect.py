@@ -4,7 +4,7 @@ from pimoroni_yukon.modules import SerialServoModule
 from pimoroni_yukon.devices.lx_servo import LXServo
 
 """
-Detect any servos that are attached to a Serial Bus Servos module connected to Slot1.
+Detect any servos that are attached to a Serial Bus Servo module connected to Slot1.
 """
 
 # Constants
