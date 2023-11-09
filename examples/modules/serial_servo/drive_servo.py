@@ -5,7 +5,7 @@ from pimoroni_yukon.devices.lx_servo import LXServo
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-Drive a servo continuously (aka wheel mode) at a speed with Yukon's onboard buttons.
+Drive a serial servo continuously (aka wheel mode) at a speed with Yukon's onboard buttons.
 This uses a Serial Bus Servos module connected to Slot1.
 
 Press "A" to drive the servo at the speed.
@@ -14,7 +14,7 @@ Press "Boot/User" to exit the program.
 """
 
 # Constants
-SERVO_ID = 3                # The ID of the servo to control
+SERVO_ID = 1                # The ID of the servo to control
 VOLTAGE_LIMIT = 8.4         # The voltage to not exceed, to protect the servos
 SPEED = 0.5                 # The speed (between -1.0 and 1.0) the servo will drive at when button 'A' is pressed
 SLEEP = 0.1                 # The time to sleep between each update

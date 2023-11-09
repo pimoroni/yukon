@@ -340,7 +340,7 @@ class LXServo:
             self.__mode = LXServo.MOTOR_MODE
 
         if value == 0:
-            logging.info(self.__message_header() + f"Stop driving")
+            logging.info(self.__message_header() + "Stop driving")
         else:
             logging.info(self.__message_header() + f"Driving at {value / 1000}")
 
@@ -366,12 +366,12 @@ class LXServo:
     def stop(self):
         if self.__id == self.BROADCAST_ID:
             self.__send(SERVO_MOVE_STOP)
-            logging.info(self.__message_header() + f"Stop moving")
+            logging.info(self.__message_header() + "Stop moving")
             self.drive_at(0.0)
         else:
             if self.__mode == LXServo.SERVO_MODE:
                 self.__send(SERVO_MOVE_STOP)
-                logging.info(self.__message_header() + f"Stop moving")
+                logging.info(self.__message_header() + "Stop moving")
             else:
                 self.drive_at(0.0)
 

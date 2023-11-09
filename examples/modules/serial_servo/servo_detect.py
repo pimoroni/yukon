@@ -10,6 +10,7 @@ Detect any servos that are attached to a Serial Bus Servo module connected to Sl
 # Constants
 VOLTAGE_LIMIT = 8.4         # The voltage to not exceed, to protect the servos
 RESPONSE_TIMEOUT = 0.005    # How long to wait for a serial servo to respond
+POWER_ON_DELAY = 1.0        # The time to sleep after turning on the power, for serial servos to power on
 
 # Variables
 yukon = Yukon(voltage_limit=VOLTAGE_LIMIT)  # Create a new Yukon object, with a lower voltage limit set
@@ -30,7 +31,7 @@ try:
     yukon.verify_and_initialise()           # Verify that a SerialServoModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
 
-    yukon.monitored_sleep(1)                # Wait for serial servos to power up
+    yukon.monitored_sleep(POWER_ON_DELAY)   # Wait for serial servos to power up
 
     print("> Scanning for servos ...")
     print_header_row()

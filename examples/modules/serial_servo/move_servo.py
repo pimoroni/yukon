@@ -5,7 +5,7 @@ from pimoroni_yukon.devices.lx_servo import LXServo
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-Move a servo between two angles with Yukon's onboard buttons.
+Move a serial servo between two angles with Yukon's onboard buttons.
 This uses a Serial Bus Servos module connected to Slot1.
 
 Press "A" to move the servo to the first angle.
