@@ -10,7 +10,7 @@ Press "Boot/User" to exit the program.
 """
 
 # Constants
-PERIOD = 0.5                # The time between each buzz
+PERIOD = 0.5                # The time between each buzz of the buzzer
 DUTY = 0.5                  # The percentage of the time that the buzz will be on for
 
 # Variables
