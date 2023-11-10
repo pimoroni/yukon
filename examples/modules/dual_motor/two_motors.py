@@ -62,7 +62,7 @@ try:
         current_time = ticks_add(current_time, int(1000 / UPDATES))
 
         # Monitor sensors until the current time is reached, recording the min, max, and average for each
-        # This approach accounts for the updating of the rainbows taking a non-zero amount of time to complete
+        # This approach accounts for the updates takinga non-zero amount of time to complete
         yukon.monitor_until_ms(current_time)
 
 finally:

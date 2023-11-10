@@ -12,6 +12,7 @@ SLEEP = 0.1                                 # The time to sleep between each rea
 # Variables
 yukon = Yukon(logging_level=LOG_DEBUG)      # Create a Yukon object with the logging level set to debug
 
+# Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
     # Perform the usual verify checks, but allow for unregistered and undetected modules, as well as no modules
     yukon.verify_and_initialise(allow_unregistered=True, allow_undetected=True, allow_no_modules=True)

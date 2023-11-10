@@ -17,6 +17,7 @@ Press "Boot/User" to exit the program.
 SERVO_ID = 1                # The ID of the servo to control
 VOLTAGE_LIMIT = 8.4         # The voltage to not exceed, to protect the servos
 SPEED = 0.5                 # The speed (between -1.0 and 1.0) the servo will drive at when button 'A' is pressed
+POWER_ON_DELAY = 1.0        # The time to sleep after turning on the power, for serial servos to power on
 SLEEP = 0.1                 # The time to sleep between each update
 
 # Variables
@@ -41,7 +42,7 @@ try:
     yukon.verify_and_initialise()           # Verify that a SerialServoModule is attached to Yukon, and initialise it
     yukon.enable_main_output()              # Turn on power to the module slots
 
-    yukon.monitored_sleep(1)                # Wait for serial servos to power up
+    yukon.monitored_sleep(POWER_ON_DELAY)   # Wait for serial servos to power up
 
     # Create an LXServo object to interact with the servo,
     # giving it access to the module's UART and Duplexer
@@ -73,7 +74,7 @@ try:
         current_time = ticks_add(current_time, int(SLEEP * 1000))
 
         # Monitor sensors until the current time is reached, recording the min, max, and average for each
-        # This approach accounts for the updating of the rainbows taking a non-zero amount of time to complete
+        # This approach accounts for the updates takinga non-zero amount of time to complete
         yukon.monitor_until_ms(current_time)
 
 finally:
