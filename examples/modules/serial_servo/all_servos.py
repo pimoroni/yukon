@@ -5,7 +5,7 @@ from pimoroni_yukon.devices.lx_servo import LXServo
 from pimoroni_yukon.timing import ticks_ms, ticks_add
 
 """
-Move a set of serial servos attached to a set of Quad Servo Modules connected to Slots.
+Move a set of serial servos attached to a set of Serial Bus Servo modules connected to Slots.
 A wave pattern will be played on the attached servos.
 
 Press "Boot/User" to exit the program.
@@ -59,7 +59,7 @@ try:
     NUM_SERVOS = len(servos)
     print(f"{NUM_SERVOS} servos available")
 
-    # Move all servos to their starting positions
+    # Move all servos to their starting angles
     current_servo = 0
     for servo in servos:
         servo.move_to(angle_from_index(current_servo), START_DURATION)

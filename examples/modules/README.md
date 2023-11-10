@@ -38,6 +38,11 @@
   - [All Servos](#all-servos)
   - [Servo Feedback](#servo-feedback)
 - [Serial Servo Module](#serial-servo-module)
+  - [Detect Servo](#detect-servo)
+  - [Move Servo](#move-servo)
+  - [Drive Servo](#drive-servo)
+  - [All Servos](#all-servos-1)
+  - [Calibrate Servo](#calibrate-servo)
 - [Proto Module](#proto-module)
 
 
@@ -254,6 +259,40 @@ Read the analog inputs of Quad Servo Direct modules connected to Slots.
 
 
 ## Serial Servo Module
+
+### Detect Servo
+[serial_servo/detect_servo.py](serial_servo/detect_servo.py)
+
+Detect any servos that are attached to a Serial Bus Servo module connected to Slot1.
+
+
+### Move Servo
+[serial_servo/move_servo.py](serial_servo/move_servo.py)
+
+Move a serial servo between two angles with Yukon's onboard buttons.
+This uses a Serial Bus Servo module connected to Slot1.
+
+
+### Drive Servo
+[serial_servo/drive_servo.py](serial_servo/drive_servo.py)
+
+Drive a serial servo continuously (aka wheel mode) at a speed with Yukon's onboard buttons.
+This uses a Serial Bus Servo module connected to Slot1.
+
+
+### All Servos
+[serial_servo/all_servos.py](serial_servo/all_servos.py)
+
+Move a set of serial servos attached to a set of Serial Bus Servo modules connected to Slots.
+A wave pattern will be played on the attached servos.
+
+
+### Calibrate Servo 
+[serial_servo/calibrate_servo.py](serial_servo/calibrate_servo.py)
+
+Calibrate a serial servo's angle offset with Yukon's onboard buttons.
+This uses a Serial Bus Servo module connected to Slot1.
+
 
 ## Proto Module
 
