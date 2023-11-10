@@ -44,6 +44,7 @@
   - [All Servos](#all-servos-1)
   - [Calibrate Servo](#calibrate-servo)
 - [Proto Module](#proto-module)
+  - [Buzzer](#buzzer)
 
 
 ## Audio Amp Module
@@ -287,7 +288,7 @@ Move a set of serial servos attached to a set of Serial Bus Servo modules connec
 A wave pattern will be played on the attached servos.
 
 
-### Calibrate Servo 
+### Calibrate Servo
 [serial_servo/calibrate_servo.py](serial_servo/calibrate_servo.py)
 
 Calibrate a serial servo's angle offset with Yukon's onboard buttons.
@@ -296,3 +297,8 @@ This uses a Serial Bus Servo module connected to Slot1.
 
 ## Proto Module
 
+### Buzzer
+
+[proto/buzzer.py](proto/buzzer.py)
+
+Drive a buzzer soldered between Fast3 and Ground on a proto module connected to Slot1.
