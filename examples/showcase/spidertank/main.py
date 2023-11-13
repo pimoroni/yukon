@@ -29,7 +29,7 @@ TIMESTEP = 1 / UPDATES
 TIMESTEP_MS = int(TIMESTEP * 1000)
 POWER_ON_DELAY = 1.0                # The time to sleep after turning on the power, for serial servos to power on
 LOW_VOLTAGE_LEVEL = 6.8             # The voltage below which the program will terminate and start the buzzer
-BUZZER_PERIOD = 0.5                 # The time between each buzz of the buzzer
+BUZZER_PERIOD = 0.5                 # The time between each buzz of the low voltage alarm
 BUZZER_DUTY = 0.5                   # The percentage of the time that the buzz will be on for
 PRINT_LEG = 1                       # Which leg to debug print the angles of
 
