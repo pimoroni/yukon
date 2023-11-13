@@ -12,12 +12,12 @@ import pimoroni_yukon.logging as logging
 class BenchPowerModule(YukonModule):
     NAME = "Bench Power"
 
-    VOLTAGE_MAX = 12.3953
-    VOLTAGE_MID = 6.5052
     VOLTAGE_MIN = 0.6713
-    VOLTAGE_MIN_MEASURE = 0.1477
-    VOLTAGE_MID_MEASURE = 1.1706
-    VOLTAGE_MAX_MEASURE = 2.2007
+    VOLTAGE_MID = 6.5052
+    VOLTAGE_MAX = 12.3953
+    MEASURED_AT_VOLTAGE_MIN = 0.1477
+    MEASURED_AT_VOLTAGE_MID = 1.1706
+    MEASURED_AT_VOLTAGE_MAX = 2.2007
     PWM_MIN = 0.3
     PWM_MAX = 0.0
 
@@ -92,10 +92,10 @@ class BenchPowerModule(YukonModule):
     def read_voltage(self, samples=1):
         # return (self.__read_adc1(samples) * (100 + 22)) / 22
         voltage = self.__read_adc1(samples)
-        if voltage >= self.VOLTAGE_MID_MEASURE:
-            return ((voltage - self.VOLTAGE_MID_MEASURE) * (self.VOLTAGE_MAX - self.VOLTAGE_MID)) / (self.VOLTAGE_MAX_MEASURE - self.VOLTAGE_MID_MEASURE) + self.VOLTAGE_MID
+        if voltage >= self.MEASURED_AT_VOLTAGE_MID:
+            return ((voltage - self.MEASURED_AT_VOLTAGE_MID) * (self.VOLTAGE_MAX - self.VOLTAGE_MID)) / (self.MEASURED_AT_VOLTAGE_MAX - self.MEASURED_AT_VOLTAGE_MID) + self.VOLTAGE_MID
         else:
-            return max(((voltage - self.VOLTAGE_MIN_MEASURE) * (self.VOLTAGE_MID - self.VOLTAGE_MIN)) / (self.VOLTAGE_MID_MEASURE - self.VOLTAGE_MIN_MEASURE) + self.VOLTAGE_MIN, 0.0)
+            return max(((voltage - self.MEASURED_AT_VOLTAGE_MIN) * (self.VOLTAGE_MID - self.VOLTAGE_MIN)) / (self.MEASURED_AT_VOLTAGE_MID - self.MEASURED_AT_VOLTAGE_MIN) + self.VOLTAGE_MIN, 0.0)
 
     def read_power_good(self):
         return self.__power_good.value() == 1

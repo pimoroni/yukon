@@ -26,6 +26,12 @@ try:
     yukon.enable_main_output()              # Turn on power to the module slots
     module.enable()                         # Enable the output switches
 
+    print()  # New line
+    print("Controls:")
+    print(f"- Press 'A' to toggle the state of the '{OUTPUT_NAMES[0]}' output")
+    print(f"- Press 'B' to toggle the state of the '{OUTPUT_NAMES[1]}' output")
+    print()  # New line
+
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
 

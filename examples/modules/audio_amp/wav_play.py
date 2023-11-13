@@ -42,6 +42,12 @@ try:
 
     amp.enable()                            # Enable the audio amplifier
 
+    print()  # New line
+    print("Controls:")
+    print(f"- Press 'A' to play '{WAV_FILE_A}', or stop what is currently playing")
+    print(f"- Press 'B' to play '{WAV_FILE_B}', or stop what is currently playing")
+    print()  # New line
+
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
 
@@ -52,8 +58,10 @@ try:
                 amp.player.play_wav(WAV_FILE_A)     # Play file A
                 amp.set_volume(VOLUME_A)            # Set the volume to play file A at
                 yukon.set_led('A', True)            # Show that file A is playing
+                print("Playing the first WAV file")
             else:
                 amp.player.stop()                   # Stop whichever file is currently playing
+                print("Stopping playback")
 
         # Has the button been pressed?
         if button_newly_pressed('B'):
@@ -62,8 +70,10 @@ try:
                 amp.player.play_wav(WAV_FILE_B)     # Play file B
                 amp.set_volume(VOLUME_B)            # Set the volume to play file B at
                 yukon.set_led('B', True)            # Show that file B is playing
+                print("Playing the second WAV file")
             else:
                 amp.player.stop()                   # Stop whichever file is currently playing
+                print("Stopping playback")
 
         # Has either file stopped playing?
         if not amp.player.is_playing():

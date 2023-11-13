@@ -120,8 +120,7 @@ amp = AudioAmpModule(I2S_ID)    # Create an AudioAmpModule object
 
 
 # Variables for recording the button state and if it has been toggled
-# Starting as True makes the song play automatically
-button_toggle = True
+button_toggle = False
 last_button_state = False
 
 
@@ -146,6 +145,11 @@ try:
 
     amp.enable()                            # Enable the audio amp. This includes I2C configuration
     amp.set_volume(NOTE_VOLUME)             # Set the output volume of the audio amp
+
+    print()  # New line
+    print("Controls:")
+    print("- Press 'A' to start or stop the tone song")
+    print()  # New line
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():

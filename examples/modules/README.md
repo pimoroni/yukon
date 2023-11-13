@@ -66,7 +66,7 @@ You will need to copy the files "ahoy.wav" and "bye.wav" over to the root of you
 ### Single Power
 [bench_power/single_power.py](bench_power/single_power.py)
 
-Control the variable output of a Bench Power Module connected to Slot1.
+Control the variable output of a Bench Power Module connected to Slot1, and print out the voltage that is measured.
 
 
 ### Multiple Powers

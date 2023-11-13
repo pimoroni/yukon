@@ -49,6 +49,13 @@ try:
     # giving it access to the module's UART and Duplexer
     servo = LXServo(SERVO_ID, module.uart, module.duplexer)
 
+    print()  # New line
+    print("Controls:")
+    print(f"- Press 'A' to increment the servo angle offset by {ANGLE_INCREMENT}")
+    print(f"- Press 'B' to decrement the servo angle offset by {ANGLE_INCREMENT}")
+    print("- Press 'Boot/User' to save the angle offset to the servo and exit the program.")
+    print()  # New line
+
     # Print out the initial angle offset stored on the servo
     print(f"Angle Offset: {servo.angle_offset()}")
 

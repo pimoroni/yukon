@@ -7,6 +7,7 @@ This is the library reference for the [Bench Power Module for Yukon](https://pim
 - [Using the Module](#using-the-module)
   - [Controlling its Output](#controlling-its-output)
   - [Changing its Voltage](#changing-its-voltage)
+  - [Reading back Voltage](#reading-back-voltage)
   - [Onboard Sensors](#onboard-sensors)
 - [References](#references)
   - [Constants](#constants)
@@ -72,11 +73,32 @@ The first is by calling `.set_voltage(voltage)`, and providing it with a voltage
 The second is by calling `.set_percent(percent)`, and providing it with a value from `0.0` to `1.0`.
 
 
-### Onboard Sensors
+### Reading back Voltage
 
 The Bench Power module features a voltage divider, letting its output be measured by calling `.read_voltage()`.
 
-There is also an onboard thermistor, letting its temperature be monitored. This can be read by calling `.read_temperature()`.
+:warning: Due to variations in component values on the Bench Power module and Yukon board itself, the voltage returned by this function may over or under report what is actually output. The `BenchPowerModule` class performs a 3-point conversion to mitigate this, but if absolute accuracy is needed for your application then the following constants should be modified with assistance of an external multimeter:
+
+```python
+# The three voltage points used for conversion
+VOLTAGE_MIN = 0.6713
+VOLTAGE_MID = 6.5052
+VOLTAGE_MAX = 12.3953
+
+# The ADC values (between 0.0 and 3.3) measured at the three voltage points
+MEASURED_AT_VOLTAGE_MIN = 0.1477
+MEASURED_AT_VOLTAGE_MID = 1.1706
+MEASURED_AT_VOLTAGE_MAX = 2.2007
+
+# The PWM range the voltage points are over, with 0.0 resulting in the maximum voltage
+PWM_MIN = 0.3
+PWM_MAX = 0.0
+```
+
+
+### Onboard Sensors
+
+The Bench Power module features an onboard thermistor, letting its temperature be monitored. This can be read by calling `.read_temperature()`.
 
 Additionally, the power good status of the onboard regulator can be read by calling `.read_power_good()`. This will be `True` during normal operation, but will switch to `False` under various conditions such as the input voltage dropping below what is needed for the module to achieve a stable output. For details of other conditions, check the [TPS54A24 datasheet](https://www.ti.com/lit/ds/symlink/tps54a24.pdf).
 
@@ -90,9 +112,9 @@ NAME = "Bench Power"
 VOLTAGE_MAX = 12.3953
 VOLTAGE_MID = 6.5052
 VOLTAGE_MIN = 0.6713
-VOLTAGE_MIN_MEASURE = 0.1477
-VOLTAGE_MID_MEASURE = 1.1706
-VOLTAGE_MAX_MEASURE = 2.2007
+MEASURED_AT_VOLTAGE_MIN = 0.1477
+MEASURED_AT_VOLTAGE_MID = 1.1706
+MEASURED_AT_VOLTAGE_MAX = 2.2007
 PWM_MIN = 0.3
 PWM_MAX = 0.0
 TEMPERATURE_THRESHOLD = 80.0

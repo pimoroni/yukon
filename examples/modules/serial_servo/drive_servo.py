@@ -48,6 +48,12 @@ try:
     # giving it access to the module's UART and Duplexer
     servo = LXServo(SERVO_ID, module.uart, module.duplexer)
 
+    print()  # New line
+    print("Controls:")
+    print(f"- Press 'A' to drive the servo at {SPEED}")
+    print("- Press 'B' to stop the servo")
+    print()  # New line
+
     current_time = ticks_ms()               # Record the start time of the program loop
 
     # Loop until the BOOT/USER button is pressed
