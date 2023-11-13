@@ -12,16 +12,16 @@ from pimoroni_yukon.logging import LOG_WARN
 from commander import JoyBTCommander
 
 # Constants
-UPDATES = 50                            # How many times to update LEDs and Servos per second
+UPDATES = 50                            # How many times to update motors and LEDs per second
 TIMESTEP = 1 / UPDATES
 TIMESTEP_MS = int(TIMESTEP * 1000)
-MOTOR_EXTENT = 0.4                      # How far from zero to drive the motors
+MOTOR_SPEED = 0.4                       # The top speed to drive each motor at
 
 STRIP_TYPE = LEDStripModule.NEOPIXEL    # The type of LED strip being driven
 STRIP_PIO = 0                           # The PIO system to use (0 or 1) to drive the strip
 STRIP_SM = 0                            # The State Machines (SM) to use to drive the strip
 LEDS_PER_STRIP = 120                    # How many LEDs are on the strip
-PULSE_TIME = 2.0                        # The time to perform a complete pulse of the LEDs when motors_active
+SPEED_HUE_RANGE = 1.5                   # The speed range that will result in the full green -> blue -> red hue range
 
 BT_UART_ID = 1                          # The ID of the hardware UART to use for bluetooth comms via a serial tranceiver
 BT_BAUDRATE = 9600                      # The baudrate of the bluetooth serial tranceiver's serial
@@ -49,40 +49,46 @@ buzzer = BUZZER_SLOT.FAST3                          # The pin the low voltage bu
 exited_due_to_low_voltage = True                    # Record if the program exited due to low voltage (assume true to start)
 
 
+# Function for mapping a value from one range to another
+def map_float(input, in_min, in_max, out_min, out_max):
+    return (((input - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min
+
+
+# Function that gets called when no communication have been received for a given time
 def no_comms_callback():
     # Disable both motors, causing them to coast to a stop
     left_driver.motor.disable()
     right_driver.motor.disable()
 
 
+# Function that gets called when new joystick data is received
 def joystick_callback(x, y):
     x *= y      # Prevent turning on the spot (which the chassis cannot achieve) by scaling the side input by the forward input
 
     # Update the left and right motor speeds based on the forward and side inputs
-    left_speed = -y-x
-    right_speed = y-x
-    left_driver.motor.speed(left_speed * MOTOR_EXTENT)
-    right_driver.motor.speed(right_speed * MOTOR_EXTENT)
+    left_speed = -y - x
+    right_speed = y - x
+    left_driver.motor.speed(left_speed * MOTOR_SPEED)
+    right_driver.motor.speed(right_speed * MOTOR_SPEED)
 
     MID_LED = led_module.strip.num_leds() // 2
 
     # Update the left side LEDs to a colour based on the left speed
-    lefthue = map_float(left_speed, 1.5, -1.5, 0.999, 0.333)
+    left_hue = map_float(left_speed, SPEED_HUE_RANGE, -SPEED_HUE_RANGE, 0.999, 0.333)
     for led in range(0, MID_LED):
-        led_module.strip.set_hsv(led, lefthue, 1.0, 1.0)
+        led_module.strip.set_hsv(led, left_hue, 1.0, 1.0)
 
     # Update the right side LEDs to a colour based on the right speed
-    righthue = map_float(right_speed, -1.5, 1.5, 0.999, 0.333)
+    right_hue = map_float(right_speed, -SPEED_HUE_RANGE, SPEED_HUE_RANGE, 0.999, 0.333)
     for led in range(MID_LED, led_module.strip.num_leds()):
-        led_module.strip.set_hsv(led, righthue, 1.0, 1.0)
+        led_module.strip.set_hsv(led, right_hue, 1.0, 1.0)
 
     led_module.strip.update()       # Send the new colours to the LEDs
 
 
-# Function for mapping a value from one range to another
-def map_float(input, in_min, in_max, out_min, out_max):
-    return (((input - in_min) * (out_max - out_min)) / (in_max - in_min)) + out_min
-
+# Assign timeout and joystick callbacks to the controller
+controller.set_timeout_callback(no_comms_callback)
+controller.set_joystick_callback(joystick_callback)
 
 # Ensure the input voltage is above the low level
 if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
@@ -94,11 +100,6 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
         yukon.register_with_slot(left_driver, LEFT_SLOT)
         yukon.register_with_slot(right_driver, RIGHT_SLOT)
         yukon.register_with_slot(led_module, LED_SLOT)
-
-        # Assign timeout and joystick callbacks to the controller, and start it
-        controller.set_timeout_callback(no_comms_callback)
-        controller.set_joystick_callback(joystick_callback)
-        controller.begin()
 
         yukon.verify_and_initialise()           # Verify that modules are attached to Yukon, and initialise them
         yukon.enable_main_output()              # Turn on power to the module slots
@@ -113,10 +114,10 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
         # Loop until the BOOT/USER button is pressed
         while not yukon.is_boot_pressed():
 
-            controller.check_receive()
-            print(controller.button_states_to_string(), controller.joystick[0], controller.joystick[1], sep=", ")
+            controller.check_receive()          # Check the controller for any new inputs
+            print(f"LSpeed = {left_driver.motor.speed()}, RSpeed = {right_driver.motor.speed()}", end=", ")
 
-            # Perform a pulsing animation on the LEDs if there is no controller connection
+            # Set the LEDs to a static colour if there is no controller connected
             if not controller.is_connected():
                 # Update all the LEDs to show the same colour
                 for led in range(led_module.strip.num_leds()):
@@ -133,21 +134,31 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
             except RuntimeError as e:
                 left_driver.disable()
                 right_driver.disable()
-                import time
+                led_module.disable()
                 print(str(e))
                 time.sleep(1.0)
                 yukon.enable_main_output()
                 left_driver.enable()
                 right_driver.enable()
+                led_module.enable()
 
             # Get the average voltage recorded from monitoring, and print it out
-            avg_voltage = yukon.get_readings()["Vi_avg"]
+            readings = yukon.get_readings()
+            avg_voltage = readings["Vi_avg"]
             print(f"V = {avg_voltage}")
 
             # Check if the average input voltage was below the low voltage level
             if avg_voltage < LOW_VOLTAGE_LEVEL:
                 exited_due_to_low_voltage = True
                 break           # Break out of the loop
+
+            # Convert the average voltage, current, and temperature to text to display on the controller
+            voltage_text = "{:.2f}V".format(round(readings["Vi_avg"], 2))
+            current_text = "{:.2f}A".format(round(readings["C_avg"], 2))
+            temperature_text = "{:.2f}°C".format(round(readings["T_avg"], 2))
+
+            # Send the converted data back to the controller
+            controller.sendFields(voltage_text, current_text, temperature_text)
 
     finally:
         # Put the board back into a safe state, regardless of how the program may have ended
@@ -166,4 +177,3 @@ if exited_due_to_low_voltage:
         time.sleep(BUZZER_PERIOD * BUZZER_DUTY)
         buzzer.off()
         time.sleep(BUZZER_PERIOD * (1.0 - BUZZER_DUTY))
-
