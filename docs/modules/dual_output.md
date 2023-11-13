@@ -71,7 +71,7 @@ For convenience the constants `OUTPUT_1 = 0` and `OUTPUT_2 = 0` are provided.
 
 ### Accessing the Outputs
 
-The `DualOutputModule` class uses MicroPython's native [Pin class](https://docs.micropython.org/en/latest/library/machine.Pin.html) for its outputs. To Pin objects are created and made accessible through the `.outputs` list.
+The `DualOutputModule` class uses MicroPython's native [Pin class](https://docs.micropython.org/en/latest/library/machine.Pin.html) for its outputs. Two Pin objects are created and made accessible through the `.outputs` list.
 
 Here is an example that enables and toggles one of the outputs.
 

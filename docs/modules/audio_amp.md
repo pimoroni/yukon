@@ -10,6 +10,7 @@ This is the library reference for the [Audio Amp Module for Yukon](https://pimor
   - [Changing its Volume](#changing-its-volume)
   - [Advanced Control](#advanced-control)
   - [Onboard Sensors](#onboard-sensors)
+- [Restrictions](#restrictions)
 - [References](#references)
   - [Constants](#constants)
   - [Variables](#variables)
@@ -86,6 +87,7 @@ is_paused() -> bool
 
 To see how these functions may be used, look at the [tone_song.py](../../examples/modules/audio_amp/tone_song.py) and [wav_play.py](../../examples/modules/audio_amp/wav_play.py) examples.
 
+:information_source: WAV files should be 16-bit signed, with a sample rate of either 44100 or 48000. Both stereo and mono files are supported, although as the module only drives a single speaker, saving your audio as mono will reduce your file sizes.
 
 ### Changing its Volume
 
@@ -107,6 +109,11 @@ detect_i2c() -> int
 ### Onboard Sensors
 
 The Audio Amp module features an onboard thermistor, letting its temperature be monitored. This can be read by calling `.read_temperature()`.
+
+
+## Restrictions
+
+:warning: AudioAmpModule makes use of MicroPython's I2S system to drive the amplifier. Currently this system only supports two instances at any one time, meaning only two modules can be used simultaneously.
 
 
 ## References

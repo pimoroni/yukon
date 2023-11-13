@@ -17,7 +17,6 @@ This is the library reference for the [Pimoroni Yukon](https://pimoroni.com/yuko
   - [Yukon Module](#yukon-module)
 - [Constants Reference](#constants-reference)
   - [Slot Constants](#slot-constants)
-  - [Sensor Addresses](#sensor-addresses)
 
 
 ## Getting Started
@@ -54,6 +53,13 @@ yukon.set_led('A', True)
 yukon.set_led('B', False)
 ```
 
+It is also possible to read back the current state of the LEDs using the `.is_led_on()` function.
+
+```python
+state_a = yukon.is_led_on('A')
+state_b = yukon.is_led_on('B')
+```
+
 
 ## Time Delays and Sleeping
 
@@ -65,13 +71,12 @@ Although it is possible to read these sensors standalone, it is recommended to l
 * `monitored_sleep_ms(ms)` - Repeatedly checks each sensor for a given number of milliseconds
 * `monitor_until_ms(end_ms)` - Repeatedly checks each sensor until a given end time has been reached (in milliseconds)
 * `monitor_once()` - Checks each sensor once, and summarises the readings
-* `monitor()` - The base monitoring function, all the other functions are based on.
 
 :warning: These functions should be used in place of the regular `time.sleep()`. This lets Yukon turn off the main output and raise exceptions in the event of dangerous conditions, protecting your hardware.
 
 The kinds of exceptions raised are: `OverVoltageError`, `UnderVoltageError`, `OverCurrentError`, `OverTemperatureError`, and `FaultError`. These are in addition to any standard python errors that may occur as a result of code running within monitor.
 
-:info: The end time that `monitor_until_ms()` expects is a value from the `time.ticks_ms()`.
+:information_source: The end time that `monitor_until_ms()` expects is a value from the `time.ticks_ms()`.
 
 Depending on the logging level set on Yukon, the monitor functions will print out the readings they have accumulated over their operation. For example, the minimum, maximum, and average voltage detected. For heavily populated Yukon boards, this printout can be quite lengthy, so the values shown can be filtered with optional `allowed` and `excluded` parameters. Below is an example of a sleep that will only report the maximum current.
 
@@ -82,7 +87,7 @@ yukon.monitored_sleep(0.01, allowed="C_max")
 After a monitor function has completed, the values it obtained can be accessed with the `get_readings()` function, which returns an ordered dictionary of key value pairs. The below example shows how the average temperature over the monitoring period can be read.
 
 ```python
-readings = yukon.GetReadings()
+readings = yukon.get_readings()
 temperature = readings["T_avg"]
 ```
 
@@ -100,15 +105,15 @@ In the event that your code needs to read Yukon's sensors directly, the followin
 In addition, each module will have functions for reading its various sensors:
 
 
-| Function | Audio Amp | Bench Power | Big Motor | Dual Motor | Dual Switched | LED Strip | Quad Servo Direct | Quad Servo Reg |
-|----------|-----------|-------------|-----------|------------|---------------|-----------|-------------------|----------|
-`read_voltage()` | - | Yes | - | - | - | - | - | - |
-`read_current()` | - | - | Yes | - | - | - | - | - |
-`read_temperature()` | Yes | Yes | Yes | Yes | Yes | Yes | - | Yes |
-`read_power_good()` | - | Yes | - | - | Yes | Yes | - | Yes |
-`read_fault()` | - | - | Yes | Yes | - | - | - | - |
-`read_adc1()` | - | - | - | - | - | - | Yes | - |
-`read_adc2()` | - | - | - | - | - | - | Yes | - |
+| Function           | Audio Amp | Bench Power | Big Motor | Dual Motor | Dual Switched | LED Strip | Quad Servo Direct | Quad Servo Reg | Serial Servo |
+|--------------------|-----------|-------------|-----------|------------|---------------|-----------|-------------------|----------------|--------------|
+`read_voltage()`     | -         | Yes         | -         | -          | -             | -         | -                 | -              | -            |
+`read_current()`     | -         | -           | Yes       | -          | -             | -         | -                 | -              | -            |
+`read_temperature()` | Yes       | Yes         | Yes       | Yes        | Yes           | Yes       | -                 | Yes            | -            |
+`read_power_good()`  | -         | Yes         | -         | -          | Yes           | Yes       | -                 | Yes            | -            |
+`read_fault()`       | -         | -           | Yes       | Yes        | -             | -         | -                 | -              | -            |
+`read_adc1()`        | -         | -           | -         | -          | -             | -         | Yes               | -              | -            |
+`read_adc2()`        | -         | -           | -         | -          | -             | -         | Yes               | -              | -            |
 
 
 ## Program Lifecycle
@@ -117,7 +122,7 @@ When writing a program for Yukon, there are a number of steps that should be inc
 
 
 ```python
-# Start with any imports needed for your pram
+# Start with any imports needed for your program
 from pimoroni_yukon import Yukon
 
 # Import the classes for the modules you intend to use
@@ -129,13 +134,14 @@ from pimoroni_yukon.logging import LOG_NONE, LOG_WARN, LOG_INFO, LOG_DEBUG
 # Create an instance of the Yukon class, configuring any software limits for voltage, current, and temperature. The logging level can also be set here.
 yukon = Yukon(voltage_limit=<?>, current_limit=<?>, temperature_limit=<?>, logging_level=<?>)
 
-# Immediately start a try block, to catch any exceptions and put the board back into a safe state
+# Create instances of your modules here, if their slots are known
+module = <ModuleClass>
+
+# Start a try block to catch any exceptions and put the board back into a safe state
 try:
-  # Create instances of your modules here
-  module1 = <ModuleClass>
 
   # Register modules with the Yukon class
-  yukon.register_with_slot(module1, 1)
+  yukon.register_with_slot(module, 1)
 
   # Initialise Yukon's registered modules
   yukon.verify_and_initialise()
@@ -144,7 +150,7 @@ try:
   yukon.enable_main_output()
 
   # Enable the module
-  module1.enable()
+  module.enable()
 
   # Loop forever
   while True:
@@ -195,17 +201,17 @@ DETECTION_ADC_HIGH = 3.2
 #### Methods
 Here is the complete list of methods available on the `Yukon` class:
 ```python
-## Initialisation ##
+# Initialisation
 Yukon(voltage_limit=DEFAULT_VOLTAGE_LIMIT : float,
       current_limit=DEFAULT_CURRENT_LIMIT : float,
       temperature_limit=DEFAULT_TEMPERATURE_LIMIT : float
       logging_level=logging.LOG_INFO : int)
 reset() -> None
 
-## Misc ##
+# Misc
 change_logging(logging_level : int) -> None
 
-## Slot ##
+# Slot
 find_slots_with(module_type : type[YukonModule]) -> list[SLOT]
 register_with_slot(module : YukonModule, slot : int | SLOT) -> None
 deregister_slot(slot : int | SLOT) -> None
@@ -215,18 +221,18 @@ verify_and_initialise(allow_unregistered : bool | int | SLOT | list | tuple,
                    allow_discrepencies : bool | int | SLOT | list | tuple,
                    allow_no_modules : bool) -> None
 
-## Interaction ##
+# Interaction
 is_pressed(switch : int | string) -> bool
 is_boot_pressed() -> bool
 is_led_on(switch: int | string) -> bool
 set_led(switch : int | string, value : bool) -> None
 
-## Power Control ##
+# Power Control
 enable_main_output() -> None
 disable_main_output() -> None
 is_main_output_enabled() -> bool
 
-## Sensing ##
+# Sensing
 read_input_voltage() -> float
 read_output_voltage() -> float
 read_current() -> float
@@ -234,7 +240,7 @@ read_temperature() -> float
 read_slot_adc1(slot : SLOT) -> float
 read_slot_adc2(slot : SLOT) -> float
 
-## Monitoring ##
+# Monitoring
 assign_monitor_action(callback_function : Any) -> None
 monitor() -> None
 monitored_sleep(seconds : float, allowed : list | None, excluded : list | None) -> None
@@ -249,18 +255,18 @@ clear_readings() -> None
 ### Yukon Module
 
 ```python
-## Address Checking ##
+# Address Checking
 @staticmethod
 is_module(adc1_level : int, adc2_level : int, slow1 : bool, slow2 : bool, slow3 :bool) -> bool
 
-## Initialisation ##
+# Initialisation
 YukonModule()
 initialise(slot : SLOT, adc1_func : Any, adc2_func : Any) -> None
 is_initialised() -> bool
 deregister() -> None
 reset() -> None
 
-## Monitoring ##
+# Monitoring
 assign_monitor_action(callback_function : Any) -> None
 monitor() -> None
 get_readings() -> OrderedDict
@@ -359,14 +365,4 @@ SLOW2 = Pin.board.SLOT6_SLOW2
 SLOW3 = Pin.board.SLOT6_SLOW3
 ADC1_ADDR = 9         # 0b1001
 ADC2_THERM_ADDR = 10  # 0b1010
-```
-
-
-### Sensor Addresses
-
-```python
-CURRENT_SENSE_ADDR = 12       # 0b1100
-TEMP_SENSE_ADDR = 13          # 0b1101
-VOLTAGE_OUT_SENSE_ADDR = 14   # 0b1110
-VOLTAGE_IN_SENSE_ADDR = 15    # 0b1111
 ```

@@ -58,6 +58,7 @@ Play a sequence of tones out of an Audio Amp Module connected to Slot1.
 [audio_amp/wav_play.py](audio_amp/wav_play.py)
 
 Play wave files out of an Audio Amp Module connected to Slot1.
+You will need to copy the files "ahoy.wav" and "bye.wav" over to the root of your Yukon's filesystem.
 
 
 ## Bench Power Module

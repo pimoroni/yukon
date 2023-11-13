@@ -20,7 +20,7 @@ Yukon is a high-power modular robotics and engineering platform, able to drive y
 
 Powered by the RP2040, Yukon leverages the chip's unique pin capabilities to offer six slots for attaching a range of interchangeable hardware modules for driving high-powered devices. This lets you control motors, servos, steppers, speakers, LED strips, and more, all from a single board!
 
-Customise Yukon to suit almost any project, or started with a few modules and expand as a project grows. There is also a proto module for adding more features! Each module is screwed down to ensure a solid mechanical and electrical connection.
+Customise Yukon to suit almost any project, or start with a few modules and expand as a project grows. There is also a proto module for adding more features! Each module is screwed down to ensure a solid mechanical and electrical connection.
 
 * :link: [Buy a Yukon here](https://shop.pimoroni.com/products/yukon)
 
