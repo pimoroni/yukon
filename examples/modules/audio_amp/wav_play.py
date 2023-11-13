@@ -4,6 +4,7 @@ from pimoroni_yukon.modules import AudioAmpModule
 
 """
 Play wave files out of an Audio Amp Module connected to Slot1.
+You will need to copy the files "ahoy.wav" and "bye.wav" over to the root of your Yukon's filesystem.
 
 Press "A" to start the first WAV file, or stop if anything is already playing.
 Press "B" to start the second WAV file, or stop if anything is already playing.
@@ -12,8 +13,8 @@ Press "Boot/User" to exit the program.
 
 # Constants
 I2S_ID = 0                  # The I2S instance to use for audio (only 0 and 1 supported)
-WAV_FILE_A = "ahoy.wav"                         # The first wave file. Make sure this file is present in the root directory of your Yukon
-WAV_FILE_B = "Turret_turret_autosearch_4.wav"   # The second wave file. Make sure this file is present in the root directory of your Yukon
+WAV_FILE_A = "ahoy.wav"     # The first wave file. Make sure this file is present in the root directory of your Yukon
+WAV_FILE_B = "bye.wav"      # The second wave file. Make sure this file is present in the root directory of your Yukon
 VOLUME_A = 0.6              # The volume (between 0.0 and 1.0) to play the first file at
 VOLUME_B = 0.6              # The volume (between 0.0 and 1.0) to play the second file at
 
