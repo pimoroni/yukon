@@ -75,7 +75,7 @@ receive_on_data() -> None
 
 ### Initialising a Serial Servo
 
-The Yukon library includes support for the LX range of serial bus servos from LewanSoul/HiWonder (tested with the LX-16A and LX-224HV). This is offered via a `LXServo` class.
+The Yukon library currently supports the LX range of serial bus servos from LewanSoul/HiWonder (tested with the LX-16A and LX-224HV). This is offered via a `LXServo` class.
 
 To use an LX servo with the Serial Bus Servo module, create an instance of it, giving it the ID of the servo you wish to control (from 0 to 254), along with the uart and duplexer from the `SerialServoModule`.
 
@@ -96,6 +96,9 @@ yukon.monitored_sleep(1.0)
 servo = LXServo(SERVO_ID, module.uart, module.duplexer)
 # Create any additional LXServo objects here
 ```
+
+:information_source: Serial servos from the likes of Robotis, HerkuleX, FeeTech etc, can be supported by implementing similar classes that accept a `UART` and `Duplexer`.
+
 
 ### Controlling a Serial Servo
 
