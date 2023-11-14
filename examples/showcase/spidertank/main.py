@@ -12,12 +12,15 @@ from pimoroni_yukon.logging import LOG_WARN
 from leg_ik import Vector3, calculate_ik_3dof, Limits, rotate_y
 
 """
-This is a showcase of how Yukon can be used to drive a 3 degree of freedom hexapod robot.
+A showcase of Yukon as a hexapod robot, with 3 degrees of freedom per leg.
 It uses two Serial Bus Servo modules, one to control the left side servos,
 and the other to control the right side servos.
 
-There is also a proto module wired up to a buzzer to alert the user to the battery
-voltage getting too low.
+There is also a proto module wired up to a buzzer to alert the user to the
+battery voltage getting too low.
+
+The program performs inverse kinematics for each leg, with the target
+points following a tripod walking gait.
 
 Press "Boot/User" to exit the program, only if the buzzer is not sounding.
 If the buzzer sounds, disconnect power as soon as possible!

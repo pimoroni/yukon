@@ -5,6 +5,21 @@
 import math
 from collections import namedtuple
 
+"""
+This file contains a collection of classes and functions for performing
+the inverse kinematics (IK) of a 3 degree of freedom robot leg.
+
+The central class of this implementation is Vector3, which is used to store
+3D coordinates. The axes of these coordinates follow the left hand rule:
+* X = right/left
+* Y = up/down
+* Z = forward/back
+
+This IK implementation is derived from understandings gained by
+Christopher "ZodiusInfuser" Parrott, during the development of:
+https://github.com/ZodiusInfuser/TrueWalkSimulator
+"""
+
 Limits = namedtuple("Limits", ("min", "max"))
 
 
