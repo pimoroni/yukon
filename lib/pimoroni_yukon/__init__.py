@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import sys
 import time
 import tca
 from machine import ADC, Pin, I2C
@@ -13,6 +14,8 @@ from pimoroni_yukon.timing import ticks_ms, ticks_add, ticks_diff
 from pimoroni_yukon.conversion import u16_to_voltage_in, u16_to_voltage_out, u16_to_current, analog_to_temp
 from ucollections import OrderedDict, namedtuple
 
+
+YUKON_VERSION = "1.0.0"
 
 Slot = namedtuple("Slot", ("ID",
                            "FAST1",
@@ -146,6 +149,8 @@ class Yukon:
         self.__current_limit = current_limit
         self.__temperature_limit = temperature_limit
         logging.level = logging_level
+
+        logging.info(f"> Running Yukon {YUKON_VERSION}, {sys.version.split('; ')[1]}")
 
         self.__slot_assignments = OrderedDict({
             SLOT1: None,
