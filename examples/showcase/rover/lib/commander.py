@@ -4,7 +4,6 @@
 
 from pimoroni_yukon.timing import ticks_diff, ticks_ms
 
-
 """
 JoyBTCommander is a class for communicating with an Android-based
 bluetooth serial controller app of the same name. This app provides
@@ -85,15 +84,17 @@ class JoyBTCommander():
         # < 0X02   Buttons state   0X01   DataField#1   0x04   DataField#2   0x05   DataField#3    0x03 >
         # < 0X02      "01011"      0X01     "120.00"    0x04     "-4500"     0x05  "Motor enabled" 0x03 >    // example
 
-        self.__uart.write(self.STX)                         # Start transmission
-        self.__uart.write(self.__button_states_to_string())   # Button state feedback
-        self.__uart.write(0x1)
-        self.__uart.write(str(data_field1))                 # Data Field #1
-        self.__uart.write(0x4)
-        self.__uart.write(str(data_field2))                 # Data Field #2
-        self.__uart.write(0x5)
-        self.__uart.write(str(data_field3))                 # Data Field #3
-        self.__uart.write(self.ETX)                         # End transmission
+        buffer = bytearray()
+        buffer.append(self.STX)                             # Start transmission
+        buffer.extend(self.__button_states_to_string())     # Button state feedback
+        buffer.append(0x1)
+        buffer.extend(str(data_field1))                     # Data Field #1
+        buffer.append(0x4)
+        buffer.extend(str(data_field2))                     # Data Field #2
+        buffer.append(0x5)
+        buffer.extend(str(data_field3))                     # Data Field #3
+        buffer.append(self.ETX)                             # End transmission
+        self.__uart.write(buffer)
 
     def is_button_pressed(self, button):
         if button < 0 or button >= self.BUTTON_COUNT:

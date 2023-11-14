@@ -4,12 +4,28 @@ from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT6 as LEFT_SLOT
 from pimoroni_yukon import SLOT1 as RIGHT_SLOT
 from pimoroni_yukon import SLOT5 as LED_SLOT
-from pimoroni_yukon import SLOT2 as BT_SLOT
-from pimoroni_yukon import SLOT3 as BUZZER_SLOT
+from pimoroni_yukon import SLOT3 as BT_BUZZ_SLOT
 from pimoroni_yukon.modules import BigMotorModule, LEDStripModule
 from pimoroni_yukon import ticks_ms, ticks_add
 from pimoroni_yukon.logging import LOG_WARN
 from commander import JoyBTCommander
+
+"""
+A showcase of Yukon as a differential drive rover.
+It uses two Big Motor modules, one to control the left side motors,
+and the other to control the right side motors.
+
+There is a LED Strip module controlling left and right strips that represent
+each side's speed as a colour from green -> blue -> red. Additionally, there is
+a proto module wired up to a buzzer to alert the user to the battery voltage getting
+too low, which also exposes the UART for connection to a bluetooth serial transceiver.
+
+The program receives commands from the JoyBTCommander Android App and converts them to
+motor speeds. it also sends the voltage, current, and temperature of Yukon back to the App.
+
+Press "Boot/User" to exit the program, only if the buzzer is not sounding.
+If the buzzer sounds, disconnect power as soon as possible!
+"""
 
 # Constants
 UPDATES = 50                            # How many times to update motors and LEDs per second
@@ -41,11 +57,11 @@ led_module = LEDStripModule(STRIP_TYPE,             # Create a LEDStripModule ob
                             LEDS_PER_STRIP)
 
 controller = JoyBTCommander(UART(BT_UART_ID,        # Create a JoyBTCommander object, providing it with
-                            tx=BT_SLOT.FAST1,       # a UART object for the serial bluetooth tranceiver
-                            rx=BT_SLOT.FAST2,
+                            tx=BT_BUZZ_SLOT.FAST1,  # a UART object for the serial bluetooth tranceiver
+                            rx=BT_BUZZ_SLOT.FAST2,
                             baudrate=BT_BAUDRATE),
                             BT_NO_COMMS_TIMEOUT)
-buzzer = BUZZER_SLOT.FAST3                          # The pin the low voltage buzzer is attached to
+buzzer = BT_BUZZ_SLOT.FAST3                         # The pin the low voltage buzzer is attached to
 exited_due_to_low_voltage = True                    # Record if the program exited due to low voltage (assume true to start)
 
 
@@ -115,7 +131,7 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
         while not yukon.is_boot_pressed():
 
             controller.check_receive()          # Check the controller for any new inputs
-            print(f"LSpeed = {left_driver.motor.speed()}, RSpeed = {right_driver.motor.speed()}", end=", ")
+            print(f"LSpeed = {0.0 - left_driver.motor.speed()}, RSpeed = {right_driver.motor.speed()}", end=", ")
 
             # Set the LEDs to a static colour if there is no controller connected
             if not controller.is_connected():
@@ -158,7 +174,7 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
             temperature_text = "{:.2f}°C".format(round(readings["T_avg"], 2))
 
             # Send the converted data back to the controller
-            controller.sendFields(voltage_text, current_text, temperature_text)
+            controller.send_fields(voltage_text, current_text, temperature_text)
 
     finally:
         # Put the board back into a safe state, regardless of how the program may have ended
