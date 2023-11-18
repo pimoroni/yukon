@@ -67,7 +67,7 @@ class WavPlayer:
 
     def play_wav(self, wav_file, loop=False):
         if os.listdir(self.__root).count(wav_file) == 0:
-            raise ValueError("%s: not found" % wav_file)
+            raise ValueError(f"'{wav_file}' not found")
 
         self.__stop_i2s()                                       # Stop any active playback and terminate the I2S instance
 

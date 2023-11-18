@@ -19,18 +19,21 @@ class OkayStepper:
     STEP_PHASES = 4
     DEFAULT_MICROSTEPS = 8
 
-    def __init__(self, motor_a, motor_b, current_scale=DEFAULT_CURRENT_SCALE, microsteps=DEFAULT_MICROSTEPS, debug_pin=None):
-        self.motor_a = motor_a
-        self.motor_b = motor_b
+    def __init__(self, motor_a, motor_b, alt_motor_a=None, alt_motor_b=None, steps_per_unit=1.0, current_scale=DEFAULT_CURRENT_SCALE, microsteps=DEFAULT_MICROSTEPS, debug_pin=None):
+        self.__motor_a = motor_a
+        self.__motor_b = motor_b
+        self.__alt_motor_a = alt_motor_a
+        self.__alt_motor_b = alt_motor_b
+        self.__steps_per_unit = steps_per_unit
         self.__debug_pin = debug_pin
         if self.__debug_pin is not None:
             self.__debug_pin.init(Pin.OUT)
 
         self.__moving = False
-        self.current_microstep = 0
-        self.end_microstep = 0
+        self.__current_microstep = 0
+        self.__end_microstep = 0
 
-        self.step_timer = Timer()
+        self.__step_timer = Timer()
 
         current_scale = max(min(current_scale, 1.0), 0.0)
 
@@ -48,24 +51,32 @@ class OkayStepper:
         return table
 
     def __set_duties(self, table):
-        stepper_entry = table[self.current_microstep % self.__total_microsteps]
-        self.motor_a.duty(stepper_entry[0])
-        self.motor_b.duty(stepper_entry[1])
+        stepper_entry = table[self.__current_microstep % self.__total_microsteps]
+        self.__motor_a.duty(stepper_entry[0])
+        self.__motor_b.duty(stepper_entry[1])
+        if self.__alt_motor_a is not None:
+            self.__alt_motor_a.duty(stepper_entry[0])
+        if self.__alt_motor_b is not None:
+            self.__alt_motor_b.duty(stepper_entry[1])
 
     def hold(self):
         self.__set_duties(self.__hold_table)
 
     def release(self):
-        self.step_timer.deinit()
-        self.motor_a.disable()
-        self.motor_b.disable()
+        self.__step_timer.deinit()
+        self.__motor_a.disable()
+        self.__motor_b.disable()
+        if self.__alt_motor_a is not None:
+            self.__alt_motor_a.disable()
+        if self.__alt_motor_b is not None:
+            self.__alt_motor_b.disable()
 
     def __increase_microstep(self, timer):
         if self.__debug_pin is not None:
             self.__debug_pin.on()
 
-        self.current_microstep += 1
-        if self.current_microstep < self.end_microstep:
+        self.__current_microstep += 1
+        if self.__current_microstep < self.__end_microstep:
             self.__set_duties(self.__step_table)
         else:
             timer.deinit()
@@ -79,8 +90,8 @@ class OkayStepper:
         if self.__debug_pin is not None:
             self.__debug_pin.on()
 
-        self.current_microstep -= 1
-        if self.current_microstep > self.end_microstep:
+        self.__current_microstep -= 1
+        if self.__current_microstep > self.__end_microstep:
             self.__set_duties(self.__step_table)
         else:
             timer.deinit()
@@ -101,9 +112,9 @@ class OkayStepper:
         if self.__debug_pin is not None:
             self.__debug_pin.off()
 
-    def __move_by(self, microstep_diff, travel_time, debug=True):
+    def __move_by(self, microstep_diff, travel_time, debug=False):
         if microstep_diff != 0:
-            self.end_microstep = self.current_microstep + microstep_diff
+            self.__end_microstep = self.__current_microstep + microstep_diff
 
             tick_hz = 1000000
             period_per_step = int((travel_time * tick_hz) / abs(microstep_diff))
@@ -112,33 +123,57 @@ class OkayStepper:
                 tick_hz //= 10
 
             if debug:
-                print(f"> Moving from {self.current_microstep / self.__microsteps} to {self.end_microstep / self.__microsteps}, in {travel_time}s")
+                print(f"> Moving from {self.__current_microstep / self.__microsteps} to {self.__end_microstep / self.__microsteps}, in {travel_time}s")
 
             self.__moving = True
-            self.step_timer.init(mode=Timer.PERIODIC, period=period_per_step, tick_hz=tick_hz,
-                                 callback=self.__increase_microstep if microstep_diff > 0 else self.__decrease_microstep)
+            self.__step_timer.init(mode=Timer.PERIODIC, period=period_per_step, tick_hz=tick_hz,
+                                   callback=self.__increase_microstep if microstep_diff > 0 else self.__decrease_microstep)
         else:
             if debug:
-                print(f"> Idling at {self.current_microstep / self.__microsteps} for {travel_time}s")
+                print(f"> Idling at {self.__current_microstep / self.__microsteps} for {travel_time}s")
 
             self.hold()
             self.__moving = True
-            self.step_timer.init(mode=Timer.ONE_SHOT,
-                                 period=int(travel_time * 1000),
-                                 tick_hz=1000,
-                                 callback=self.__hold_microstep)
+            self.__step_timer.init(mode=Timer.ONE_SHOT,
+                                   period=int(travel_time * 1000),
+                                   tick_hz=1000,
+                                   callback=self.__hold_microstep)
 
-    def move_to(self, step, travel_time, debug=True):
-        self.step_timer.deinit()
+    def move_to_step(self, step, travel_time, debug=False):
+        self.__step_timer.deinit()
+        if travel_time <= 0.0:
+            raise ValueError("travel_time out of range. Expected greater than 0.0")
 
-        microstep_diff = int(step * self.__microsteps) - self.current_microstep
+        microstep_diff = int(step * self.__microsteps) - self.__current_microstep
         self.__move_by(microstep_diff, travel_time, debug)
 
-    def move_by(self, steps, travel_time, debug=True):
-        self.step_timer.deinit()
+    def move_by_steps(self, steps, travel_time, debug=False):
+        self.__step_timer.deinit()
+        if travel_time <= 0.0:
+            raise ValueError("travel_time out of range. Expected greater than 0.0")
 
         microstep_diff = int(steps * self.__microsteps)
         self.__move_by(microstep_diff, travel_time, debug)
+
+    def move_to(self, unit, travel_time, debug=False):
+        self.move_to_step(unit * self.__steps_per_unit, travel_time, debug)
+
+    def move_by(self, units, travel_time, debug=False):
+        self.move_by_steps(units * self.__steps_per_unit, travel_time, debug)
+
+    def steps(self):
+        return self.__current_microstep / self.__microsteps
+
+    def units(self):
+        return self.steps() / self.__steps_per_unit
+
+    def step_diff(self, step):
+        microstep_diff = int(step * self.__microsteps) - self.__current_microstep
+        return microstep_diff / self.__microsteps
+
+    def unit_diff(self, unit):
+        step = unit * self.__steps_per_unit
+        return self.step_diff(step) / self.__steps_per_unit
 
     def is_moving(self):
         return self.__moving
@@ -146,3 +181,6 @@ class OkayStepper:
     def wait_for_move(self):
         while self.__moving:
             pass
+
+    def zero_position(self):
+        self.__current_microstep = 0
