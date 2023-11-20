@@ -173,7 +173,7 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
             current_time = ticks_add(current_time, TIMESTEP_MS)
 
             # Monitor sensors until the current time is reached, recording the min, max, and average for each
-            # This approach accounts for the updates takinga non-zero amount of time to complete
+            # This approach accounts for the updates taking a non-zero amount of time to complete
             yukon.monitor_until_ms(current_time)
 
             # Get the average voltage recorded from monitoring, and print it out
