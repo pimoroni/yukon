@@ -131,11 +131,11 @@ def move_to_xy(x, y, speed=BELT_SPEED_MM_PER_SEC):
     dx = x_stepper.unit_diff(x)
     dy = y_stepper.unit_diff(y)
 
-    travel_time = math.sqrt(dx * dx + dy * dy) / speed
-    if travel_time > 0:
-        print(f"Moving to X {x}, Y {y}, in T {travel_time}")
-        x_stepper.move_to(x, travel_time)
-        y_stepper.move_to(y, travel_time)
+    duration = math.sqrt(dx * dx + dy * dy) / speed
+    if duration > 0:
+        print(f"Moving to X {x}, Y {y}, in T {duration}")
+        x_stepper.move_to(x, duration)
+        y_stepper.move_to(y, duration)
 
         x_stepper.wait_for_move()
         y_stepper.wait_for_move()
@@ -143,11 +143,11 @@ def move_to_xy(x, y, speed=BELT_SPEED_MM_PER_SEC):
 
 # Move the plotter by a given x and y position (in mm) at a set speed
 def move_by_xy(dx, dy, speed=BELT_SPEED_MM_PER_SEC):
-    travel_time = math.sqrt(dx * dx + dy * dy) / speed
-    if travel_time > 0:
-        print(f"Moving by X {dx}, Y {dy}, in T {travel_time}")
-        x_stepper.move_by(dx, travel_time)
-        y_stepper.move_by(dy, travel_time)
+    duration = math.sqrt(dx * dx + dy * dy) / speed
+    if duration > 0:
+        print(f"Moving by X {dx}, Y {dy}, in T {duration}")
+        x_stepper.move_by(dx, duration)
+        y_stepper.move_by(dy, duration)
 
         x_stepper.wait_for_move()
         y_stepper.wait_for_move()
@@ -156,30 +156,30 @@ def move_by_xy(dx, dy, speed=BELT_SPEED_MM_PER_SEC):
 # Move the plotter's pen to its drawing height
 def lower_pen():
     dz = z_stepper.unit_diff(PEN_LOWER_HEIGHT_MM)
-    travel_time = abs(dz) / SCREW_SPEED_MM_PER_SEC
-    if travel_time > 0:
-        print(f"Lowering Pen to {PEN_LOWER_HEIGHT_MM}, in T {travel_time}")
-        z_stepper.move_to(PEN_LOWER_HEIGHT_MM, travel_time)
+    duration = abs(dz) / SCREW_SPEED_MM_PER_SEC
+    if duration > 0:
+        print(f"Lowering Pen to {PEN_LOWER_HEIGHT_MM}, in T {duration}")
+        z_stepper.move_to(PEN_LOWER_HEIGHT_MM, duration)
         z_stepper.wait_for_move()
 
 
 # Move the plotter's pen to just above its drawing height
 def lift_pen():
     dz = z_stepper.unit_diff(PEN_LIFT_HEIGHT_MM)
-    travel_time = abs(dz) / SCREW_SPEED_MM_PER_SEC
-    if travel_time > 0:
-        print(f"Lifting Pen to {PEN_LIFT_HEIGHT_MM}, in T {travel_time}")
-        z_stepper.move_to(PEN_LIFT_HEIGHT_MM, travel_time)
+    duration = abs(dz) / SCREW_SPEED_MM_PER_SEC
+    if duration > 0:
+        print(f"Lifting Pen to {PEN_LIFT_HEIGHT_MM}, in T {duration}")
+        z_stepper.move_to(PEN_LIFT_HEIGHT_MM, duration)
         z_stepper.wait_for_move()
 
 
 # Move the plotter's pen to its home height
 def raise_pen():
     dz = z_stepper.units()
-    travel_time = abs(dz) / SCREW_SPEED_MM_PER_SEC
-    if travel_time > 0:
-        print(f"Raising Pen to 0, in T {travel_time}")
-        z_stepper.move_to(0, travel_time)
+    duration = abs(dz) / SCREW_SPEED_MM_PER_SEC
+    if duration > 0:
+        print(f"Raising Pen to 0, in T {duration}")
+        z_stepper.move_to(0, duration)
         z_stepper.wait_for_move()
 
 

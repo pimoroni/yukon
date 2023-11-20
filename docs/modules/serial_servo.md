@@ -68,6 +68,7 @@ To control whether TX or RX is connected to the common Data line of serial bus s
 The `Duplexer` has the following functions available.
 
 ```python
+Duplexer(tx_to_data: bool, rx_to_data: bool, active_low: bool=False)
 reset() -> None
 send_on_data() -> None
 receive_on_data() -> None

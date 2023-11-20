@@ -53,8 +53,8 @@ try:
                 yukon.set_led('A', False)                   # Show that the stepper motor is no longer moving
                 break                                       # Exit the main while loop
 
-            step, travel_time = MOVEMENTS[next_movement]    # Extract the current movement from the list
-            stepper.move_to(step, travel_time)              # Initiate the movement
+            step, duration = MOVEMENTS[next_movement]       # Extract the current movement from the list
+            stepper.move_to(step, duration)                 # Initiate the movement
             yukon.set_led('A', True)                        # Show that the stepper motor is moving
             next_movement += 1                              # Advance the next movement index
 

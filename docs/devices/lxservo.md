@@ -1,6 +1,6 @@
 # LX Servo Class - Library Reference <!-- omit in toc -->
 
-This is the library reference for the `LXServo` classed used to drive [LX-16A](https://pimoroni.com/yukon) servos with Pimoroni Yukon's [Serial Bus Servo Module](https://pimoroni.com/yukon).
+This is the library reference for the `LXServo` class used to drive [LX-16A](https://pimoroni.com/yukon) servos with Pimoroni Yukon's [Serial Bus Servo Module](https://pimoroni.com/yukon).
 
 - [References](#references)
   - [Constants](#constants)
@@ -25,8 +25,14 @@ OVER_LOADED = 0b100
 ### Functions
 
 ```python
-LXServo(id: int, uart: UART, duplexer: Duplexer, timeout: float=DEFAULT_READ_TIMEOUT, debug_pin: Pin=None)
+# Initialisation
+LXServo(id: int,
+        uart: UART,
+        duplexer: Duplexer,
+        timeout: float=DEFAULT_READ_TIMEOUT,
+        debug_pin: Pin=None)
 
+# Identification
 @property
 id -> int
 
@@ -79,7 +85,10 @@ configure_faults(conditions: int) -> None
 ```
 
 ```python
-LXServoBroadcaster(uart: UART, duplexer: Duplexer, timeout: float=DEFAULT_READ_TIMEOUT, debug_pin: Pin=None)
+LXServoBroadcaster(uart: UART,
+                   duplexer: Duplexer,
+                   timeout: float=DEFAULT_READ_TIMEOUT,
+                   debug_pin: Pin=None)
 
 # Power Control
 enable_all() -> None

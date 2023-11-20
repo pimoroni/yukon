@@ -72,20 +72,9 @@ With the `AudioAmpModule` powered, its output can be enabled or disabled by call
 
 For playing audio out of the Audio Amp module, the Yukon library includes a `WavPlayer` class. This is created automatically by the `AudioAmpModule` and can be accessed by calling `module.player`.
 
-The `WavPlayer` has the following functions available.
+The WavePlayer lets you play both WAV files and pure tones. To play a WAV file, call `.play_wav(wav_file)` with the name of the file to play. To play a tone, call `.play_tone(frequency, amplitude)` with the frequency and amplitude of the tone to play. It is also possible to `.pause()`, `.resume()`, and `.stop()` playback, as well as query whether audio `.is_playing()` or `.is_paused()`.
 
-```python
-set_root(root: string) -> None
-play_wav(wav_file: string, loop: bool=False) -> None
-play_tone(frequency: float, amplitude: float) -> None
-pause() -> None
-resume() -> None
-stop() -> None
-is_playing() -> bool
-is_paused() -> bool
-```
-
-To see how these functions may be used, look at the [tone_song.py](../../examples/modules/audio_amp/tone_song.py) and [wav_play.py](../../examples/modules/audio_amp/wav_play.py) examples.
+For more information on how to use the WavPlayer, refer to the [WavPlayer Library Reference](/docs/devices/wavplayer.md), as well as the [tone_song.py](/examples/modules/audio_amp/tone_song.py) and [wav_play.py](/examples/modules/audio_amp/wav_play.py) examples.
 
 :information_source: WAV files should be 16-bit signed, with a sample rate of either 44100 or 48000. Both stereo and mono files are supported, although as the module only drives a single speaker, saving your audio as mono will reduce your file sizes.
 

@@ -11,12 +11,9 @@ import pimoroni_yukon.logging as logging
 
 class DualMotorModule(YukonModule):
     NAME = "Dual Motor"
-    DUAL = 0
-    STEPPER = 1
     NUM_MOTORS = 2
-    MOTOR_1 = 0       # Only for DUAL motor_type
-    MOTOR_2 = 1       # Only for DUAL motor_type
-    NUM_STEPPERS = 1
+    MOTOR_1 = 0
+    MOTOR_2 = 1
     FAULT_THRESHOLD = 0.1
     DEFAULT_FREQUENCY = 25000
     TEMPERATURE_THRESHOLD = 50.0
@@ -42,12 +39,8 @@ class DualMotorModule(YukonModule):
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         return adc1_level == ADC_HIGH and slow1 is IO_LOW and slow2 is IO_LOW and slow3 is IO_HIGH
 
-    def __init__(self, motor_type=DUAL, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):
+    def __init__(self, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):
         super().__init__()
-        self.__motor_type = motor_type
-        if self.__motor_type == self.STEPPER:
-            self.NAME += " (Stepper)"
-
         self.__frequency = frequency
         self.__current_limit = current_limit
         self.__init_motors = init_motors
@@ -70,14 +63,11 @@ class DualMotorModule(YukonModule):
         pins_p = (slot.FAST2, slot.FAST4)
         pins_n = (slot.FAST1, slot.FAST3)
 
-        if self.__motor_type == self.DUAL:
-            if self.__init_motors:
-                from motor import Motor
+        if self.__init_motors:
+            from motor import Motor
 
-                # Create motor objects
-                self.motors = [Motor((pins_p[i], pins_n[i]), freq=self.__frequency) for i in range(len(pins_p))]
-        else:
-            raise NotImplementedError("Stepper motor support for the Dual Motor Module is currently not implemented")
+            # Create motor objects
+            self.motors = [Motor((pins_p[i], pins_n[i]), freq=self.__frequency) for i in range(len(pins_p))]
 
         if not self.__init_motors:
             self.motor_pins = [(pins_p[i], pins_n[i]) for i in range(len(pins_p))]
@@ -91,7 +81,7 @@ class DualMotorModule(YukonModule):
         super().initialise(slot, adc1_func, adc2_func)
 
     def reset(self):
-        if self.__motor_type == self.DUAL and self.__init_motors:
+        if self.__init_motors:
             for motor in self.motors:
                 motor.disable()
 
@@ -145,15 +135,15 @@ class DualMotorModule(YukonModule):
 
     @property
     def motor1(self):
-        if self.__motor_type == self.DUAL and self.__init_motors:
+        if self.__init_motors:
             return self.motors[0]
-        raise RuntimeError("motor1 is only accessible with the DUAL motor_type, and if init_motors was True during initialisation")
+        raise RuntimeError("motor1 is only accessible if init_motors was True during initialisation")
 
     @property
     def motor2(self):
-        if self.__motor_type == self.DUAL and self.__init_motors:
+        if self.__init_motors:
             return self.motors[1]
-        raise RuntimeError("motor2 is only accessible with the DUAL motor_type, and if init_motors was True during initialisation")
+        raise RuntimeError("motor2 is only accessible if init_motors was True during initialisation")
 
     def read_fault(self):
         return self.__read_adc1() <= self.FAULT_THRESHOLD

@@ -3,7 +3,6 @@
 This is the library reference for the [Dual Motor / Bipolar Stepper Module for Yukon](https://pimoroni.com/yukon).
 
 - [Getting Started](#getting-started)
-  - [Motor Types](#motor-types)
 - [Initialising the Module](#initialising-the-module)
 - [Using the Module](#using-the-module)
   - [Enabling its Driver](#enabling-its-driver)
@@ -26,26 +25,14 @@ To start using a Dual Motor / Bipolar Stepper Module, you first need to import t
 from pimoroni_yukon.modules import DualMotorModule
 ```
 
-Then create an instance of `DualMotorModule`, giving it the type of motors to be driven and the frequency to drive them at.
+Then create an instance of `DualMotorModule`, giving it the frequency to drive the motors at.
 
 ```python
 # Constants
-MOTOR_TYPE = DualMotorModule.DUAL
 FREQUENCY = 25000
 
-module = DualMotorModule(MOTOR_TYPE,
-                         FREQUENCY)
+module = DualMotorModule(FREQUENCY)
 ```
-
-
-### Motor Types
-
-The `DualMotorModule` can drive both 2x brushed DC motors, or 1x bipolar stepper motor. The type of motor driven can be chosen using the following constants:
-
-* `DualMotorModule.DUAL` = `0`
-* `DualMotorModule.STEPPER` = `1`
-
-:warning: Stepper motor support is currently not implemented in the Yukon library. This will be added in the near future.
 
 
 ## Initialising the Module
@@ -150,19 +137,13 @@ To use `OkayStepper`, set up the `DualMotorModule` as you would for driving two 
 stepper = OkayStepper(module.motor1, module.motor2)
 ```
 
-From there, the stepper motor can be controlled with the following functions.
+With an OkayStepper object created, the easiest way to control it is with the `.move_to(unit, duration)` function. This takes a target position, along with the duration in seconds the movement will occur over.
 
 ```python
-OkayStepper(motor_a: Motor, motor_b: Motor, current_scale: float=DEFAULT_CURRENT_SCALE, microsteps: int=DEFAULT_MICROSTEPS, debug_pin: Pin=None)
-hold() -> None
-release() -> None
-move_to(step: float, travel_time: float, debug: int=True) -> None
-move_by(steps: float, travel_time: float, debug: int=True) -> None
-is_moving() -> bool
-wait_for_move() -> None
+stepper.move_to(45, 5)  # Move to 45 units in 5 seconds
 ```
 
-To see how these functions may be used, look at the [single_stepper.py](../../examples/modules/dual_motor/single_stepper.py) example.
+For further ways to control stepper motors, refer to the [OkayStepper Library Reference](/docs/devices/okaystepper.md), as well as the [single_stepper.py](../../examples/modules/dual_motor/single_stepper.py) example.
 
 
 ### Onboard Sensors
@@ -178,12 +159,9 @@ Additionally, the fault state of the motor driver can be read by calling `.read_
 
 ```python
 NAME = "Dual Motor"
-DUAL = 0
-STEPPER = 1
 NUM_MOTORS = 2
-MOTOR_1 = 0       # Only for DUAL motor_type
-MOTOR_2 = 1       # Only for DUAL motor_type
-NUM_STEPPERS = 1
+MOTOR_1 = 0
+MOTOR_2 = 1
 FAULT_THRESHOLD = 0.1
 DEFAULT_FREQUENCY = 25000
 TEMPERATURE_THRESHOLD = 50.0
@@ -222,8 +200,7 @@ motor_pins: tuple[tuple[Pin, Pin], tuple[Pin, Pin]]
 is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool
 
 # Initialisation
-DualMotorModule(motor_type: int=DUAL,
-                frequency: float=DEFAULT_FREQUENCY,
+DualMotorModule(frequency: float=DEFAULT_FREQUENCY,
                 current_limit: float=DEFAULT_CURRENT_LIMIT,
                 init_motors: bool=True)
 initialise(slot: SLOT, adc1_func: Callable, adc2_func: Callable) -> None
@@ -238,7 +215,7 @@ is_enabled() -> bool
 current_limit() -> float
 set_current_limit(amps: float) -> None
 
-# Access (only usable if motor_type is DUAL and init_motors was True)
+# Access (only usable if init_motors was True)
 @property
 motor1 -> Motor
 @property
