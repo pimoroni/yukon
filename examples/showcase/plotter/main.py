@@ -30,9 +30,6 @@ Press "B" to re-home the machine after plotting.
 GCODE_FILE = "yukon_logo.gcode"     # The file containing gcode instructions for drawing with the plotter
 HOME_ON_PROGRAM_RUN = True          # Should homing happen automatically when the program is first run, or require a button to be pressed?
 
-CURRENT_SCALE = 0.5
-IDLE_CURRENT_SCALE = 0.1
-
 STEPS_PER_REV = 200                 # The number of steps each stepper motor takes to perform a full revolution
 BELT_PITCH = 3                      # The spacing between each notch of the belts used on the X and Y axes
 PULLEY_TOOTH_COUNT = 20             # The number of teeth on the X and Y axes direct-driven pulleys
