@@ -4,6 +4,7 @@ This folder contains a collection of *Showcase* examples, that bring together co
 
 - [RC Rover](#rc-rover)
 - [Spider Tank](#spider-tank)
+- [CNC Plotter](#cnc-plotter)
 
 
 ## RC Rover
@@ -24,3 +25,13 @@ A showcase of Yukon as a hexapod robot, with 3 degrees of freedom per leg. It us
 There is also a proto module wired up to a buzzer to alert the user to the battery voltage getting too low.
 
 The program performs inverse kinematics for each leg, with the target points following a tripod walking gait.
+
+
+## CNC Plotter
+[plotter/main.py](plotter/main.py)
+
+A showcase of Yukon as a 3-axis CNC pen plotter. It uses four Dual Motor modules, to control for stepper motors (the Y-Axis has two steppers). It also uses two Quad Servo Direct modules to provide convenient wiring for the machine's limit switches.
+
+The program first homes the 3 axes of the machine to give an origin from which to plot from. Then after pressing 'A' it executes commands from a .gcode file loaded onto Yukon.
+
+Only a subset of G-Code is supported, sufficient for performing linear moves of the machine, and raising and lowering its pen.

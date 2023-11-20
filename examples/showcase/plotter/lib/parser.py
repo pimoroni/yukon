@@ -2,7 +2,16 @@ import os
 from collections import namedtuple
 
 """
+GCodeParser is a class for processing G-Code files into movement
+and pen height commands for use with a CNC plotter.
 
+Only a subset of G-Code commands are supported:
+- G0/G1 - Linear Move
+- G90 - Absolute Positioning
+- G91 - Relative Positioning
+- M3 - Spindle CW / Laser On (used to lower the pen to the page)
+- M4 - Spindle CCW / Laser On (used to raise the pen just above the page)
+- M5 - Spindle / Laser Off (used to raise the pen to its home position)
 """
 
 Rect = namedtuple("Rect", ("x", "y", "width", "height"))
