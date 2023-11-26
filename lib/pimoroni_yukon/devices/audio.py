@@ -69,7 +69,7 @@ class WavPlayer:
         if os.listdir(self.__root).count(wav_file) == 0:
             raise ValueError("%s: not found" % wav_file)
 
-        self.__stop_i2s()                                       # Stop any active playback and terminate the I2S instance
+        self.stop()                                             # Stop any active playback and terminate the I2S instance
 
         self.__wav_file = open(self.__root + wav_file, "rb")    # Open the chosen WAV file in read-only, binary mode
         self.__loop_wav = loop                                  # Record if the user wants the file to loop
@@ -136,6 +136,13 @@ class WavPlayer:
                 self.__wav_file.close()
             else:
                 self.__state = WavPlayer.STOP
+        while self.is_playing():        # and wait for it to complete
+            pass
+
+        if self.__audio_out is not None:
+            self.__audio_out.deinit()   # Deinit any active I2S comms
+
+        self.__state == WavPlayer.NONE  # Return to the none state
 
     def is_playing(self):
         return self.__state != WavPlayer.NONE and self.__state != WavPlayer.STOP
@@ -163,16 +170,6 @@ class WavPlayer:
         self.__flush_count = self.__ibuf_len // self.SILENCE_BUFFER_LENGTH + 1
         self.__audio_out.irq(self.__i2s_callback)
         self.__audio_out.write(self.__silence_samples)
-
-    def __stop_i2s(self):
-        self.stop()                     # Stop any active playback
-        while self.is_playing():        # and wait for it to complete
-            pass
-
-        if self.__audio_out is not None:
-            self.__audio_out.deinit()   # Deinit any active I2S comms
-
-        self.__state == WavPlayer.NONE  # Return to the none state
 
     def __i2s_callback(self, arg):
         ### PLAY ###
