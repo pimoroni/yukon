@@ -418,16 +418,16 @@ class Yukon:
                     unregistered_slots += 1
 
         if not allow_no_modules and unregistered_slots == self.NUM_SLOTS:
-            raise VerificationError("No modules have been registered with Yukon. At least one module needs to be registered to enable the output")
+            raise VerificationError("No modules have been registered with Yukon. At least one module needs to be registered to enable the output, or disable this warning with `allow_no_modules=True`.")
 
         if raise_discrepency:
-            raise VerificationError("Detected a different combination of modules than what was registered with Yukon. Please check the modules attached to your board and the program you are running.")
+            raise VerificationError("Detected a different combination of modules than what was registered with Yukon. Please check the modules attached to your board and the program you are running, or disable this warning with `allow_discrepencies=True`.")
 
         if raise_undetected:
-            raise VerificationError("Some or all modules registered with Yukon have not been detected. Please check that the modules are correctly attached to your board or disable this warning.")
+            raise VerificationError("Some or all modules registered with Yukon have not been detected. Please check that the modules are correctly attached to your board, or disable this warning with `allow_undetected=True`.")
 
         if raise_unregistered:
-            raise VerificationError("Detected modules that have not been registered with Yukon, which could behave unexpectedly when connected to power. Please remove these modules or disable this warning.")
+            raise VerificationError("Detected modules that have not been registered with Yukon, which could behave unexpectedly when connected to power. Please register these modules with Yukon using `.register_with_slot()`, disconnect them from your board, or disable this warning with `allow_unregistered=True`.")
 
         logging.info()  # New line
 
