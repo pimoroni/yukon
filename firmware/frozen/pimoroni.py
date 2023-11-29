@@ -143,22 +143,38 @@ class Button:
 
 class RGBLED:
     def __init__(self, r, g, b, invert=True):
-        self.invert = invert
-        self.led_r = PWM(Pin(r))
-        self.led_r.freq(1000)
-        self.led_g = PWM(Pin(g))
-        self.led_g.freq(1000)
-        self.led_b = PWM(Pin(b))
-        self.led_b.freq(1000)
+        self.led_r = PWM(Pin(r), freq=1000, duty_u16=0, invert=invert)
+        self.led_g = PWM(Pin(g), freq=1000, duty_u16=0, invert=invert)
+        self.led_b = PWM(Pin(b), freq=1000, duty_u16=0, invert=invert)
 
     def set_rgb(self, r, g, b):
-        if self.invert:
-            r = 255 - r
-            g = 255 - g
-            b = 255 - b
         self.led_r.duty_u16(int((r * 65535) / 255))
         self.led_g.duty_u16(int((g * 65535) / 255))
         self.led_b.duty_u16(int((b * 65535) / 255))
+
+    def set_hsv(self, h, s, v):
+        if s == 0.0:
+            v = int(v * 255)
+            self.set_rgb(v, v, v)
+        else:
+            i = int(h * 6.0)
+            f = (h * 6.0) - i
+            p, q, t = v * (1.0 - s), v * (1.0 - s * f), v * (1.0 - s * (1.0 - f))
+            v, t, p, q = int(v * 255), int(t * 255), int(p * 255), int(q * 255)
+
+            i = i % 6
+            if i == 0:
+                self.set_rgb(v, t, p)
+            elif i == 1:
+                self.set_rgb(q, v, p)
+            elif i == 2:
+                self.set_rgb(p, v, t)
+            elif i == 3:
+                self.set_rgb(p, q, v)
+            elif i == 4:
+                self.set_rgb(t, p, v)
+            elif i == 5:
+                self.set_rgb(v, p, q)
 
 
 # A simple class for handling Proportional, Integral & Derivative (PID) control calculations
