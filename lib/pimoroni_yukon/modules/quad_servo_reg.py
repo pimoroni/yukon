@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
+from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
 from machine import Pin
 from servo import Servo
 from ucollections import OrderedDict
@@ -21,10 +21,11 @@ class QuadServoRegModule(YukonModule):
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | ALL   | 0     | 1     | 0     | Quad Servo Regulated |                             |
+    # | HIGH  | ALL   | 0     | 1     | 0     | Quad Servo Regulated | Power Not Good              |
+    # | HIGH  | ALL   | 0     | 1     | 1     | Quad Servo Regulated | Power Good                  |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_FLOAT and slow1 is IO_LOW and slow2 is IO_HIGH and slow3 is IO_LOW
+        return adc1_level == ADC_HIGH and slow1 is IO_LOW and slow2 is IO_HIGH
 
     def __init__(self, init_servos=True, halt_on_not_pgood=False):
         super().__init__()
@@ -45,7 +46,7 @@ class QuadServoRegModule(YukonModule):
 
         # Create the power control pin objects
         self.__power_en = slot.SLOW1
-        self.__power_good = slot.SLOW2
+        self.__power_good = slot.SLOW3
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)

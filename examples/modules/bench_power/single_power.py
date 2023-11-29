@@ -32,7 +32,7 @@ def monitor_and_print(duration):
     global module
     yukon.monitored_sleep(duration)
     measured_avg = module.get_readings()["Vo_avg"]
-    print(f"Target = {voltage} V, Measured = {measured_avg} V")
+    print(f"Target = {round(voltage, 3)} V, Measured = {round(measured_avg, 3)} V")
 
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)

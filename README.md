@@ -16,15 +16,20 @@ This repository is home to the MicroPython build, library, and examples for Pimo
 
 ## Introduction
 
-Yukon is a high-power modular robotics and engineering platform, able to drive your most ambitious of robots, props or contraptions!
+Yukon is a high-power modular robotics and engineering platform, able to drive your most ambitious of robots, props and devices!
 
-Powered by the RP2040, Yukon leverages the chip's unique pin capabilities to offer six slots for attaching a range of interchangeable hardware modules for driving high-powered devices. This lets you control motors, servos, steppers, speakers, LED strips, and more, all from a single board!
+Powered by the RP2040, Yukon leverages the chip's unique pin capabilities to offer six slots for attaching a range of interchangeable hardware modules for driving high-powered devices. This lets you drive unique combinations of motors, servos, steppers, speakers, LED strips, and more, all from a single Yukon board!
 
-Customise Yukon to suit almost any project, or start with a few modules and expand as a project grows. There is also a proto module for adding more features! Each module is screwed down to ensure a solid mechanical and electrical connection.
+Powering Yukon is easy thanks to its XT30 connector, which enables you to attach 2 to 4 cell Lithium Polymer (LiPo) batteries (or any other source from 5V to 17V) to deliver up to 15A continuous for your high-power projects. An e-Fuse with switchable output is included to protect from accidental overvoltage and overcurrent events, along with internal sensors for monitoring voltage, current, and temperature whilst your programs run.
+
+Yukon is supported by a comprehensive MicroPython library with a whopping 50 (!) examples to show you how to use the individual features of the board and all of its modules. There are even showcases of Yukon as a remote-controlled rover, spider tank, and pen plotter!
 
 * :link: [Buy a Yukon here](https://shop.pimoroni.com/products/yukon)
 
+
 ## Download MicroPython
+
+All Yukon boards come pre-flashed with MicroPython and the libraries needed to get you started. The instructions below are for if you wish to update to the latest firmware or restore you board back to a factory state.
 
 Grab the latest release from [https://github.com/pimoroni/yukon/releases/latest](https://github.com/pimoroni/yukon/releases/latest)
 

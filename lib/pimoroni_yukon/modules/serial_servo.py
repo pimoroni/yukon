@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
+from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
 from machine import Pin, UART
 
 
@@ -31,10 +31,10 @@ class SerialServoModule(YukonModule):
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | ALL   | 1     | 0     | 0     | Serial Servo         |                             |
+    # | HIGH  | HIGH  | 1     | 0     | 0     | Serial Servo         |                             |
     @staticmethod
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level is ADC_FLOAT and slow1 is IO_HIGH and slow2 is IO_LOW and slow3 is IO_LOW
+        return adc1_level is ADC_HIGH and adc2_level is ADC_HIGH and slow1 is IO_HIGH and slow2 is IO_LOW and slow3 is IO_LOW
 
     def __init__(self, baudrate=DEFAULT_BAUDRATE):
         super().__init__()

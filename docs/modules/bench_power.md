@@ -80,19 +80,19 @@ The Bench Power module features a voltage divider, letting its output be measure
 :warning: Due to variations in component values on the Bench Power module and Yukon board itself, the voltage returned by this function may over or under report what is actually output. The `BenchPowerModule` class performs a 3-point conversion to mitigate this, but if absolute accuracy is needed for your application then the following constants should be modified with assistance of an external multimeter:
 
 ```python
-# The three voltage points used for conversion
-VOLTAGE_MIN = 0.6713
-VOLTAGE_MID = 6.5052
-VOLTAGE_MAX = 12.3953
-
-# The ADC values (between 0.0 and 3.3) measured at the three voltage points
-MEASURED_AT_VOLTAGE_MIN = 0.1477
-MEASURED_AT_VOLTAGE_MID = 1.1706
-MEASURED_AT_VOLTAGE_MAX = 2.2007
-
 # The PWM range the voltage points are over, with 0.0 resulting in the maximum voltage
 PWM_MIN = 0.3
 PWM_MAX = 0.0
+
+# The three voltage points produced by those PWM values, used for conversion
+VOLTAGE_AT_PWM_MIN = 0.6017
+VOLTAGE_AT_PWM_MID = 6.4864
+VOLTAGE_AT_PWM_MAX = 12.4303
+
+# The ADC values (between 0.0 and 3.3) measured at the three PWM values
+MEASURED_AT_PWM_MIN = 0.1439
+MEASURED_AT_PWM_MID = 1.3094
+MEASURED_AT_PWM_MAX = 2.4976
 ```
 
 
@@ -109,14 +109,14 @@ Additionally, the power good status of the onboard regulator can be read by call
 
 ```python
 NAME = "Bench Power"
-VOLTAGE_MAX = 12.3953
-VOLTAGE_MID = 6.5052
-VOLTAGE_MIN = 0.6713
-MEASURED_AT_VOLTAGE_MIN = 0.1477
-MEASURED_AT_VOLTAGE_MID = 1.1706
-MEASURED_AT_VOLTAGE_MAX = 2.2007
 PWM_MIN = 0.3
 PWM_MAX = 0.0
+VOLTAGE_AT_PWM_MIN = 0.6017
+VOLTAGE_AT_PWM_MID = 6.4864
+VOLTAGE_AT_PWM_MAX = 12.4303
+MEASURED_AT_PWM_MIN = 0.1439
+MEASURED_AT_PWM_MID = 1.3094
+MEASURED_AT_PWM_MAX = 2.4976
 TEMPERATURE_THRESHOLD = 80.0
 ```
 

@@ -135,14 +135,14 @@ class Yukon:
     VOLTAGE_OUT_SENSE_ADDR = 14  # 0b1110
     VOLTAGE_IN_SENSE_ADDR = 15   # 0b1111
 
-    OUTPUT_STABLISE_TIMEOUT_US = 200 * 1000
+    OUTPUT_STABLISE_TIMEOUT_US = 200 * 1000     # The time to wait for the output voltage to stablise after being enabled
     OUTPUT_STABLISE_TIME_US = 10 * 1000
     OUTPUT_STABLISE_V_DIFF = 0.1
 
-    OUTPUT_DISSIPATE_TIMEOUT_S = 15  # When a bench power module is attached and there is no additional output load, it can take a while for it to return to an idle state
+    OUTPUT_DISSIPATE_TIMEOUT_S = 5              # The time to wait for the voltage to dissipate below the level needed for module detection
     OUTPUT_DISSIPATE_TIMEOUT_US = OUTPUT_DISSIPATE_TIMEOUT_S * 1000 * 1000
     OUTPUT_DISSIPATE_TIME_US = 10 * 1000
-    OUTPUT_DISSIPATE_LEVEL = 0.4  # The voltage below which we can reliably obtain the address of attached modules
+    OUTPUT_DISSIPATE_LEVEL = 2.0                # The voltage below which we can reliably obtain the address of attached modules
 
     def __init__(self, voltage_limit=DEFAULT_VOLTAGE_LIMIT, current_limit=DEFAULT_CURRENT_LIMIT, temperature_limit=DEFAULT_TEMPERATURE_LIMIT, logging_level=logging.LOG_INFO):
         self.__voltage_limit = min(voltage_limit, self.ABSOLUTE_MAX_VOLTAGE_LIMIT)

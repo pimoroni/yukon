@@ -90,7 +90,7 @@ Here is the current address list for Yukon modules produced by Pimoroni.
             <td rowspan=3>0</td>
             <td rowspan=3>1</td>
             <td rowspan=3>Big Motor + Encoder</td>
-            <td rowspan=3>Fault Cleared</td>
+            <td rowspan=3>No Fault</td>
         </tr>
         <tr style="background-color:rgba(180, 167, 214, 0.25);">
             <td>FLOAT</td>
@@ -168,7 +168,7 @@ Here is the current address list for Yukon modules produced by Pimoroni.
             <td rowspan=3>1</td>
             <td rowspan=3>1</td>
             <td rowspan=3>Big Motor + Encoder</td>
-            <td rowspan=3>Fault Asserted</td>
+            <td rowspan=3>Faulted</td>
         </tr>
         <tr style="background-color:rgba(180, 167, 214, 0.25);">
             <td>FLOAT</td>
@@ -239,8 +239,9 @@ Here is the current address list for Yukon modules produced by Pimoroni.
         <tr style="border-top: 1.5px dotted;">
             <td>HIGH</td><td>LOW</td><td>1</td><td>0</td><td>0</td><td></td><td></td>
         </tr>
-        <tr>
-            <td>HIGH</td><td>FLOAT</td><td>1</td><td>0</td><td>0</td><td></td><td></td>
+        <!-- Reserved -->
+        <tr style="background-color:rgba(128, 128, 128, 0.25);">
+            <td>HIGH</td><td>FLOAT</td><td>1</td><td>0</td><td>0</td><td>Reserved</td><td></td>
         </tr>
         <!-- Serial Bus Servo -->
         <tr style="background-color:rgba(244, 204, 204, 0.25);">
@@ -307,8 +308,9 @@ Here is the current address list for Yukon modules produced by Pimoroni.
         <tr style="border-top: 1.5px dotted;">
             <td>HIGH</td><td>LOW</td><td>1</td><td>1</td><td>0</td><td></td><td></td>
         </tr>
-        <tr>
-            <td>HIGH</td><td>FLOAT</td><td>1</td><td>1</td><td>0</td><td></td><td></td>
+        <!-- Reserved -->
+        <tr style="background-color:rgba(128, 128, 128, 0.25);">>
+            <td>HIGH</td><td>FLOAT</td><td>1</td><td>1</td><td>0</td><td>Reserved</td><td></td>
         </tr>
         <!-- Proto Potentiometer -->
         <tr style="background-color:rgba(162, 196, 201, 0.25);">
