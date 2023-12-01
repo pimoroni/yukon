@@ -12,13 +12,17 @@ This repository is home to the MicroPython build, library, and examples for Pimo
 - [Flashing the Firmware](#flashing-the-firmware)
 - [Examples](#examples)
 - [Documentation](#documentation)
+- [Library Refererence](#library-refererence)
+  - [Boards](#boards)
+  - [Modules](#modules)
+  - [Devices](#devices)
 
 
 ## Introduction
 
-Yukon is a high-power modular robotics and engineering platform, able to drive your most ambitious of robots, props and devices!
+Yukon is a high-power modular robotics and engineering platform, designed to drive the most ambitious of robots, props and devices!
 
-Powered by the RP2040, Yukon leverages the chip's unique pin capabilities to offer six slots for attaching a range of interchangeable hardware modules for driving high-powered devices. This lets you drive unique combinations of motors, servos, steppers, speakers, LED strips, and more, all from a single Yukon board!
+Powered by RP2040, Yukon leverages the chip's unique pin capabilities to offer six slots for attaching a range of interchangeable hardware modules for driving high-powered devices. This lets you drive unique combinations of motors, servos, steppers, speakers, LED strips, and more, all from a single Yukon board!
 
 Powering Yukon is easy thanks to its XT30 connector, which enables you to attach 2 to 4 cell Lithium Polymer (LiPo) batteries (or any other source from 5V to 17V) to deliver up to 15A continuous for your high-power projects. An e-Fuse with switchable output is included to protect from accidental overvoltage and overcurrent events, along with internal sensors for monitoring voltage, current, and temperature whilst your programs run.
 
@@ -29,7 +33,7 @@ Yukon is supported by a comprehensive MicroPython library with a whopping 50 (!)
 
 ## Download MicroPython
 
-All Yukon boards come pre-flashed with MicroPython and the libraries needed to get you started. The instructions below are for if you wish to update to the latest firmware or restore you board back to a factory state.
+All Yukon boards come pre-flashed with MicroPython and the libraries needed to get you started. The instructions below are for if you wish to update your board to the latest firmware or restore it back back to a factory state.
 
 Grab the latest release from [https://github.com/pimoroni/yukon/releases/latest](https://github.com/pimoroni/yukon/releases/latest)
 
@@ -76,4 +80,37 @@ There are many examples to get you started with Yukon, located in the examples f
 
 ## Documentation
 
-To take Yukon further, the full API is described in the [documentation readme](/docs/README.md)
+To find out more about how Yukon works, the following documentation is available:
+
+* [Docs: Overview](/docs/overview.md)
+* [Docs: Module Detection](/docs/module_detection.md)
+
+## Library Refererence
+
+To take Yukon further, the full API for the library is described in the following documentation pages.
+
+### Boards
+
+* [Docs: Yukon](/docs/reference.md)
+
+
+### Modules
+
+* [Docs: Audio Amp Module](/docs/modules/audio_amp.md)
+* [Docs: Bench Power Module](/docs/modules/bench_power.md)
+* [Docs: Big Motor + Encoder Module](/docs/modules/big_motor.md)
+* [Docs: Dual Motor / Bipolar Stepper Module](/docs/modules/dual_motor.md)
+* [Docs: Dual Switched Output Module](/docs/modules/dual_output.md)
+* [Docs: LED Strip Module](/docs/modules/led_strip.md)
+* [Docs: Quad Servo Direct Module](/docs/modules/quad_servo_direct.md)
+* [Docs: Quad Servo Regulated Module](/docs/modules/quad_servo_reg.md)
+* [Docs: Serial Bus Servo Module](/docs/modules/serial_servo.md)
+* [Docs: Yukon Module](/docs/modules/yukon_module.md)
+* [Docs: Custom Module](/docs/modules/custom_module.md)
+
+
+### Devices
+
+* [Docs: LX Servo Class](/docs/devices/lxservo.md)
+* [Docs: OkayStepper Class](/docs/devices/okaystepper.md)
+* [Docs: WavPlayer Class](/docs/devices/wavplayer.md)

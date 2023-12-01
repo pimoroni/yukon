@@ -11,7 +11,7 @@ This is the library reference for the [Audio Amp Module for Yukon](https://pimor
   - [Advanced Control](#advanced-control)
   - [Onboard Sensors](#onboard-sensors)
 - [Restrictions](#restrictions)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Functions](#functions)
@@ -105,7 +105,7 @@ The Audio Amp module features an onboard thermistor, letting its temperature be 
 :warning: AudioAmpModule makes use of MicroPython's I2S system to drive the amplifier. Currently this system only supports two instances at any one time, meaning only two modules can be used simultaneously.
 
 
-## References
+## Reference
 
 ### Constants
 

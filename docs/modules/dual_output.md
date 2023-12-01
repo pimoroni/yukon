@@ -8,7 +8,7 @@ This is the library reference for the [Dual Switched Output Module for Yukon](ht
   - [Enabling its Outputs](#enabling-its-outputs)
   - [Accessing the Outputs](#accessing-the-outputs)
   - [Onboard Sensors](#onboard-sensors)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Functions](#functions)
@@ -96,7 +96,7 @@ The Dual Switched Output module features an onboard thermistor, letting its temp
 Additionally, the power good status of the two output switches can be read by calling `.read_power_good1()` and `.read_power_good2()`. These will be `True` during normal operation, but will switch to `False` under various conditions. For details of these conditions, check the [SLG55021 datasheet](https://www.renesas.com/eu/en/document/dst/slg55021-200010v-datasheet).
 
 
-## References
+## Reference
 
 ### Constants
 

@@ -1,4 +1,4 @@
-### Big Motor Module - Library Reference <!-- omit in toc -->
+# Big Motor + Encoder Module - Library Reference <!-- omit in toc -->
 
 This is the library reference for the [Big Motor + Encoder Module for Yukon](https://pimoroni.com/yukon).
 
@@ -11,7 +11,7 @@ This is the library reference for the [Big Motor + Encoder Module for Yukon](htt
   - [Accessing the Encoder](#accessing-the-encoder)
     - [Direct GPIO Access](#direct-gpio-access)
   - [Onboard Sensors](#onboard-sensors)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Methods](#methods)
@@ -154,7 +154,7 @@ There is also an onboard thermistor, letting its temperature be monitored. This 
 Additionally, the fault state of the motor driver can be read by calling `.read_fault()`. This will be `False` during normal operation, but will switch to `True` under various conditions. For details of these conditions, check the [DRV8706H datasheet](https://www.ti.com/lit/ds/symlink/drv8706-q1.pdf).
 
 
-## References
+## Reference
 
 ### Constants
 

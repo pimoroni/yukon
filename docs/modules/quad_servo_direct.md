@@ -8,7 +8,7 @@ This is the library reference for the [Quad Servo Direct Module for Yukon](https
   - [Accessing the Servos](#accessing-the-servos)
     - [More than 16 Servos](#more-than-16-servos)
   - [External Sensors](#external-sensors)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Functions](#functions)
@@ -112,7 +112,7 @@ The Quad Servo Direct module supports connecting two external 3.3V sensors via a
 There is also an optional `samples` parameter that lets multiple readings be taken in quick succession to produce a more accurate reading.
 
 
-## References
+## Reference
 
 ### Constants
 

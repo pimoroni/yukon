@@ -1,5 +1,7 @@
 # Pimoroni Yukon - Module Detection <!-- omit in toc -->
 
+This is the module detection documentation for the [Pimoroni Yukon](https://pimoroni.com/yukon), a high-power modular robotics and engineering platform, powered by the Raspberry Pi RP2040.
+
 - [How it Works](#how-it-works)
   - [IO States](#io-states)
   - [Multiple Addresses](#multiple-addresses)

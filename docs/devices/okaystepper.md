@@ -2,12 +2,12 @@
 
 This is the library reference for the `OkayStepper` class used to drive bipolar stepper motors with Pimoroni Yukon's [Dual Motor Module](https://pimoroni.com/yukon).
 
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Functions](#functions)
 
 
-## References
+## Reference
 
 ### Constants
 

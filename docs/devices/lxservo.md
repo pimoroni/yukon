@@ -2,12 +2,12 @@
 
 This is the library reference for the `LXServo` class used to drive [LX-16A](https://pimoroni.com/yukon) servos with Pimoroni Yukon's [Serial Bus Servo Module](https://pimoroni.com/yukon).
 
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Functions](#functions)
 
 
-## References
+## Reference
 
 ### Constants
 

@@ -2,12 +2,12 @@
 
 This is the library reference for the `WavPlayer` class used to play audio out of Pimoroni Yukon's [Audio Amp Module](https://pimoroni.com/yukon).
 
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Functions](#functions)
 
 
-## References
+## Reference
 
 ### Constants
 

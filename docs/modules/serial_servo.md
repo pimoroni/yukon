@@ -9,7 +9,7 @@ This is the library reference for the [Serial Bus Servo Module for Yukon](https:
   - [Initialising a Serial Servo](#initialising-a-serial-servo)
   - [Controlling a Serial Servo](#controlling-a-serial-servo)
 - [Restrictions](#restrictions)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Functions](#functions)
@@ -123,7 +123,7 @@ For further ways to control LX servos, refer to the [LXServo Library Reference](
 :warning: SerialServoModule makes use of a single hardware UART to send data to and receive data from connected serial bus servos. RP2040 only has two hardware UARTs meaning that only two Serial Bus Servo modules may be used simultaneously, and the slots they are attached to must not use the same UART. Refer to the [Yukon Pinout Diagram](../yukon_pinout_diagram.png) for the slots you are using, and relocate your modules if there is a conflict.
 
 
-## References
+## Reference
 
 ### Constants
 

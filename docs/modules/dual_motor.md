@@ -11,7 +11,7 @@ This is the library reference for the [Dual Motor / Bipolar Stepper Module for Y
     - [More than 8 Motors](#more-than-8-motors)
   - [Driving a Stepper Motor](#driving-a-stepper-motor)
   - [Onboard Sensors](#onboard-sensors)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Functions](#functions)
@@ -153,7 +153,7 @@ The Dual Motor / Bipolar Stepper module features an onboard thermistor, letting 
 Additionally, the fault state of the motor driver can be read by calling `.read_fault()`. This will be `False` during normal operation, but will switch to `True` under various conditions. For details of these conditions, check the [DRV8424P datasheet](https://www.ti.com/lit/ds/symlink/drv8424e.pdf).
 
 
-## References
+## Reference
 
 ### Constants
 

@@ -9,7 +9,7 @@ This is the library reference for the [Bench Power Module for Yukon](https://pim
   - [Changing its Voltage](#changing-its-voltage)
   - [Reading back Voltage](#reading-back-voltage)
   - [Onboard Sensors](#onboard-sensors)
-- [References](#references)
+- [Reference](#reference)
   - [Constants](#constants)
   - [Variables](#variables)
   - [Methods](#methods)
@@ -103,7 +103,7 @@ The Bench Power module features an onboard thermistor, letting its temperature b
 Additionally, the power good status of the onboard regulator can be read by calling `.read_power_good()`. This will be `True` during normal operation, but will switch to `False` under various conditions such as the input voltage dropping below what is needed for the module to achieve a stable output. For details of other conditions, check the [TPS54A24 datasheet](https://www.ti.com/lit/ds/symlink/tps54a24.pdf).
 
 
-## References
+## Reference
 
 ### Constants
 
