@@ -16,7 +16,7 @@ class DualMotorModule(YukonModule):
     MOTOR_2 = 1
     FAULT_THRESHOLD = 0.1
     DEFAULT_FREQUENCY = 25000
-    TEMPERATURE_THRESHOLD = 50.0
+    TEMPERATURE_THRESHOLD = 70.0
 
     # The current (in amps) associated with each limit (Do Not Modify!)
     CURRENT_LIMIT_1 = 0.161
