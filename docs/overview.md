@@ -11,12 +11,12 @@ Here you will find an overview of the [Pimoroni Yukon](https://pimoroni.com/yuko
 
 If you have ever looked at the pinout of RP2040 (or the Pico), you may have noticed how its GPIO functions like UART, SPI, and I2C repeat in groups of four. We noticed this too, which gave us the idea to create modular system that could take advantage of this.
 
-We did not want to create another breakout system without reason though, so the idea shifted towards high-power uses that are not catered for by our [Breakout Garden](https://shop.pimoroni.com/collections/breakout-garden) range, such as driving motors and servos. After two years of development, and four hardware versions of the main board alone, Yukon is the result.
+We did not want to create another breakout system without reason though, so the idea shifted towards high-power uses that are not catered for by our [Breakout Garden](https://shop.pimoroni.com/collections/breakout-garden) range, such as driving motors and servos. After two years of development, and four hardware versions of the host board alone, Yukon is the result.
 
 
 ## What is Yukon?
 
-Yukon is an RP2040-based controller for high-power projects. It consists of a main board and a range of specialised modules for driving various high-power devices. These modules can be attached to a main board in almost any combination to suit the needs of your project. This is achieved through the unique pin capabilities of the RP2040, and additional IO expanders and analog multiplexers. There are a total of 80 IO on the Yukon main board, with 64 available to the user via module slots or expansion headers.
+Yukon is an RP2040-based controller for high-power projects. It consists of a host board and a range of specialised modules for driving various high-power devices. These modules can be attached to a host board in almost any combination to suit the needs of your project. This is achieved through the unique pin capabilities of the RP2040, and additional IO expanders and analog multiplexers. There are a total of 80 IO on the Yukon host board, with 64 available to the user via module slots or expansion headers.
 
 To power your project, Yukon features an XT30 connector (common on batteries used for remote-controlled hobbies). This supports 5V to 17V with up to 15A of continuous current. An e-Fuse with switchable output is included allow for module power to be programatically controlled, as well as protect from accidental overvoltage and overcurrent events. There are also internal sensors on Yukon for monitoring voltage, current, and temperature from your program.
 
