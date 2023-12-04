@@ -14,7 +14,7 @@ class DualOutputModule(YukonModule):
     OUTPUT_1 = 0
     OUTPUT_2 = 1
     NUM_OUTPUTS = 2
-    TEMPERATURE_THRESHOLD = 50.0
+    TEMPERATURE_THRESHOLD = 70.0
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
