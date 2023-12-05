@@ -15,7 +15,7 @@ from pimoroni_yukon.conversion import u16_to_voltage_in, u16_to_voltage_out, u16
 from ucollections import OrderedDict, namedtuple
 
 
-YUKON_VERSION = "1.0.0"
+YUKON_VERSION = "1.0.1"
 
 Slot = namedtuple("Slot", ("ID",
                            "FAST1",
