@@ -8,6 +8,9 @@ This folder contains a collection of *Showcase* examples, that bring together co
 
 
 ## RC Rover
+
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-projects-4_1500x1500_crop_center.jpg" width="500">
+
 [rover/main.py](rover/main.py)
 
 A showcase of Yukon as a differential drive rover. It uses two Big Motor modules, one to control the left side motors, and the other to control the right side motors.
@@ -18,6 +21,9 @@ The program receives commands from the JoyBTCommander Android App and converts t
 
 
 ## Spider Tank
+
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-projects-3_1500x1500_crop_center.jpg" width="500">
+
 [spidertank/main.py](spidertank/main.py)
 
 A showcase of Yukon as a hexapod robot, with 3 degrees of freedom per leg. It uses two Serial Bus Servo modules, one to control the left side servos, and the other to control the right side servos.
@@ -28,6 +34,9 @@ The program performs inverse kinematics for each leg, with the target points fol
 
 
 ## CNC Plotter
+
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-projects-7_1500x1500_crop_center.jpg" width="500">
+
 [plotter/main.py](plotter/main.py)
 
 A showcase of Yukon as a 3-axis CNC pen plotter. It uses four Dual Motor modules, to control for stepper motors (the Y-Axis has two steppers). It also uses two Quad Servo Direct modules to provide convenient wiring for the machine's limit switches.

@@ -1,6 +1,8 @@
 # Bench Power Module - Micropython Examples <!-- omit in toc -->
 
-These are micropython examples for the [Bench Power Module for Yukon](https://pimoroni.com/yukon).
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-22_1500x1500_crop_center.jpg" width="500">
+
+These are micropython examples for the [Bench Power Module for Yukon](https://shop.pimoroni.com/products/bench-power-module-for-yukon).
 
 - [Examples](#examples)
   - [Single Power](#single-power)

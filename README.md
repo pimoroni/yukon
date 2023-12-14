@@ -1,5 +1,7 @@
 # Pimoroni Yukon <!-- omit in toc -->
 
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-host-with-modules_1500x1500_crop_center.jpg" width="500">
+
 This repository is home to the MicroPython build, library, and examples for Pimoroni Yukon.
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/pimoroni/yukon/micropython.yml?branch=main&label=MicroPython)](https://github.com/pimoroni/yukon/actions/workflows/micropython.yml)

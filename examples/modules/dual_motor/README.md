@@ -1,6 +1,8 @@
 # Dual Motor / Bipolar Stepper Module - Micropython Examples <!-- omit in toc -->
 
-These are the micropython examples for the [Dual Motor / Bipolar Stepper Module for Yukon](https://pimoroni.com/yukon).
+<img src="https://shop.pimoroni.com/cdn/shop/files/yukon-05_1500x1500_crop_center.jpg" width="500">
+
+These are the micropython examples for the [Dual Motor / Bipolar Stepper Module for Yukon](https://shop.pimoroni.com/products/dual-motor-bipolar-stepper-module-for-yukon).
 
 - [Examples](#examples)
   - [Two Motors](#two-motors)
