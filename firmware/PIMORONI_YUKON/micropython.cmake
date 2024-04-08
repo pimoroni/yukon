@@ -50,5 +50,6 @@ include(modules_py/modules_py)
 
 # Must call `enable_ulab()` to enable
 include(micropython-common-ulab)
+enable_ulab()
 
 include(tca9555/micropython)
