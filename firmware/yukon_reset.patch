@@ -1,8 +1,8 @@
 diff --git a/ports/rp2/CMakeLists.txt b/ports/rp2/CMakeLists.txt
-index 87bc91b82..bf736ff91 100644
+index 1eaefcfb9..677a5e0e6 100644
 --- a/ports/rp2/CMakeLists.txt
 +++ b/ports/rp2/CMakeLists.txt
-@@ -281,6 +281,25 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
+@@ -322,6 +322,25 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
      ${MICROPY_DIR}/shared/tinyusb/
  )
  
@@ -28,7 +28,7 @@ index 87bc91b82..bf736ff91 100644
  if (MICROPY_PY_NETWORK_CYW43)
      string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
      if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
-@@ -498,6 +527,11 @@ target_sources(${MICROPY_TARGET} PRIVATE
+@@ -548,6 +577,11 @@ target_sources(${MICROPY_TARGET} PRIVATE
      ${GEN_PINS_HDR}
  )
  
@@ -39,12 +39,12 @@ index 87bc91b82..bf736ff91 100644
 +
  # Generate pins
  add_custom_command(
-     OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC} ${GEN_PINS_QSTR}
+     OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC}
 diff --git a/ports/rp2/main.c b/ports/rp2/main.c
-index bb5ecc68d..9890bf580 100644
+index ec58b70ae..8c0571fcc 100644
 --- a/ports/rp2/main.c
 +++ b/ports/rp2/main.c
-@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
+@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
      // Hook for setting up anything that can wait until after other hardware features are initialised
      MICROPY_BOARD_EARLY_INIT();
  
@@ -52,25 +52,33 @@ index bb5ecc68d..9890bf580 100644
      for (;;) {
  
          // Initialise MicroPython runtime.
-@@ -182,25 +183,34 @@ int main(int argc, char **argv) {
+@@ -185,30 +186,39 @@ int main(int argc, char **argv) {
          pyexec_frozen_module("_boot.py", false);
          #endif
  
 -        // Execute user scripts.
 -        int ret = pyexec_file_if_exists("boot.py");
--        if (ret & PYEXEC_FORCED_EXIT) {
--            goto soft_reset_exit;
--        }
--        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
--            ret = pyexec_file_if_exists("main.py");
 +        if (run_main) {
 +            // Execute user scripts.
 +            int ret = pyexec_file_if_exists("boot.py");
+ 
+-        #if MICROPY_HW_ENABLE_USBDEV
+-        mp_usbd_init();
+-        #endif
++            #if MICROPY_HW_ENABLE_USBDEV
++            mp_usbd_init();
++            #endif
+ 
+-        if (ret & PYEXEC_FORCED_EXIT) {
+-            goto soft_reset_exit;
+-        }
+-        if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
+-            ret = pyexec_file_if_exists("main.py");
              if (ret & PYEXEC_FORCED_EXIT) {
 +                run_main = !(ret & PYEXEC_SKIP_USER_CODE);
                  goto soft_reset_exit;
              }
-+            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
++            if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL && ret != 0) {
 +                ret = pyexec_file_if_exists("main.py");
 +                if (ret & PYEXEC_FORCED_EXIT) {
 +                    run_main = !(ret & PYEXEC_SKIP_USER_CODE);
