@@ -1,8 +1,8 @@
 diff --git a/ports/rp2/CMakeLists.txt b/ports/rp2/CMakeLists.txt
-index 1eaefcfb9..677a5e0e6 100644
+index 19c7178fc..4f98e904b 100644
 --- a/ports/rp2/CMakeLists.txt
 +++ b/ports/rp2/CMakeLists.txt
-@@ -322,6 +322,25 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
+@@ -335,6 +335,25 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
      ${MICROPY_DIR}/shared/tinyusb/
  )
  
@@ -28,7 +28,7 @@ index 1eaefcfb9..677a5e0e6 100644
  if (MICROPY_PY_NETWORK_CYW43)
      string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
      if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
-@@ -548,6 +577,11 @@ target_sources(${MICROPY_TARGET} PRIVATE
+@@ -562,6 +591,11 @@ target_sources(${MICROPY_TARGET} PRIVATE
      ${GEN_PINS_HDR}
  )
  
@@ -41,10 +41,10 @@ index 1eaefcfb9..677a5e0e6 100644
  add_custom_command(
      OUTPUT ${GEN_PINS_HDR} ${GEN_PINS_SRC}
 diff --git a/ports/rp2/main.c b/ports/rp2/main.c
-index ec58b70ae..8c0571fcc 100644
+index 134e0edac..37498dd87 100644
 --- a/ports/rp2/main.c
 +++ b/ports/rp2/main.c
-@@ -152,6 +152,7 @@ int main(int argc, char **argv) {
+@@ -158,6 +158,7 @@ int main(int argc, char **argv) {
      // Hook for setting up anything that can wait until after other hardware features are initialised
      MICROPY_BOARD_EARLY_INIT();
  
@@ -52,7 +52,7 @@ index ec58b70ae..8c0571fcc 100644
      for (;;) {
  
          // Initialise MicroPython runtime.
-@@ -185,30 +186,39 @@ int main(int argc, char **argv) {
+@@ -191,30 +192,39 @@ int main(int argc, char **argv) {
          pyexec_frozen_module("_boot.py", false);
          #endif
  
@@ -105,11 +105,11 @@ index ec58b70ae..8c0571fcc 100644
                  }
              }
 diff --git a/shared/runtime/pyexec.h b/shared/runtime/pyexec.h
-index 64c5ef943..6a2cd8b8f 100644
+index 5779d3e09..eb92fbb04 100644
 --- a/shared/runtime/pyexec.h
 +++ b/shared/runtime/pyexec.h
-@@ -41,6 +41,7 @@ extern pyexec_mode_kind_t pyexec_mode_kind;
- extern int pyexec_system_exit;
+@@ -36,6 +36,7 @@ typedef enum {
+ extern pyexec_mode_kind_t pyexec_mode_kind;
  
  #define PYEXEC_FORCED_EXIT (0x100)
 +#define PYEXEC_SKIP_USER_CODE (0x200)
