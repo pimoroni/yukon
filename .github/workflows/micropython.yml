@@ -7,7 +7,7 @@ on:
     types: [created]
 
 env:
-  MICROPYTHON_VERSION: d131d20033858e91557577a7de71e09f2c56eab5
+  MICROPYTHON_VERSION: 17d82344581ad3a76033fae54c5d3304e17f185f
   PIMORONI_PICO_VERSION: 49a5d4292586f5851978f6f4a2f6b3214fb379ce
   WORKFLOW_VERSION: v2
 
@@ -30,7 +30,7 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
-        repository: pimoroni/micropython
+        repository: micropython/micropython
         ref: ${{env.MICROPYTHON_VERSION}}
         submodules: false  # MicroPython submodules are hideously broken
         path: micropython
@@ -41,9 +41,12 @@ jobs:
       working-directory: micropython
       run: |
         git submodule update --init lib/pico-sdk
+        git submodule update --init lib/cyw43-driver
+        git submodule update --init lib/lwip
         git submodule update --init lib/mbedtls
         git submodule update --init lib/micropython-lib
         git submodule update --init lib/tinyusb
+        git submodule update --init lib/btstack
 
     - name: Build mpy-cross
       if: steps.cache.outputs.cache-hit != 'true'
@@ -61,9 +64,6 @@ jobs:
           - name: Yukon
             shortname: yukon
             board: PIMORONI_YUKON
-            # 0x10000000 + (16*1024*1024) - (15*1024*1024)
-            dir2uf2_fs_start: 269484032
-            dir2uf2_fs_size: 15728640
 
     env:
       RELEASE_FILE: pimoroni-${{matrix.shortname}}-${{github.event.release.tag_name || github.sha}}-micropython
@@ -104,11 +104,18 @@ jobs:
         submodules: true
         path: pimoroni-pico
 
+    - name: "Py_Decl: Checkout py_decl"
+      uses: actions/checkout@v4
+      with:
+        repository: gadgetoid/py_decl
+        ref: v0.0.1
+        path: py_decl
+
     # Check out dir2u2f
     - uses: actions/checkout@v4
       with:
         repository: gadgetoid/dir2uf2
-        ref: v0.0.1
+        ref: v0.0.6
         path: dir2uf2
 
     # HACK: Patch startup overclock into Pico SDK
@@ -128,11 +135,14 @@ jobs:
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
 
-    # Install apt packages
-    - name: Install CCache & Compiler
-      shell: bash
-      run:
-        sudo apt update && sudo apt install ccache gcc-arm-none-eabi
+    - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
+      uses: carlosperate/arm-none-eabi-gcc-action@v1
+      with:
+        release: '9-2020-q2'
+
+    - name: Install CCache
+      run: |
+        sudo apt update && sudo apt install ccache
 
     # Build firmware
     - name: Configure MicroPython
@@ -155,11 +165,16 @@ jobs:
       run: |
         cp firmware.uf2 ${{env.RELEASE_FILE}}.uf2
 
+    - name: "Py_Decl: Verify UF2"
+      shell: bash
+      run: |
+        python3 py_decl/py_decl.py --to-json --verify micropython/ports/rp2/build/${{env.RELEASE_FILE}}.uf2
+
     - name: Append Filesystem
       shell: bash
       run: |
-        python3 -m pip install littlefs-python==0.4.0
-        ./dir2uf2/dir2uf2 --verbose --fs-start ${{matrix.dir2uf2_fs_start}} --fs-size ${{matrix.dir2uf2_fs_size}} --append-to micropython/ports/rp2/build/${{env.RELEASE_FILE}}.uf2 --manifest ${{env.BOARD_DIR}}/uf2-manifest.txt --filename ${{env.FILESYSTEM_SUFFIX}}.uf2 ${{env.FILESYSTEM_DIR}}/
+        python3 -m pip install littlefs-python==0.12.0
+        ./dir2uf2/dir2uf2 --fs-compact --append-to micropython/ports/rp2/build/${{env.RELEASE_FILE}}.uf2 --manifest ${{env.BOARD_DIR}}/uf2-manifest.txt --filename ${{env.FILESYSTEM_SUFFIX}}.uf2 ${{env.FILESYSTEM_DIR}}/
 
     - name: Store .uf2 as artifact
       uses: actions/upload-artifact@v4
