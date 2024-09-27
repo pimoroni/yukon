@@ -38,7 +38,7 @@
 
 void machine_pin_ext_init(void) {
     // Read the state of each IO expander pin, as some are initialised as outputs
-    const mp_map_t *named_map = &pin_board_pins_locals_dict.map;
+    const mp_map_t *named_map = &machine_pin_board_pins_locals_dict.map;
     for (uint i = 0; i < named_map->used; i++) {
         machine_pin_obj_t *pin = (machine_pin_obj_t *)named_map->table[i].value;
          if(pin->is_ext) {

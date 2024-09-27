@@ -21,5 +21,5 @@
 #define MICROPY_BOARD_EARLY_INIT board_init
 void board_init(void);
 
-#define MICROPY_BOARD_EARLY_RESET board_reset
+#define MICROPY_BOARD_START_SOFT_RESET board_reset
 void board_reset(void);

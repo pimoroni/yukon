@@ -12,14 +12,14 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install Python Deps
-      run: python3 -m pip install ruff
+      run: python3 -m pip install flake8
 
     - name: Lint Yukon Examples
       shell: bash
       run: |
-        python3 -m ruff --show-source --ignore E501 examples/
+        python3 -m flake8 --show-source --ignore E501,E201,E241,E222,E116,E266 examples/
 
     - name: Lint Yukon Python Libraries
       shell: bash
       run: |
-        python3 -m ruff --show-source --ignore E501 lib/
+        python3 -m flake8 --show-source --ignore E501,E201,E241,E222,E116,E266 lib/

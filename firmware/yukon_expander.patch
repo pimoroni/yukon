@@ -1,0 +1,30 @@
+diff --git a/ports/rp2/CMakeLists.txt b/ports/rp2/CMakeLists.txt
+index 19c7178fc..4f98e904b 100644
+--- a/ports/rp2/CMakeLists.txt
++++ b/ports/rp2/CMakeLists.txt
+@@ -335,6 +335,25 @@ target_include_directories(${MICROPY_TARGET} PRIVATE
+     ${MICROPY_DIR}/shared/tinyusb/
+ )
+ 
++if (MICROPY_TCA9555_DIR)
++    target_compile_definitions(${MICROPY_TARGET} PRIVATE
++        MICROPY_PY_TCA9555=1
++        MICROPY_HW_PIN_EXT_COUNT=32
++    )
++
++    list(APPEND MICROPY_SOURCE_PORT
++        ${MICROPY_TCA9555_DIR}/machine_pin_tca9555.c
++    )
++
++    list(APPEND MICROPY_SOURCE_DRIVERS
++        ${MICROPY_TCA9555_DIR}/tca9555.c
++    )
++
++    target_include_directories(${MICROPY_TARGET} PRIVATE
++        ${MICROPY_TCA9555_DIR}
++    )
++endif()
++
+ if (MICROPY_PY_NETWORK_CYW43)
+     string(CONCAT GIT_SUBMODULES "${GIT_SUBMODULES} " lib/cyw43-driver)
+     if((NOT (${ECHO_SUBMODULES})) AND NOT EXISTS ${MICROPY_DIR}/lib/cyw43-driver/src/cyw43.h)
