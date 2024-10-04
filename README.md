@@ -87,7 +87,7 @@ To find out more about how Yukon works, the following documentation is available
 * [Docs: Overview](/docs/overview.md)
 * [Docs: Module Detection](/docs/module_detection.md)
 
-## Library Refererence
+## Library Reference
 
 To take Yukon further, the full API for the library is described in the following documentation pages.
 
