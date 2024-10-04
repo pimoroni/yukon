@@ -14,7 +14,7 @@ This repository is home to the MicroPython build, library, and examples for Pimo
 - [Flashing the Firmware](#flashing-the-firmware)
 - [Examples](#examples)
 - [Documentation](#documentation)
-- [Library Refererence](#library-refererence)
+- [Library Reference](#library-reference)
   - [Boards](#boards)
   - [Modules](#modules)
   - [Devices](#devices)
