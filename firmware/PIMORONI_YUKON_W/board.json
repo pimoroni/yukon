@@ -1,0 +1,15 @@
+{
+    "deploy": [
+        "../deploy.md"
+    ],
+    "docs": "",
+    "features": [
+    ],
+    "images": [
+    ],
+    "mcu": "rp2040",
+    "product": "Pimoroni Yukon W",
+    "thumbnail": "",
+    "url": "https://shop.pimoroni.com/products/yukon",
+    "vendor": "Pimoroni"
+}
