@@ -64,6 +64,9 @@ jobs:
           - name: Yukon
             shortname: yukon
             board: PIMORONI_YUKON
+          - name: Yukon W
+            shortname: yukon_w
+            board: PIMORONI_YUKON_W
 
     env:
       RELEASE_FILE: pimoroni-${{matrix.shortname}}-${{github.event.release.tag_name || github.sha}}-micropython
@@ -71,7 +74,7 @@ jobs:
       BOARD_DIR: "$GITHUB_WORKSPACE/yukon/firmware/${{matrix.board}}"
       FILESYSTEM_DIR: "$GITHUB_WORKSPACE/yukon/lib"
       FILESYSTEM_SUFFIX: "with-filesystem"
-      BOARD: "PIMORONI_YUKON"
+      BOARD: ${{matrix.board}}
 
     steps:
     - name: Compiler Cache
