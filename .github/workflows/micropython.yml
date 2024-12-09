@@ -138,6 +138,12 @@ jobs:
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
 
+    - name: "HACK: Yukon Wireless Patch"
+      if: matrix.shortname == 'yukon_w'
+      shell: bash
+      working-directory: micropython/lib/pico-sdk
+      run: git apply "${{env.FIRMWARE_DIR}}/yukon_wireless.patch"
+
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
