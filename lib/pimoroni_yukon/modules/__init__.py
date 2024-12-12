@@ -12,6 +12,9 @@ from .proto import ProtoPotModule
 from .quad_servo_direct import QuadServoDirectModule
 from .quad_servo_reg import QuadServoRegModule
 from .serial_servo import SerialServoModule
+from .micro_sd import MicroSDModule
+from .mech_key import MechKeyModule
+from .potentiometer import PotModule
 
 
 KNOWN_MODULES = (
@@ -24,4 +27,7 @@ KNOWN_MODULES = (
     ProtoPotModule,
     QuadServoDirectModule,
     QuadServoRegModule,
-    SerialServoModule)
+    SerialServoModule,
+    MicroSDModule,
+    MechKeyModule,
+    PotModule)
