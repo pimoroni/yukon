@@ -119,11 +119,11 @@ jobs:
         path: dir2uf2
 
     # HACK: Patch startup overclock into Pico SDK
-    - name: "HACK: Startup Overclock Patch"
-      shell: bash
-      working-directory: micropython/lib/pico-sdk
-      run: |
-        git apply "${{env.FIRMWARE_DIR}}/startup_overclock.patch"
+    #- name: "HACK: Startup Overclock Patch"
+    #  shell: bash
+    #  working-directory: micropython/lib/pico-sdk
+    #  run: |
+    #    git apply "${{env.FIRMWARE_DIR}}/startup_overclock.patch"
 
     - name: "HACK: CMakeLists.txt Disable C++ Exceptions Patch"
       shell: bash
