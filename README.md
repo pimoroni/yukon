@@ -106,6 +106,7 @@ To take Yukon further, the full API for the library is described in the followin
 * [Docs: LED Strip Module](/docs/modules/led_strip.md)
 * [Docs: Quad Servo Direct Module](/docs/modules/quad_servo_direct.md)
 * [Docs: Quad Servo Regulated Module](/docs/modules/quad_servo_reg.md)
+* [Docs: RM2 Wireless Module](/docs/modules/rm2_wireless.md)
 * [Docs: Serial Bus Servo Module](/docs/modules/serial_servo.md)
 * [Docs: Yukon Module](/docs/modules/yukon_module.md)
 * [Docs: Custom Module](/docs/modules/custom_module.md)

@@ -253,9 +253,11 @@ Here is the current address list for Yukon modules produced by Pimoroni.
         <tr style="border-top: 2px solid; background-color:rgba(128, 128, 128, 0.25);">
             <td>LOW</td><td>LOW</td><td>1</td><td>0</td><td>1</td><td>Reserved</td><td></td>
         </tr>
-        <tr style="background-color:rgba(128, 128, 128, 0.25);">
-            <td>LOW</td><td>FLOAT</td><td>1</td><td>0</td><td>1</td><td>Reserved</td><td></td>
+        <!-- RM2 Wireless -->
+        <tr style="background-color:rgba(244, 204, 204, 0.25);">
+            <td>LOW</td><td>FLOAT</td><td>1</td><td>0</td><td>1</td><td>RM2 Wireless</td><td></td>
         </tr>
+        <!-- Reserved -->
         <tr style="background-color:rgba(128, 128, 128, 0.25);">
             <td>LOW</td><td>HIGH</td><td>1</td><td>0</td><td>1</td><td>Reserved</td><td></td>
         </tr>
