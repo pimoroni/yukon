@@ -1,5 +1,5 @@
 // This is a hack! Need to replace with upstream board definition.
-#define MICROPY_HW_BOARD_NAME          "Pimoroni Yukon"
+#define MICROPY_HW_BOARD_NAME          "Pimoroni Yukon (no Wireless)"
 #define MICROPY_HW_FLASH_STORAGE_BYTES (14160 * 1024)
 
 #define MICROPY_HW_USB_VID (0x2E8A)

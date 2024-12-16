@@ -1,5 +1,5 @@
 // This is a hack! Need to replace with upstream board definition.
-#define MICROPY_HW_BOARD_NAME          "Pimoroni Yukon W"
+#define MICROPY_HW_BOARD_NAME          "Pimoroni Yukon (+ Wireless)"
 #define MICROPY_HW_FLASH_STORAGE_BYTES (14160 * 1024)
 
 #define MICROPY_HW_USB_VID (0x2E8A)
@@ -20,7 +20,7 @@
 
 // Enable networking.
 #define MICROPY_PY_NETWORK 1
-#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "YukonW"
+#define MICROPY_PY_NETWORK_HOSTNAME_DEFAULT     "Yukon"
 
 // CYW43 driver configuration.
 #define CYW43_USE_SPI (1)

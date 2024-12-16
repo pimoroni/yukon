@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023 Christopher Parrott for Pimoroni Ltd
+# SPDX-FileCopyrightText: 2025 Christopher Parrott for Pimoroni Ltd
 #
 # SPDX-License-Identifier: MIT
 
@@ -15,7 +15,7 @@ from pimoroni_yukon.conversion import u16_to_voltage_in, u16_to_voltage_out, u16
 from ucollections import OrderedDict, namedtuple
 
 
-YUKON_VERSION = "1.0.2"
+YUKON_VERSION = "1.0.3"
 
 Slot = namedtuple("Slot", ("ID",
                            "FAST1",
