@@ -1,8 +1,8 @@
 diff --git a/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.c b/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.c
-index 5afe85e..c22084c 100644
+index 5afe85e..75547ee 100644
 --- a/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.c
 +++ b/src/rp2_common/pico_cyw43_driver/cyw43_bus_pio_spi.c
-@@ -20,22 +20,23 @@
+@@ -20,13 +20,13 @@
  #include "cyw43_debug_pins.h"
  
  #if CYW43_SPI_PIO
@@ -21,16 +21,4 @@ index 5afe85e..c22084c 100644
 +#define CS_PIN 17u /*25u*/
  #define IRQ_SAMPLE_DELAY_NS 100
  
--#define SPI_PROGRAM_NAME spi_gap01_sample0
-+//#define SPI_PROGRAM_NAME spi_gap01_sample0
-+#define SPI_PROGRAM_NAME spi_gap0_sample1 // for lower cpu speed
- #define SPI_PROGRAM_FUNC __CONCAT(SPI_PROGRAM_NAME, _program)
- #define SPI_PROGRAM_GET_DEFAULT_CONFIG_FUNC __CONCAT(SPI_PROGRAM_NAME, _program_get_default_config)
- #define SPI_OFFSET_END __CONCAT(SPI_PROGRAM_NAME, _offset_end)
- #define SPI_OFFSET_LP1_END __CONCAT(SPI_PROGRAM_NAME, _offset_lp1_end)
- 
--#define CLOCK_DIV 2
-+#define CLOCK_DIV 8
- #define CLOCK_DIV_MINOR 0
- #define PADS_DRIVE_STRENGTH PADS_BANK0_GPIO0_DRIVE_VALUE_12MA
- 
+ #define SPI_PROGRAM_NAME spi_gap01_sample0
