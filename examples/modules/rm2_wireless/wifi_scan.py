@@ -1,3 +1,4 @@
+import time
 import network
 import binascii
 from pimoroni_yukon import Yukon
@@ -35,8 +36,7 @@ try:
                   w[2], w[3], w[4], w[5])
         print()
 
-        # Monitor sensors for a number of seconds, recording the min, max, and average for each
-        yukon.monitored_sleep(SCAN_INTERVAL)
+        time.sleep(SCAN_INTERVAL)
 
 finally:
     # Put the board back into a safe state, regardless of how the program may have ended

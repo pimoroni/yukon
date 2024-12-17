@@ -1,3 +1,4 @@
+import time
 import network
 import requests
 from pimoroni_yukon import Yukon
@@ -60,7 +61,7 @@ try:
     # Wait until the connection is established
     while not wlan.isconnected():
         print('Waiting for connection...')
-        yukon.monitored_sleep(CONNECTION_INTERVAL)
+        time.sleep(CONNECTION_INTERVAL)
 
     # Print out our IP address
     print(f'Connected on {wlan.ifconfig()[0]}')
