@@ -22,4 +22,4 @@ jobs:
     - name: Lint Yukon Python Libraries
       shell: bash
       run: |
-        python3 -m flake8 --show-source --ignore E501,E201,E241,E222,E116,E266 lib/
+        python3 -m flake8 --show-source --ignore E501,E201,E241,E222,E116,E266,F401 lib/

@@ -64,6 +64,9 @@ jobs:
           - name: Yukon
             shortname: yukon
             board: PIMORONI_YUKON
+          - name: Yukon W
+            shortname: yukon+wireless
+            board: PIMORONI_YUKON_W
 
     env:
       RELEASE_FILE: pimoroni-${{matrix.shortname}}-${{github.event.release.tag_name || github.sha}}-micropython
@@ -71,7 +74,7 @@ jobs:
       BOARD_DIR: "$GITHUB_WORKSPACE/yukon/firmware/${{matrix.board}}"
       FILESYSTEM_DIR: "$GITHUB_WORKSPACE/yukon/lib"
       FILESYSTEM_SUFFIX: "with-filesystem"
-      BOARD: "PIMORONI_YUKON"
+      BOARD: ${{matrix.board}}
 
     steps:
     - name: Compiler Cache
@@ -134,6 +137,12 @@ jobs:
       shell: bash
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
+
+    - name: "HACK: Yukon Wireless Patch"
+      if: matrix.shortname == 'yukon_w'
+      shell: bash
+      working-directory: micropython/lib/pico-sdk
+      run: git apply "${{env.FIRMWARE_DIR}}/yukon_wireless.patch"
 
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1
