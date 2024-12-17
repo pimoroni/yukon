@@ -2,7 +2,7 @@ import network
 import binascii
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT5 as SLOT
-from pimoroni_yukon.modules import WirelessModule
+from pimoroni_yukon.modules import RM2WirelessModule
 
 """
 Periodically scan for available WiFi networks using a RM2 Wireless Module connected to Slot 5,
@@ -12,17 +12,17 @@ Hold "Boot" to exit the program (can take up to 5 seconds).
 """
 
 # Constants
-SCAN_INTERVAL = 5.0         # The time to sleep between each network scan
+SCAN_INTERVAL = 5.0             # The time to sleep between each network scan
 
 # Variables
-yukon = Yukon()             # Create a new Yukon object, with a lower voltage limit set
-module = WirelessModule()   # Create a WirelessModule object
+yukon = Yukon()                 # Create a new Yukon object, with a lower voltage limit set
+module = RM2WirelessModule()    # Create a RM2WirelessModule object
 
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
-    yukon.register_with_slot(module, SLOT)  # Register the WirelessModule object with the slot
-    yukon.verify_and_initialise()           # Verify that a WirelessModule is attached to Yukon, and initialise it
+    yukon.register_with_slot(module, SLOT)  # Register the RM2WirelessModule object with the slot
+    yukon.verify_and_initialise()           # Verify that a RM2WirelessModule is attached to Yukon, and initialise it
 
     wlan = network.WLAN(network.STA_IF)     # Create a new network object for interacting with WiFi
     wlan.active(True)                       # Turn on WLAN communications

@@ -5,7 +5,7 @@
 from .common import YukonModule, ADC_LOW, ADC_FLOAT, IO_LOW, IO_HIGH
 
 
-class WirelessModule(YukonModule):
+class RM2WirelessModule(YukonModule):
     NAME = "RM2 Wireless"
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |

@@ -3,7 +3,7 @@ import requests
 from pimoroni_yukon import Yukon
 from pimoroni_yukon import SLOT2 as STRIP_SLOT
 from pimoroni_yukon import SLOT5 as RM2_SLOT
-from pimoroni_yukon.modules import LEDStripModule, WirelessModule
+from pimoroni_yukon.modules import LEDStripModule, RM2WirelessModule
 
 
 """
@@ -41,13 +41,13 @@ leds = LEDStripModule(STRIP_TYPE,       # Create a LEDStripModule object, with t
                       STRIP_SM,
                       LEDS_PER_STRIP,
                       BRIGHTNESS)
-wireless = WirelessModule()             # Create a WirelessModule object
+wireless = RM2WirelessModule()          # Create a RM2WirelessModule object
 
 
 # Wrap the code in a try block, to catch any exceptions (including KeyboardInterrupt)
 try:
     yukon.register_with_slot(leds, STRIP_SLOT)      # Register the LEDStripModule object with the slot
-    yukon.register_with_slot(wireless, RM2_SLOT)    # Register the WirelessModule object with the slot
+    yukon.register_with_slot(wireless, RM2_SLOT)    # Register the RM2WirelessModule object with the slot
     yukon.verify_and_initialise()                   # Verify that the modules are attached to Yukon, and initialise them
 
     wlan = network.WLAN(network.STA_IF)             # Create a new network object for interacting with WiFi
