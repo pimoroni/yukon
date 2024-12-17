@@ -65,7 +65,7 @@ jobs:
             shortname: yukon
             board: PIMORONI_YUKON
           - name: Yukon W
-            shortname: yukon_w
+            shortname: yukon+wireless
             board: PIMORONI_YUKON_W
 
     env:
