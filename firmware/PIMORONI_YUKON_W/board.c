@@ -18,20 +18,20 @@ void board_init() {
 void board_reset(void) {
     for (int i = 0; i < 16; ++i) {
         gpio_init(i);
-        hw_clear_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
+        hw_clear_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
             PADS_BANK0_GPIO0_PUE_BITS |
             PADS_BANK0_GPIO0_PDE_BITS);
-        hw_set_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
+        hw_set_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
     }
 
     // Skip over SLOT 5
 
     for (int i = 20; i < 24; ++i) {
         gpio_init(i);
-        hw_clear_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
+        hw_clear_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
             PADS_BANK0_GPIO0_PUE_BITS |
             PADS_BANK0_GPIO0_PDE_BITS);
-        hw_set_bits(&padsbank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
+        hw_set_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
     }
 
     board_init();
