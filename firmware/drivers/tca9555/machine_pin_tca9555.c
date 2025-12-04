@@ -80,7 +80,7 @@ void machine_pin_ext_config(machine_pin_obj_t *self, int mode, int value) {
         }
         machine_pin_ext_set(self, value);
     } else {
-        mp_raise_ValueError("only Pin.OUT and Pin.IN are supported for this pin");
+        mp_raise_ValueError(MP_ERROR_TEXT("only Pin.OUT and Pin.IN are supported for this pin"));
     }
 }
 

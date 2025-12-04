@@ -60,14 +60,6 @@
 //#define PICO_DEFAULT_SPI_CSN_PIN 17
 //#endif
 
-#ifndef CYW43_PIN_WL_HOST_WAKE
-#define CYW43_PIN_WL_HOST_WAKE 19 /*24*/
-#endif
-
-#ifndef CYW43_PIN_WL_REG_ON
-#define CYW43_PIN_WL_REG_ON 16 /*23*/
-#endif
-
 // --- FLASH ---
 #define PICO_BOOT_STAGE2_CHOOSE_W25Q080 1
 
@@ -82,6 +74,42 @@
 // All boards have B1 RP2040
 #ifndef PICO_RP2040_B0_SUPPORTED
 #define PICO_RP2040_B0_SUPPORTED 0
+#endif
+
+// --- WIRELESS ---
+// cyw43 SPI pins can't be changed at runtime
+#ifndef CYW43_PIN_WL_DYNAMIC
+#define CYW43_PIN_WL_DYNAMIC 0
+#endif
+
+// gpio pin to power up the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_REG_ON
+#define CYW43_DEFAULT_PIN_WL_REG_ON 16u
+#endif
+
+// gpio pin for spi data out to the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_DATA_OUT
+#define CYW43_DEFAULT_PIN_WL_DATA_OUT 19u
+#endif
+
+// gpio pin for spi data in from the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_DATA_IN
+#define CYW43_DEFAULT_PIN_WL_DATA_IN 19u
+#endif
+
+// gpio (irq) pin for the irq line from the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_HOST_WAKE
+#define CYW43_DEFAULT_PIN_WL_HOST_WAKE 19u
+#endif
+
+// gpio pin for the spi clock line to the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_CLOCK
+#define CYW43_DEFAULT_PIN_WL_CLOCK 18u
+#endif
+
+// gpio pin for the spi chip select to the cyw43 chip
+#ifndef CYW43_DEFAULT_PIN_WL_CS
+#define CYW43_DEFAULT_PIN_WL_CS 17u
 #endif
 
 #endif
