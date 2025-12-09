@@ -28,8 +28,6 @@ voltage = INITIAL_VOLTAGE                   # The voltage to have the BenchPower
 
 # Function to monitor for a set duration, then print out the bench power's measured output voltage
 def monitor_and_print(duration):
-    global voltage
-    global module
     yukon.monitored_sleep(duration)
     measured_avg = module.get_readings()["Vo_avg"]
     print(f"Target = {round(voltage, 3)} V, Measured = {round(measured_avg, 3)} V")

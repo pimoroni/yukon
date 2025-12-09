@@ -29,7 +29,6 @@ angle_offset = 0                                # The angle offset being tried
 
 # Function to check if the button has been newly pressed
 def button_newly_pressed(btn):
-    global last_button_states
     button_state = yukon.is_pressed(btn)
     button_pressed = button_state and not last_button_states[btn]
     last_button_states[btn] = button_state
