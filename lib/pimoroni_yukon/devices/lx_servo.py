@@ -99,12 +99,12 @@ def send(id, uart, duplexer, command, fmt="", *data):
 
 
 def wait_for_send(uart):
-    # Wait for all the data to be sent from the buffer
+    # As of MicroPython 1.24 txdone now waits for all data to be transmitted:
+    # https://github.com/micropython/micropython/commit/97af1001ae07c573bf432b9923dcdf78055a508c
+
+    # Wait for all the data to be sent from the buffer.
     while not uart.txdone():
         pass
-
-    # Wait a short time to let the final bits finish transmitting
-    time.sleep_us(1500000 // BAUD_RATE)
 
 
 def handle_receive(uart):

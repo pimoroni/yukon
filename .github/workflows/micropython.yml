@@ -7,13 +7,13 @@ on:
     types: [created]
 
 env:
-  MICROPYTHON_VERSION: 17d82344581ad3a76033fae54c5d3304e17f185f
-  PIMORONI_PICO_VERSION: 49a5d4292586f5851978f6f4a2f6b3214fb379ce
+  MICROPYTHON_VERSION: v1.26.1
+  PIMORONI_PICO_VERSION: 6acbcb82f42526f4f6fcf77ab60aaa6ea30ffd9c
   WORKFLOW_VERSION: v2
 
 jobs:
   deps:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     name: Dependencies
     steps:
     - name: Workspace Cache
@@ -57,7 +57,7 @@ jobs:
   build:
     needs: deps
     name: Build ${{matrix.name}}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         include:
@@ -137,12 +137,6 @@ jobs:
       shell: bash
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
-
-    - name: "HACK: Yukon Wireless Patch"
-      if: matrix.shortname == 'yukon+wireless'
-      shell: bash
-      working-directory: micropython/lib/pico-sdk
-      run: git apply "${{env.FIRMWARE_DIR}}/yukon_wireless.patch"
 
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1

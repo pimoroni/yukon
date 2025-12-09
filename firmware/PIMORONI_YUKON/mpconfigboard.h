@@ -18,6 +18,9 @@
 #define TCA9555_LOCAL_MEMORY (1)
 #define TCA9555_READ_INTERNALS (1)
 
+int mp_hal_is_pin_reserved(int n);
+#define MICROPY_HW_PIN_RESERVED(i) mp_hal_is_pin_reserved(i)
+
 #define MICROPY_BOARD_EARLY_INIT board_init
 void board_init(void);
 

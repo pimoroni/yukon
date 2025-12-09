@@ -29,10 +29,11 @@
 #define CYW43_SPI_PIO (1)
 #define ENABLE_SPI_DUMPING (1)
 
+int mp_hal_is_pin_reserved(int n);
+#define MICROPY_HW_PIN_RESERVED(i) mp_hal_is_pin_reserved(i)
+
 #define MICROPY_BOARD_EARLY_INIT board_init
 void board_init(void);
 
 #define MICROPY_BOARD_START_SOFT_RESET board_reset
 void board_reset(void);
-
-#define MICROPY_HW_PIN_RESERVED(i) ((i) == CYW43_PIN_WL_HOST_WAKE || (i) == CYW43_PIN_WL_REG_ON)
