@@ -4,6 +4,7 @@
 
 from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
 from machine import Pin, UART
+import time
 
 
 class Duplexer:
@@ -41,6 +42,12 @@ class SerialServoModule(YukonModule):
 
         self.__baudrate = baudrate
 
+    def handler(self, uart):
+        # Wait a short time to let the final bits finish transmitting
+        time.sleep_us(38000000 // self.__baudrate)
+
+        self.duplexer.receive_on_data()
+
     def initialise(self, slot, adc1_func, adc2_func):
         try:
             # Create the serial object
@@ -50,6 +57,9 @@ class SerialServoModule(YukonModule):
             raise type(e)("UART perhiperal already in use. Check that a module in another slot does not share the same UART perhiperal") from None
 
         self.duplexer = Duplexer(tx_to_data=slot.FAST3, rx_to_data=slot.FAST4, active_low=True)
+
+        # Add a hard IRQ to the UART so we can better control the switchover from TX to RX
+        self.uart.irq(self.handler, UART.IRQ_TXIDLE, hard=True)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
