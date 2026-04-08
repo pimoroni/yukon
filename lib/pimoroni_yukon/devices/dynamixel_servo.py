@@ -12,6 +12,7 @@ Serial Bus Servo module.
 """
 BAUD_RATE = 1000000
 
+
 def wait_for_send(uart):
     # As of MicroPython 1.24 txdone now waits for all data to be transmitted:
     # https://github.com/micropython/micropython/commit/97af1001ae07c573bf432b9923dcdf78055a508c
@@ -19,13 +20,15 @@ def wait_for_send(uart):
     # Wait for all the data to be sent from the buffer.
     while not uart.txdone():
         pass
-    
+
+
 def calculate_checksum(id, length, instruction, parameters):
     # For the AX-12W (and other Dynamixel AX-series servos using Protocol 1.0),
     # the checksum is calculated by taking the sum of several packet components
     # and applying a bitwise NOT (ones' complement).
     s = (id + length + instruction + sum(parameters)) & 0xFF
     return (~s) & 0xFF  # Bitwise NOT
+
 
 def receive_packet(uart, expected_id, duplexer, timeout_ms, check_id=True):
     wait_for_send(uart)                 # Ensure that all data has been sent
@@ -39,55 +42,61 @@ def receive_packet(uart, expected_id, duplexer, timeout_ms, check_id=True):
             if header == b'\xff\xff':
                 # Read ID, Length, Error
                 status_info = uart.read(3)
-                if not status_info: return None
-                
+                if not status_info:
+                    return None
+
                 res_id, res_len, res_err = status_info
                 # Read parameters (if any) and Checksum
                 # Total length in packet includes Error + Params + Checksum
-                data = uart.read(res_len) 
-                
+                data = uart.read(res_len)
+
                 # Check for ID match and basic integrity
-                if check_id == False or res_id == expected_id:
+                if not check_id or res_id == expected_id:
                     duplexer.send_on_data()             # Switch back to send mode
                     return {"id": res_id, "error": res_err, "params": list(data[:-1])}
 
     duplexer.send_on_data()             # Switch back to send mode
     raise TimeoutError(f"Serial servo #{id} did not reply within the expected time")
 
+
 def send_packet(uart, id, duplexer, instruction, parameters=None):
     if parameters is None:
         parameters = []
-    
+
     length = len(parameters) + 2  # Instruction + Parameters + Checksum (1 byte not in length)
     chk = calculate_checksum(id, length, instruction, parameters)
-    
+
     # Packet: [0xFF, 0xFF, ID, Length, Instruction, Param1, ..., Checksum]
     packet = bytearray([0xFF, 0xFF, id, length, instruction])
     packet.extend(parameters)
     packet.append(chk)
-    
+
     duplexer.send_on_data()    # Switch to sending data
 
     # Clear buffer and send
-    while uart.any(): uart.read()
-    
+    while uart.any():
+        uart.read()
+
     uart.write(packet)
+
 
 def __degrees_to_raw(degree):
     # Round input to the nearest 0.5 (e.g., 150.2 -> 150.0, 150.3 -> 150.5)
     target_degree = round(degree * 2) / 2
-    
+
     position = int(round(((target_degree + 150.0) / 300.0) * 1023))
     # Map to 0-1023 range
     position = min(max(position, 0), 1023)
     return position
 
+
 def __raw_to_degrees(raw):
     # Convert raw back to float
     calc_degree = ((raw * 300.0) / 1023.0) - 150.0
-    
+
     # Round the result to the nearest 0.5 to restore symmetry
     return round(calc_degree * 2) / 2
+
 
 def __speed_to_raw(speed):
     # Round input to the nearest 0.005 (e.g., 0.152 -> 0.150, 0.153 -> 0.155)
@@ -100,8 +109,9 @@ def __speed_to_raw(speed):
         raw_speed = int(target_speed * 1023) + 1024
         # Map to 1024-2047 range
         raw_speed = min(max(raw_speed, 1024), 2047)
-    
+
     return raw_speed
+
 
 def __raw_to_speed(raw):
     # Convert raw back to float
@@ -110,15 +120,16 @@ def __raw_to_speed(raw):
         calc_speed = round(calc_speed * 2) / 2
         return calc_speed
     else:
-        calc_speed = (raw-1024) / 1023.0 
+        calc_speed = (raw - 1024) / 1023.0
         calc_speed = round(calc_speed * 2) / 2
         return -calc_speed
-    
+
+
 class AXServo:
     SERVO_MODE = 0
     MOTOR_MODE = 1
     # Default switch from Read->Write for the servos is 500 micro-seconds, so add some
-    # headroom for send and receive and mode switches from SERVO<->MOTOR. 
+    # headroom for send and receive and mode switches from SERVO<->MOTOR.
     DEFAULT_READ_TIMEOUT = 50.0
 
     # Instructions for AX Servos
@@ -127,7 +138,7 @@ class AXServo:
     INST_WRITE = 0x03
     INST_REG_WRITE = 0x04
     INST_ACTION = 0x05
-    
+
     # Registers for AX Servos
     REG_ID = 0x03
     TORQUE_ENABLE = 0x18
@@ -147,7 +158,6 @@ class AXServo:
     ADDR_PRESENT_POS = 0x24
     ADDR_PRESENT_VOLT = 0x2A
     ADDR_PRESENT_TEMP = 0x2B
-    
 
     def __init__(self, id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT, debug_pin=None):
         if id < 0 or id > self.BROADCAST_ID:
@@ -183,17 +193,17 @@ class AXServo:
     def detect(id, uart, duplexer, timeout=DEFAULT_READ_TIMEOUT):
         """
         determine whether a servo with a given id is connected
-        
+
         :id: the servo ID to try and detect
         :uart: the uart connection for the serial servo module
         :duplexer: the switch between send and receive on the uart
-        :return: True if a servo with the given id is detected, False otherwise. 
+        :return: True if a servo with the given id is detected, False otherwise.
         """
         if id == AXServo.BROADCAST_ID:
             raise ValueError("cannot detect using the broadcast ID")
-        
+
         send_packet(uart, id, duplexer, AXServo.INST_PING)
-    
+
         try:
             received = receive_packet(uart, None, duplexer, timeout, check_id=False)
             if received['id'] != id:
@@ -216,11 +226,11 @@ class AXServo:
                 raise RuntimeError(self.__message_header() + f"Incorrectly reported its ID as {received}")
         except TimeoutError:
             raise RuntimeError(self.__message_header() + "Cannot find servo") from None
-        
+
     def change_id(self, new_id):
         """
         change the id of a servo to new_id
-        
+
         :new_id: the id to set
         """
         if self.__id == self.BROADCAST_ID:
@@ -232,8 +242,8 @@ class AXServo:
         logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
 
         params = [self.REG_ID, new_id]
-        self.__send(INST_WRITE, params)
-        
+        self.__send(self.INST_WRITE, params)
+
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
 
@@ -262,12 +272,12 @@ class AXServo:
         response = self.__receive()
         return response['params'][0]
 
-
     # Movement Control
+
     def mode(self):
         """
         reports whether the servo is in SERVO mode or MOTOR mode.
-        
+
         :return: whether the servo is in AXServo.SERVO_MODE or AXServo.MOTOR_MODE
         """
         if self.__id == self.BROADCAST_ID:
@@ -282,24 +292,24 @@ class AXServo:
         # of about 0.666 deg/s
 
         raw_speed = int(deg_per_sec / 0.666)
-        raw_speed = max(0, min(1023, raw_speed)) # Clamp 1-1023 (0 is max speed)
-        
+        raw_speed = max(0, min(1023, raw_speed))  # Clamp 1-1023 (0 is max speed)
+
         angle = max(min(angle, 150.0), -150.0)
         raw_goal = __degrees_to_raw(angle)
-    
+
         params = [
-            self.GOAL_POS, 
+            self.GOAL_POS,
             raw_goal & 0xFF, (raw_goal >> 8) & 0xFF,
             raw_speed & 0xFF, (raw_speed >> 8) & 0xFF
         ]
-        speed_params = [self.GOAL_SPEED, raw_speed & 0xFF, (raw_speed >> 8) & 0xFF]
+
         if queued:
             self.__send(self.INST_REG_WRITE, params)
-        else:            
+        else:
             self.__send(self.INST_WRITE, params)
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
-        if queued:    
+        if queued:
             logging.debug(self.__message_header() + f"Queued move to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
         else:
             logging.debug(self.__message_header() + f"Moving to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
@@ -308,10 +318,9 @@ class AXServo:
         """
         moves the servo to a particular angle at a given speed, will switch to AXServo.SERVO_MODE
         if currently in AXServo.MOTOR_MODE.
-        
+
         :angle: the angle to move to in degress, between -300 and 300 unless other angle limits have been set
         :deg_per_sec: the speed to move at in degrees per second. Specific 0 to move at hardware limits.
-            
         """
         if self.__id == self.BROADCAST_ID or self.__mode != AXServo.SERVO_MODE:
             self.__switch_to_servo_mode()
@@ -321,9 +330,9 @@ class AXServo:
     def queue_move(self, angle, deg_per_sec):
         """
         queues a move for the servo to a particular angle at a given speed.
-        
+
         :angle: the angle to move to in degress, between -300 and 300 unless other angle limits have been set
-        :deg_per_sec: the speed to move at in degrees per second. Specific 0 to move at hardware limits. 
+        :deg_per_sec: the speed to move at in degrees per second. Specific 0 to move at hardware limits.
         """
         self.__move_to(angle, deg_per_sec, True)
 
@@ -341,9 +350,9 @@ class AXServo:
     def drive_at(self, speed):
         """
         make the servo drive forwards or backwards in MOTOR mode.
-        
+
         :speed: forward or backwards speed between -1.0 (CCW) to 1.0 (CW)
-        """        
+        """
         if self.__id == self.BROADCAST_ID or self.__mode == AXServo.SERVO_MODE:
             self.__switch_to_motor_mode()
 
@@ -362,7 +371,7 @@ class AXServo:
     def last_move(self):
         """
         report the last position and speed that the servo was asked to move to
-        
+
         :return: the angle and degrees and speed in deg/sec that the servo was asked to move to
         """
         if self.__id == self.BROADCAST_ID:
@@ -376,13 +385,13 @@ class AXServo:
 
         angle = round(((raw_pos / 1023.0) * 300) - 150, 1)
         deg_per_sec = raw_speed * 0.666
-        
+
         return angle, deg_per_sec
 
     def last_speed(self):
         """
         report the last speed that the servo was asked to move at
-        
+
         :return: the last speed that the servo was asked to move
         at as a percentage between -1.0 and 1.0
         """
@@ -393,7 +402,7 @@ class AXServo:
         response = self.__receive()
         p = response['params']
         raw_speed = p[0] + (p[1] << 8)
-        
+
         return __raw_to_speed(raw_speed)
 
     def stop(self):
@@ -427,13 +436,13 @@ class AXServo:
     def read_angle(self):
         """
         read the current angle of the servo
-        
+
         :return: The current servo angle between -150 and 150 degrees
         """
         pos = self.__read_angle_raw()
         degrees = __raw_to_degrees(pos)
         return degrees
-    
+
     def __read_angle_raw(self):
         if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the temperature when broadcasting")
@@ -443,7 +452,7 @@ class AXServo:
         p = response['params']
         pos = p[0] + (p[1] << 8)
         return pos
-    
+
     def read_voltage(self):
         if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the voltage when broadcasting")
@@ -473,7 +482,7 @@ class AXServo:
         # Combine bytes (Little-Endian)
         punch = p[0] + (p[1] << 8)
         return punch
-    
+
     def read_temperature(self):
         if self.__id == self.BROADCAST_ID:
             raise ValueError("cannot read the temperature when broadcasting")
@@ -487,7 +496,7 @@ class AXServo:
         """
         returns the angle limits in degrees between -150.0 and 150.0. If in motor mode
         then both upper (clockwise) and lower (counter clockwise) limits will be -150.0.
-        
+
         :return: the lower (counter clockwise) and upper (clockwise) limits as degrees
         between -150.0 and 150.0. If the servo is in AXServo.MOTOR_MODE then the angle_limits
         will be (-150.0, -150.0)
@@ -497,22 +506,22 @@ class AXServo:
 
         self.__send(self.INST_READ, [self.CW_ANGLE_LIMIT, 4])
         response = self.__receive()
-        
+
         p = response['params']
         # Combine bytes (Little-Endian)
         ccw_raw = p[0] + (p[1] << 8)
         cw_raw = p[2] + (p[3] << 8)
-        
+
         # Convert to degrees
         cw_deg = __raw_to_degrees(cw_raw)
         ccw_deg = __raw_to_degrees(ccw_raw)
-  
+
         return ccw_deg, cw_deg
 
     def voltage_limits(self):
         """
         the upper and lower voltage limits that the servo is configured to work within
-        
+
         :return: the lower and upper voltage limits (in Volts)
         """
         if self.__id == self.BROADCAST_ID:
@@ -528,7 +537,7 @@ class AXServo:
     def temperature_limit(self):
         """
         the upper temperature limit that the servo is configured to function within
-        
+
         :return: the upper temperature limit in degress centigrade.
         """
         if self.__id == self.BROADCAST_ID:
@@ -542,8 +551,8 @@ class AXServo:
         """
         set the range of movement for the servo in degrees (between -150 and 150).
         If lower_degrees and upper_degrees are the same then switches the servo to
-        AXServo.MOTOR_MODE otherwise servo will be in AXServo.SERVO_MODE. 
-        
+        AXServo.MOTOR_MODE otherwise servo will be in AXServo.SERVO_MODE.
+
         :lower_degrees: the lower/counter clockwise limit of motion of the servo. Between -150 and 150 degrees.
         :upper_degrees: the upper/clockwise limit of motion of the servo. Between -150 and 150 degrees
         """
@@ -555,8 +564,8 @@ class AXServo:
 
         # Parameters: [Address, CW_L, CW_H, CCW_L, CCW_H]
         params = [
-            self.CW_ANGLE_LIMIT, 
-            ccw & 0xFF, (ccw >> 8) & 0xFF, 
+            self.CW_ANGLE_LIMIT,
+            ccw & 0xFF, (ccw >> 8) & 0xFF,
             cw & 0xFF, (cw >> 8) & 0xFF
         ]
         self.__send(self.INST_WRITE, params)
@@ -567,33 +576,33 @@ class AXServo:
     def set_torque_limit(self, torque_limit):
         """
         set the torque limit of the servo.
-        
+
         :torque_limit: the new torque limit in the range 0..1023.
         """
         # Clamp to hardware limits
         clamped_torque_limit = max(0, min(1023, torque_limit))
-    
+
         # Parameters: [Address, CW_L, CW_H, CCW_L, CCW_H]
         params = [
-            self.TORQUE_LIMIT, 
+            self.TORQUE_LIMIT,
             clamped_torque_limit & 0xFF, (clamped_torque_limit >> 8) & 0xFF
         ]
         self.__send(self.INST_WRITE, params)
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
 
-    def set_punch(self, punch):    
+    def set_punch(self, punch):
         """
         set the punch of the servo.
-        
+
         :punch: the new punch in the range 0..1023.
         """
         # Clamp to hardware limits
         clamped_punch = max(0, min(1023, punch))
-    
+
         # Parameters: [Address, PUNCH_L, PUNCH_H]
         params = [
-            self.PUNCH, 
+            self.PUNCH,
             clamped_punch & 0xFF, (clamped_punch >> 8) & 0xFF
         ]
         self.__send(self.INST_WRITE, params)
@@ -605,19 +614,19 @@ class AXServo:
         set the low and high voltage limits. These limits define the
         safe operating range for the input voltage; if the actual voltage
         falls outside this range, the servo triggers an error to protect
-        its internal components. 
-        
+        its internal components.
+
         :low_v: the low voltage level in the range 5-16V
-        :high_v: the high voltage level in the range 5-16V        
+        :high_v: the high voltage level in the range 5-16V
         """
         # Convert Volts to raw 1-byte integers (e.g., 11.5V -> 115)
         # Range is roughly 50 to 160 (5.0V to 16.0V)
         low_raw = int(max(5.0, min(16.0, low_v)) * 10)
         high_raw = int(max(5.0, min(16.0, high_v)) * 10)
-        
+
         # Parameters: [Starting Address, Low_Val, High_Val]
         params = [self.DOWN_LIMIT_VOLTAGE, low_raw, high_raw]
-        
+
         self.__send(self.INST_WRITE, params)
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
@@ -627,9 +636,9 @@ class AXServo:
         set the max safe operating temperature for the servo. This limits
         defines the safe max temperature; if the actual temperature of the servo
         is above this then the servo triggers an error to protect its internal
-        components. 
-        
-        :limit: the temperature limit between 50..100C. 
+        components.
+
+        :limit: the temperature limit between 50..100C.
         """
         limit = min(max(limit, 50), 100)
         self.__send(self.INST_WRITE, [self.TEMP_LIMIT, limit])
@@ -651,7 +660,7 @@ class AXServo:
         Updates LED or Shutdown behavior. Pass None to keep current.
         """
         current_led, current_shutdown = self.fault_config()
-        
+
         new_led = led_bits if led_bits is not None else current_led
         new_shutdown = shutdown_bits if shutdown_bits is not None else current_shutdown
 
@@ -664,7 +673,7 @@ class AXServo:
     def __check_response(self, response):
         if response['error'] != 0:
             raise ValueError(f"error setting properties: {response}")
-        
+
     def __switch_to_servo_mode(self):
         self.set_angle_limits(-150.0, 150.0)
 
@@ -685,7 +694,7 @@ class AXServo:
 
     def __message_header(self):
         return f"[Servo{self.__id}] "
-    
+
 
 class AXServoBroadcaster:
 
@@ -735,7 +744,3 @@ class AXServoBroadcaster:
     # Fault Settings
     def configure_all_faults(self, led_bits, shutdown_bits):
         self.__servo.configure_faults(led_bits, shutdown_bits)
-
-
-
-
