@@ -115,5 +115,6 @@ To take Yukon further, the full API for the library is described in the followin
 ### Devices
 
 * [Docs: LX Servo Class](/docs/devices/lxservo.md)
+* [Docs: Dynamixel Servo Class](/docs/devices/dynamixel_servo.md)
 * [Docs: OkayStepper Class](/docs/devices/okaystepper.md)
 * [Docs: WavPlayer Class](/docs/devices/wavplayer.md)
