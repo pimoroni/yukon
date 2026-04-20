@@ -7,6 +7,7 @@ from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
 import pimoroni_yukon.logging as logging
+from plasma import COLOR_ORDER_GRB
 
 
 class LEDStripModule(YukonModule):
@@ -26,7 +27,7 @@ class LEDStripModule(YukonModule):
     def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
         return adc1_level == ADC_LOW and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_HIGH
 
-    def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, halt_on_not_pgood=False):
+    def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, rgbw=False, color_order=COLOR_ORDER_GRB, halt_on_not_pgood=False):
         super().__init__()
 
         if strip_type < 0 or strip_type > 2:
@@ -67,6 +68,8 @@ class LEDStripModule(YukonModule):
         self.__sm = sm
         self.__num_leds = num_leds
         self.__brightness = brightness
+        self.__rgbw = rgbw
+        self.__color_order = color_order
         self.halt_on_not_pgood = halt_on_not_pgood
 
         self.__last_pgood = False
@@ -80,10 +83,10 @@ class LEDStripModule(YukonModule):
                 if not isinstance(num_leds, (list, tuple)):
                     num_leds = (num_leds, num_leds)
 
-                self.strips = [WS2812(num_leds[0], self.__pio, self.__sm, slot.FAST4),
-                               WS2812(num_leds[1], self.__pio, (self.__sm + 1) % 4, slot.FAST3)]
+                self.strips = [WS2812(num_leds[0], self.__pio, self.__sm, slot.FAST4, rgbw=self.__rgbw, color_order=self.__color_order),
+                               WS2812(num_leds[1], self.__pio, (self.__sm + 1) % 4, slot.FAST3, rgbw=self.__rgbw, color_order=self.__color_order)]
             else:
-                self.strip = WS2812(self.__num_leds, self.__pio, self.__sm, slot.FAST4)
+                self.strip = WS2812(self.__num_leds, self.__pio, self.__sm, slot.FAST4, rgbw=self.__rgbw, color_order=self.__color_order)
         else:
             from plasma import APA102
             self.strip = APA102(self.__num_leds, self.__pio, self.__sm, slot.FAST4, slot.FAST3)
