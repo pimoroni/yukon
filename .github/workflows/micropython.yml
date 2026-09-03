@@ -9,8 +9,8 @@ on:
 env:
   # pimoroni/micropython cyw43-dynamic-pins, v1.29.0 plus the dynamic cyw43 pin commits, matching pimoroni-pico
   MICROPYTHON_VERSION: cd1df9d9cb3c96206eb4bc03e90af63bb0afd841
-  # pimoroni-pico patch/plasma-num-leds: main plus Pin object support in Servo, Motor and Encoder (PR #1157) and num_leds() on Plasma
-  PIMORONI_PICO_VERSION: 69e0d5f185331f5e29aaad8821d376de33ad4713
+  # pimoroni-pico feature/brushless: main plus Pin object support in Servo, Motor and Encoder (PR #1157), PWMCluster fixes and the Brushless and BrushlessCluster classes
+  PIMORONI_PICO_VERSION: 529401d2290ac2f2c2ed0ff644d5edf64ff87db3
   WORKFLOW_VERSION: v2
 
 jobs:
