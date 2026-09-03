@@ -16,17 +16,12 @@ void board_init() {
 }
 
 void board_reset(void) {
-    for (int i = 0; i < 16; ++i) {
-        gpio_init(i);
-        hw_clear_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
-            PADS_BANK0_GPIO0_PUE_BITS |
-            PADS_BANK0_GPIO0_PDE_BITS);
-        hw_set_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_OD_BITS);
-    }
+    for (int i = 0; i < 24; ++i) {
+        // Leave the pins of a running cyw43 alone, or the link to it will break
+        if (mp_hal_is_pin_reserved(i)) {
+            continue;
+        }
 
-    // Skip over SLOT 5
-
-    for (int i = 20; i < 24; ++i) {
         gpio_init(i);
         hw_clear_bits(&pads_bank0_hw->io[i], PADS_BANK0_GPIO0_IE_BITS |
             PADS_BANK0_GPIO0_PUE_BITS |
