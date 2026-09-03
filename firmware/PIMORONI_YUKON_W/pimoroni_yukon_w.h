@@ -67,6 +67,7 @@
 #define PICO_FLASH_SPI_CLKDIV 2
 #endif
 
+pico_board_cmake_set_default(PICO_FLASH_SIZE_BYTES, (16 * 1024 * 1024))
 #ifndef PICO_FLASH_SIZE_BYTES
 #define PICO_FLASH_SIZE_BYTES (16 * 1024 * 1024)
 #endif
@@ -77,9 +78,10 @@
 #endif
 
 // --- WIRELESS ---
-// cyw43 SPI pins can't be changed at runtime
+// cyw43 SPI pins can be changed at runtime, so the module works in any slot.
+// The defaults below are Slot 5's fast pins.
 #ifndef CYW43_PIN_WL_DYNAMIC
-#define CYW43_PIN_WL_DYNAMIC 0
+#define CYW43_PIN_WL_DYNAMIC 1
 #endif
 
 // gpio pin to power up the cyw43 chip

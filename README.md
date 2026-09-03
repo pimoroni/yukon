@@ -5,12 +5,13 @@
 This repository is home to the MicroPython build, library, and examples for Pimoroni Yukon.
 
 [![Build Status](https://img.shields.io/github/actions/workflow/status/pimoroni/yukon/micropython.yml?branch=main&label=MicroPython)](https://github.com/pimoroni/yukon/actions/workflows/micropython.yml)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/pimoroni/yukon)](https://github.com/pimoroni/picovision/releases/latest/)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/pimoroni/yukon)](https://github.com/pimoroni/yukon/releases/latest/)
 
 - [Introduction](#introduction)
 - [Download MicroPython](#download-micropython)
   - [Firmware Only](#firmware-only)
   - [With Filesystem](#with-filesystem)
+  - [With or Without Wireless](#with-or-without-wireless)
 - [Flashing the Firmware](#flashing-the-firmware)
 - [Examples](#examples)
 - [Documentation](#documentation)
@@ -35,26 +36,41 @@ Yukon is supported by a comprehensive MicroPython library with a whopping 50 (!)
 
 ## Download MicroPython
 
-All Yukon boards come pre-flashed with MicroPython and the libraries needed to get you started. The instructions below are for if you wish to update your board to the latest firmware or restore it back back to a factory state.
+All Yukon boards come pre-flashed with MicroPython and the libraries needed to get you started. The instructions below are for if you wish to update your board to the latest firmware or restore it back to a factory state.
 
 Grab the latest release from [https://github.com/pimoroni/yukon/releases/latest](https://github.com/pimoroni/yukon/releases/latest)
 
-There are two .uf2 files to pick from:
+There are two choices to make when selecting a .uf2 file, whether you want the library files included, and whether you want wireless support.
 
 ### Firmware Only
 
 * `pimoroni-yukon-vX.X.X-micropython.uf2`
+* `pimoroni-yukon+wireless-vX.X.X-micropython.uf2`
 
-This build includes only the firmware needed for Yukon to function. You will need to manually update the `lib/pimoroni_yukon` library afterwards to get the latest features and bug fixes.
+These builds include only the firmware needed for Yukon to function. You will need to manually update the `lib/pimoroni_yukon` library afterwards to get the latest features and bug fixes.
 
 
 ### With Filesystem
 
 :warning: **This option will overwrite the entire contents of your Yukon! Be sure to back up files to your PC before installing!**
 
-* `pimoroni-yukon-vX.X.X-micropython-with-filesystem.uf2 `
+* `pimoroni-yukon-vX.X.X-micropython-with-filesystem.uf2`
+* `pimoroni-yukon+wireless-vX.X.X-micropython-with-filesystem.uf2`
 
-This build contains both the firmware for Yukon and the library files needed to take full advantage of the hardware.
+These builds contain both the firmware for Yukon and the library files needed to take full advantage of the hardware.
+
+
+### With or Without Wireless
+
+Builds with `+wireless` in their name add the networking and Bluetooth support needed by the [RM2 Wireless Module](/docs/modules/rm2_wireless.md).
+
+* `pimoroni-yukon+wireless-vX.X.X-micropython...` has wireless
+* `pimoroni-yukon-vX.X.X-micropython...` no wireless
+
+The wireless build always has support available, with or without a RM2 Wireless Module attached. This takes around 40KB of memory away from your programs, reducing it from roughly 240KB to 200KB. If your project does not need wireless but could use more memory, then flash your board with the non-wireless build.
+
+On a wireless build the RM2 Wireless Module can now be used in any slot.
+
 
 ## Flashing the Firmware
 
@@ -64,7 +80,7 @@ This build contains both the firmware for Yukon and the library files needed to 
 
 3. Put your board into bootloader mode by holding the BOOT/USER button whilst pressing the PWR button to turn the board on. The green light should turn on, and the lights next to the A and B buttons should have a dim glow.
 
-4. Drag and drop one of the `pimoroni-yukon-vX.X.X...` .uf2 files to the "RPI-RP2" drive that appears.
+4. Drag and drop one of the `pimoroni-yukon...` .uf2 files to the "RPI-RP2" drive that appears.
 
 5. After the copy completes your board should reset and, if you used the `with-filesystem` variant, should start playing a flashing pattern on the A and B LEDs.
 
