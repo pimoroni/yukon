@@ -9,7 +9,6 @@
 
 #include "btstack.h"
 #include "classic/hid_host.h"
-#include "classic/btstack_link_key_db_memory.h"
 
 #define INQUIRY_MAX_RESULTS 8
 #define INQUIRY_NAME_MAX 32
@@ -283,6 +282,112 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
     }
 }
 
+// The link key store BTstack asks for a key from, and tells about new ones. A fixed array, cleared
+// when the stack opens it on each activation. BTstack's own in-memory store keeps a static list
+// across the bluetooth module's re-initialisation while the pool under it is rebuilt, and corrupts.
+#define LINK_KEY_SLOTS 8
+
+typedef struct {
+    bool used;
+    bd_addr_t address;
+    link_key_t key;
+    link_key_type_t type;
+} link_key_slot_t;
+
+static link_key_slot_t link_key_slots[LINK_KEY_SLOTS];
+
+static link_key_slot_t *link_key_slot_for(bd_addr_t address) {
+    for (int i = 0; i < LINK_KEY_SLOTS; ++i) {
+        if (link_key_slots[i].used && bd_addr_cmp(link_key_slots[i].address, address) == 0) {
+            return &link_key_slots[i];
+        }
+    }
+    return NULL;
+}
+
+static void link_key_store_open(void) {
+    memset(link_key_slots, 0, sizeof(link_key_slots));
+}
+
+static void link_key_store_set_local_bd_addr(bd_addr_t address) {
+    (void)address;
+}
+
+static void link_key_store_close(void) {
+}
+
+static int link_key_store_get(bd_addr_t address, link_key_t key, link_key_type_t *type) {
+    link_key_slot_t *slot = link_key_slot_for(address);
+    if (slot == NULL) {
+        return 0;
+    }
+    memcpy(key, slot->key, LINK_KEY_LEN);
+    if (type != NULL) {
+        *type = slot->type;
+    }
+    return 1;
+}
+
+// Replaces an entry for the same address, else takes a free slot, else the first slot.
+static void link_key_store_put(bd_addr_t address, link_key_t key, link_key_type_t type) {
+    link_key_slot_t *slot = link_key_slot_for(address);
+    for (int i = 0; slot == NULL && i < LINK_KEY_SLOTS; ++i) {
+        if (!link_key_slots[i].used) {
+            slot = &link_key_slots[i];
+        }
+    }
+    if (slot == NULL) {
+        slot = &link_key_slots[0];
+    }
+    slot->used = true;
+    memcpy(slot->address, address, sizeof(bd_addr_t));
+    memcpy(slot->key, key, LINK_KEY_LEN);
+    slot->type = type;
+}
+
+static void link_key_store_delete(bd_addr_t address) {
+    link_key_slot_t *slot = link_key_slot_for(address);
+    if (slot != NULL) {
+        slot->used = false;
+    }
+}
+
+// The iterator context is the index of the next slot to look at.
+static int link_key_store_iterator_init(btstack_link_key_iterator_t *it) {
+    it->context = (void *)0;
+    return 1;
+}
+
+static int link_key_store_iterator_get_next(btstack_link_key_iterator_t *it, bd_addr_t address, link_key_t key, link_key_type_t *type) {
+    for (uintptr_t i = (uintptr_t)it->context; i < LINK_KEY_SLOTS; ++i) {
+        if (link_key_slots[i].used) {
+            memcpy(address, link_key_slots[i].address, sizeof(bd_addr_t));
+            memcpy(key, link_key_slots[i].key, LINK_KEY_LEN);
+            *type = link_key_slots[i].type;
+            it->context = (void *)(i + 1);
+            return 1;
+        }
+    }
+    it->context = (void *)(uintptr_t)LINK_KEY_SLOTS;
+    return 0;
+}
+
+static void link_key_store_iterator_done(btstack_link_key_iterator_t *it) {
+    (void)it;
+}
+
+static const btstack_link_key_db_t link_key_store = {
+    &link_key_store_open,
+    &link_key_store_set_local_bd_addr,
+    &link_key_store_close,
+    &link_key_store_get,
+    &link_key_store_put,
+    &link_key_store_delete,
+    &link_key_store_iterator_init,
+    &link_key_store_iterator_get_next,
+    &link_key_store_iterator_done,
+};
+
 // Hook the running stack on first use. l2cap_init and sm_init are already done by the bluetooth module.
 static void require_stack_working(void) {
     if (hci_get_state() != HCI_STATE_WORKING) {
@@ -298,7 +403,7 @@ static void require_stack_working(void) {
     // Refused only if a command is in flight, and then inquiry_start retries.
     inquiry_mode_pending = hci_send_cmd(&hci_write_inquiry_mode, INQUIRY_MODE_RSSI_AND_EIR) != ERROR_CODE_SUCCESS;
 
-    hci_set_link_key_db(btstack_link_key_db_memory_instance());
+    hci_set_link_key_db(&link_key_store);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
     gap_ssp_set_auto_accept(1);
     gap_set_bondable_mode(1);

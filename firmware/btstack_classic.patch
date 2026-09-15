@@ -1,8 +1,8 @@
 diff --git a/extmod/btstack/btstack.cmake b/extmod/btstack/btstack.cmake
-index dd416fcbf..b40228073 100644
+index dd416fcbf..7a45b4251 100644
 --- a/extmod/btstack/btstack.cmake
 +++ b/extmod/btstack/btstack.cmake
-@@ -58,3 +58,13 @@ target_sources(micropy_extmod_btstack INTERFACE
+@@ -58,3 +58,12 @@ target_sources(micropy_extmod_btstack INTERFACE
      ${BTSTACK_LIB_DIR}/src/l2cap.c
      ${BTSTACK_LIB_DIR}/src/l2cap_signaling.c
  )
@@ -10,7 +10,6 @@ index dd416fcbf..b40228073 100644
 +# Bluetooth Classic, with the HID host for game pads and the SDP client it discovers them with.
 +if(MICROPY_BLUETOOTH_BTSTACK_CLASSIC)
 +    target_sources(micropy_extmod_btstack INTERFACE
-+        ${BTSTACK_LIB_DIR}/src/classic/btstack_link_key_db_memory.c
 +        ${BTSTACK_LIB_DIR}/src/classic/hid_host.c
 +        ${BTSTACK_LIB_DIR}/src/classic/sdp_client.c
 +        ${BTSTACK_LIB_DIR}/src/classic/sdp_util.c
