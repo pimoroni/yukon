@@ -94,6 +94,7 @@ There are many examples to get you started with Yukon, located in the examples f
 * [Examples: Board](/examples/board/README.md)
 * [Examples: Modules](/examples/modules/README.md)
 * [Examples: Showcase](/examples/showcase/README.md)
+* [Examples: Wireless](/examples/wireless/README.md)
 
 
 ## Documentation
