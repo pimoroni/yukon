@@ -52,9 +52,14 @@ static uint16_t hid_cid = 0;
 static hid_state_t hid_state = HID_DISCONNECTED;
 static uint8_t hid_status = 0;
 static bool hid_descriptor_available = false;
-static uint8_t hid_report[HID_REPORT_MAX];
-static uint16_t hid_report_len = 0;
-static uint32_t hid_report_count = 0;
+// Reports queue up so a press and release arriving between two polls are both seen. When the queue
+// is full the oldest is dropped, so a slow poller sees the latest state rather than stalling.
+#define HID_REPORT_QUEUE 8
+
+static uint8_t hid_reports[HID_REPORT_QUEUE][HID_REPORT_MAX];
+static uint16_t hid_report_lens[HID_REPORT_QUEUE];
+static uint32_t hid_report_count = 0;   // reports received since the connection opened
+static uint32_t hid_report_read = 0;    // reports handed to Python
 
 // A pad put back into pairing mode forgets its link key while this side still holds one, so the
 // first connect after that fails on security. The stale key is dropped and the connect retried once,
@@ -162,6 +167,9 @@ static void handle_hid_event(uint8_t *packet) {
             if (hid_status == ERROR_CODE_SUCCESS) {
                 hid_cid = hid_subevent_connection_opened_get_hid_cid(packet);
                 hid_state = HID_CONNECTED;
+                // A fresh queue for each connection, whichever side opened it.
+                hid_report_count = 0;
+                hid_report_read = 0;
             } else if (hid_status == L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_SECURITY && !connect_retried) {
                 gap_drop_link_key_for_bd_addr(connect_address);
                 connect_retried = true;
@@ -187,9 +195,13 @@ static void handle_hid_event(uint8_t *packet) {
             if (length > HID_REPORT_MAX) {
                 length = HID_REPORT_MAX;
             }
-            memcpy(hid_report, hid_subevent_report_get_report(packet), length);
-            hid_report_len = length;
+            uint8_t slot = hid_report_count % HID_REPORT_QUEUE;
+            memcpy(hid_reports[slot], hid_subevent_report_get_report(packet), length);
+            hid_report_lens[slot] = length;
             hid_report_count++;
+            if (hid_report_count - hid_report_read > HID_REPORT_QUEUE) {
+                hid_report_read = hid_report_count - HID_REPORT_QUEUE;
+            }
             break;
         }
 
@@ -507,7 +519,8 @@ static mp_obj_t btclassic_connect(mp_obj_t address_obj) {
     hid_state = HID_CONNECTING;
     hid_status = 0;
     hid_descriptor_available = false;
-    hid_report_len = 0;
+    hid_report_count = 0;
+    hid_report_read = 0;
     uint8_t status = hid_host_connect(connect_address, HID_PROTOCOL_MODE_REPORT, &hid_cid);
     if (status != ERROR_CODE_SUCCESS) {
         hid_state = HID_FAILED;
@@ -541,12 +554,14 @@ static mp_obj_t btclassic_state(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_state_obj, btclassic_state);
 
-// The most recent input report as raw bytes, with a count of reports received, or None before the first.
+// The next unread input report as (sequence number, raw bytes), or None when none is waiting.
 static mp_obj_t btclassic_report(void) {
-    if (hid_report_len == 0) {
+    if (hid_report_read == hid_report_count) {
         return mp_const_none;
     }
-    mp_obj_t items[2] = { mp_obj_new_int_from_uint(hid_report_count), mp_obj_new_bytes(hid_report, hid_report_len) };
+    uint8_t slot = hid_report_read % HID_REPORT_QUEUE;
+    hid_report_read++;
+    mp_obj_t items[2] = { mp_obj_new_int_from_uint(hid_report_read), mp_obj_new_bytes(hid_reports[slot], hid_report_lens[slot]) };
     return mp_obj_new_tuple(2, items);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_report_obj, btclassic_report);

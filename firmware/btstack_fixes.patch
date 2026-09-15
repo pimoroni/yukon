@@ -1,5 +1,5 @@
 diff --git a/src/classic/hid_host.c b/src/classic/hid_host.c
-index 5b4c2846d..4732976c3 100644
+index 5b4c2846d..130ba4466 100644
 --- a/src/classic/hid_host.c
 +++ b/src/classic/hid_host.c
 @@ -53,7 +53,9 @@
@@ -12,6 +12,15 @@ index 5b4c2846d..4732976c3 100644
  
  #define CONTROL_MESSAGE_BITMASK_SUSPEND             1
  #define CONTROL_MESSAGE_BITMASK_EXIT_SUSPEND        2
+@@ -735,7 +737,7 @@ static void hid_host_packet_handler(uint8_t packet_type, uint16_t channel, uint8
+ 
+             if (channel == connection->interrupt_cid){
+                 uint8_t * in_place_event = packet - 7;
+-                hid_setup_report_event(connection, in_place_event, size-1);
++                hid_setup_report_event(connection, in_place_event, size);
+                 hid_host_callback(HCI_EVENT_PACKET, connection->hid_cid, in_place_event, size + 7);
+                 break;
+             }
 diff --git a/src/hci.c b/src/hci.c
 index e541e4c88..13f72d7ce 100644
 --- a/src/hci.c
