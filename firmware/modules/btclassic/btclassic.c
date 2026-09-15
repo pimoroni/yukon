@@ -63,6 +63,15 @@ static uint32_t hid_report_count = 0;
 static bd_addr_t connect_address;
 static bool connect_retried = false;
 static bool connect_retry_pending = false;
+// BTstack caches the key on its connection record too, so the ACL link has to drop before the
+// retry, or the cached key answers the next request and fails again.
+static hci_con_handle_t connect_handle = HCI_CON_HANDLE_INVALID;
+static bool connect_retry_after_disconnect = false;
+
+// Link keys live in BTstack's in-memory store and are lost at power off. Python reads them out
+// with link_keys() after a pairing and puts them back with add_link_key() at start, so the file
+// format and its location are a Python decision. This counts new keys so Python knows when to save.
+static uint32_t link_key_notifications = 0;
 
 // Name lookups are issued from Python's polling, not from inside the event handler, since a command
 // requested while BTstack is dispatching an event may find it unable to send and is not retried.
@@ -157,8 +166,13 @@ static void handle_hid_event(uint8_t *packet) {
             } else if (hid_status == L2CAP_CONNECTION_RESPONSE_RESULT_REFUSED_SECURITY && !connect_retried) {
                 gap_drop_link_key_for_bd_addr(connect_address);
                 connect_retried = true;
-                connect_retry_pending = true;
                 hid_cid = 0;
+                if (connect_handle != HCI_CON_HANDLE_INVALID) {
+                    connect_retry_after_disconnect = true;
+                    gap_disconnect(connect_handle);
+                } else {
+                    connect_retry_pending = true;
+                }
             } else {
                 hid_cid = 0;
                 hid_state = HID_FAILED;
@@ -227,6 +241,29 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
 
         case HCI_EVENT_REMOTE_NAME_REQUEST_COMPLETE:
             handle_remote_name(packet);
+            break;
+
+        case HCI_EVENT_LINK_KEY_NOTIFICATION:
+            link_key_notifications++;
+            break;
+
+        case HCI_EVENT_CONNECTION_COMPLETE: {
+            bd_addr_t address;
+            hci_event_connection_complete_get_bd_addr(packet, address);
+            if (hci_event_connection_complete_get_status(packet) == ERROR_CODE_SUCCESS && bd_addr_cmp(address, connect_address) == 0) {
+                connect_handle = hci_event_connection_complete_get_connection_handle(packet);
+            }
+            break;
+        }
+
+        case HCI_EVENT_DISCONNECTION_COMPLETE:
+            if (hci_event_disconnection_complete_get_connection_handle(packet) == connect_handle) {
+                connect_handle = HCI_CON_HANDLE_INVALID;
+                if (connect_retry_after_disconnect) {
+                    connect_retry_after_disconnect = false;
+                    connect_retry_pending = true;
+                }
+            }
             break;
 
         case HCI_EVENT_PIN_CODE_REQUEST: {
@@ -359,6 +396,8 @@ static mp_obj_t btclassic_connect(mp_obj_t address_obj) {
     address_from_obj(address_obj, connect_address);
     connect_retried = false;
     connect_retry_pending = false;
+    connect_retry_after_disconnect = false;
+    connect_handle = HCI_CON_HANDLE_INVALID;
 
     hid_state = HID_CONNECTING;
     hid_status = 0;
@@ -416,7 +455,61 @@ static mp_obj_t btclassic_descriptor(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_descriptor_obj, btclassic_descriptor);
 
+// The stored link keys as (address, key, type) tuples, and a count of keys received since power on.
+static mp_obj_t btclassic_link_keys(void) {
+    require_stack_working();
+    mp_obj_t list = mp_obj_new_list(0, NULL);
+    btstack_link_key_iterator_t it;
+    if (gap_link_key_iterator_init(&it)) {
+        bd_addr_t address;
+        link_key_t key;
+        link_key_type_t type;
+        while (gap_link_key_iterator_get_next(&it, address, key, &type)) {
+            mp_obj_t items[3] = {
+                mp_obj_new_bytes(address, sizeof(bd_addr_t)),
+                mp_obj_new_bytes(key, LINK_KEY_LEN),
+                mp_obj_new_int(type),
+            };
+            mp_obj_list_append(list, mp_obj_new_tuple(3, items));
+        }
+        gap_link_key_iterator_done(&it);
+    }
+    mp_obj_t result[2] = { mp_obj_new_int_from_uint(link_key_notifications), list };
+    return mp_obj_new_tuple(2, result);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_link_keys_obj, btclassic_link_keys);
+
+// Store a link key for address, as returned by link_keys() on an earlier run.
+static mp_obj_t btclassic_add_link_key(mp_obj_t address_obj, mp_obj_t key_obj, mp_obj_t type_obj) {
+    require_stack_working();
+    bd_addr_t address;
+    address_from_obj(address_obj, address);
+    mp_buffer_info_t key;
+    mp_get_buffer_raise(key_obj, &key, MP_BUFFER_READ);
+    if (key.len != LINK_KEY_LEN) {
+        mp_raise_ValueError(MP_ERROR_TEXT("key must be 16 bytes"));
+    }
+    link_key_t link_key;
+    memcpy(link_key, key.buf, LINK_KEY_LEN);
+    gap_store_link_key_for_bd_addr(address, link_key, (link_key_type_t)mp_obj_get_int(type_obj));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_3(btclassic_add_link_key_obj, btclassic_add_link_key);
+
+// Forget the link key for address, so the next connect pairs afresh.
+static mp_obj_t btclassic_drop_link_key(mp_obj_t address_obj) {
+    require_stack_working();
+    bd_addr_t address;
+    address_from_obj(address_obj, address);
+    gap_drop_link_key_for_bd_addr(address);
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(btclassic_drop_link_key_obj, btclassic_drop_link_key);
+
 static const mp_rom_map_elem_t btclassic_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_link_keys), MP_ROM_PTR(&btclassic_link_keys_obj) },
+    { MP_ROM_QSTR(MP_QSTR_add_link_key), MP_ROM_PTR(&btclassic_add_link_key_obj) },
+    { MP_ROM_QSTR(MP_QSTR_drop_link_key), MP_ROM_PTR(&btclassic_drop_link_key_obj) },
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_btclassic) },
     { MP_ROM_QSTR(MP_QSTR_inquiry_start), MP_ROM_PTR(&btclassic_inquiry_start_obj) },
     { MP_ROM_QSTR(MP_QSTR_inquiry_active), MP_ROM_PTR(&btclassic_inquiry_active_obj) },
