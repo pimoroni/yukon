@@ -1,0 +1,53 @@
+diff --git a/extmod/btstack/btstack.cmake b/extmod/btstack/btstack.cmake
+index dd416fcbf..b40228073 100644
+--- a/extmod/btstack/btstack.cmake
++++ b/extmod/btstack/btstack.cmake
+@@ -58,3 +58,13 @@ target_sources(micropy_extmod_btstack INTERFACE
+     ${BTSTACK_LIB_DIR}/src/l2cap.c
+     ${BTSTACK_LIB_DIR}/src/l2cap_signaling.c
+ )
++
++# Bluetooth Classic, with the HID host for game pads and the SDP client it discovers them with.
++if(MICROPY_BLUETOOTH_BTSTACK_CLASSIC)
++    target_sources(micropy_extmod_btstack INTERFACE
++        ${BTSTACK_LIB_DIR}/src/classic/btstack_link_key_db_memory.c
++        ${BTSTACK_LIB_DIR}/src/classic/hid_host.c
++        ${BTSTACK_LIB_DIR}/src/classic/sdp_client.c
++        ${BTSTACK_LIB_DIR}/src/classic/sdp_util.c
++    )
++endif()
+diff --git a/ports/rp2/CMakeLists.txt b/ports/rp2/CMakeLists.txt
+index c3ddadad7..4951eec49 100644
+--- a/ports/rp2/CMakeLists.txt
++++ b/ports/rp2/CMakeLists.txt
+@@ -374,6 +374,12 @@ if (MICROPY_BLUETOOTH_BTSTACK)
+         "MICROPY_BLUETOOTH_BTSTACK_CONFIG_FILE=\"btstack_inc/btstack_config.h\""
+     )
+ 
++    if(MICROPY_BLUETOOTH_BTSTACK_CLASSIC)
++        target_compile_definitions(${MICROPY_TARGET} PRIVATE
++            MICROPY_BLUETOOTH_BTSTACK_CLASSIC=1
++        )
++    endif()
++
+     # For modbluetooth_btstack.c includes
+     get_target_property(BTSTACK_INCLUDE micropy_extmod_btstack INTERFACE_INCLUDE_DIRECTORIES)
+     list(APPEND MICROPY_INC_CORE ${BTSTACK_INCLUDE})
+diff --git a/ports/rp2/btstack_inc/btstack_config.h b/ports/rp2/btstack_inc/btstack_config.h
+index ec7cd7fb7..6bf0445e2 100644
+--- a/ports/rp2/btstack_inc/btstack_config.h
++++ b/ports/rp2/btstack_inc/btstack_config.h
+@@ -4,6 +4,13 @@
+ #define HCI_OUTGOING_PRE_BUFFER_SIZE 4
+ #define HCI_ACL_CHUNK_SIZE_ALIGNMENT 4
+ 
++#if MICROPY_BLUETOOTH_BTSTACK_CLASSIC
++#define ENABLE_CLASSIC
++#define MAX_NR_HID_HOST_CONNECTIONS 1
++// Game pad report descriptors run past the HID host's 300 byte default.
++#define MAX_ATTRIBUTE_VALUE_SIZE 512
++#endif
++
+ #include "btstack_config_common.h"
+ 
+ #endif

@@ -1,0 +1,44 @@
+diff --git a/src/classic/hid_host.c b/src/classic/hid_host.c
+index 5b4c2846d..4732976c3 100644
+--- a/src/classic/hid_host.c
++++ b/src/classic/hid_host.c
+@@ -53,7 +53,9 @@
+ #include "classic/sdp_util.h"
+ #include "classic/sdp_client.h"
+ 
++#ifndef MAX_ATTRIBUTE_VALUE_SIZE
+ #define MAX_ATTRIBUTE_VALUE_SIZE 300
++#endif
+ 
+ #define CONTROL_MESSAGE_BITMASK_SUSPEND             1
+ #define CONTROL_MESSAGE_BITMASK_EXIT_SUSPEND        2
+diff --git a/src/hci.c b/src/hci.c
+index e541e4c88..13f72d7ce 100644
+--- a/src/hci.c
++++ b/src/hci.c
+@@ -1635,7 +1635,11 @@ static void gap_run_set_local_name(void){
+     (void)memcpy(&packet[3], hci_stack->local_name, bytes_to_copy);
+     // expand '00:00:00:00:00:00' in name with bd_addr
+     btstack_replace_bd_addr_placeholder(&packet[3], bytes_to_copy, hci_stack->local_bd_addr);
+-    hci_send_cmd_packet(packet, HCI_CMD_HEADER_SIZE + DEVICE_NAME_LEN);
++    uint8_t status = hci_send_cmd_packet(packet, HCI_CMD_HEADER_SIZE + DEVICE_NAME_LEN);
++    // release packet buffer on error or for synchronous transport implementations
++    if ((status != ERROR_CODE_SUCCESS) || hci_transport_synchronous()){
++        hci_release_packet_buffer();
++    }
+ }
+ 
+ static void gap_run_set_eir_data(void){
+@@ -1676,7 +1680,11 @@ static void gap_run_set_eir_data(void){
+         // expand '00:00:00:00:00:00' in name with bd_addr
+         btstack_replace_bd_addr_placeholder(&packet[offset], bytes_to_copy, hci_stack->local_bd_addr);
+     }
+-    hci_send_cmd_packet(packet, HCI_CMD_HEADER_SIZE + 1 + EXTENDED_INQUIRY_RESPONSE_DATA_LEN);
++    uint8_t status = hci_send_cmd_packet(packet, HCI_CMD_HEADER_SIZE + 1 + EXTENDED_INQUIRY_RESPONSE_DATA_LEN);
++    // release packet buffer on error or for synchronous transport implementations
++    if ((status != ERROR_CODE_SUCCESS) || hci_transport_synchronous()){
++        hci_release_packet_buffer();
++    }
+ }
+ 
+ static void hci_run_gap_tasks_classic(void){
