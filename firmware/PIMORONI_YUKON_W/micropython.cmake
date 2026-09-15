@@ -52,3 +52,7 @@ include(modules_py/modules_py)
 include(micropython-common-ulab)
 
 include(tca9555/micropython)
+
+if(MICROPY_BLUETOOTH_BTSTACK_CLASSIC)
+    include(btclassic/micropython)
+endif()

@@ -140,6 +140,16 @@ jobs:
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
 
+    - name: "HACK: BTstack Classic Switch Patch"
+      shell: bash
+      working-directory: micropython
+      run: git apply "${{env.FIRMWARE_DIR}}/btstack_classic.patch"
+
+    - name: "HACK: BTstack Fixes Patch"
+      shell: bash
+      working-directory: micropython/lib/btstack
+      run: git apply "${{env.FIRMWARE_DIR}}/btstack_fixes.patch"
+
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
