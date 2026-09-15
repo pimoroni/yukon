@@ -15,6 +15,40 @@ index dd416fcbf..7a45b4251 100644
 +        ${BTSTACK_LIB_DIR}/src/classic/sdp_util.c
 +    )
 +endif()
+diff --git a/extmod/btstack/modbluetooth_btstack.c b/extmod/btstack/modbluetooth_btstack.c
+index 7694a1874..761eb10bc 100644
+--- a/extmod/btstack/modbluetooth_btstack.c
++++ b/extmod/btstack/modbluetooth_btstack.c
+@@ -646,6 +646,12 @@ int mp_bluetooth_init(void) {
+     // Register for ATT server events.
+     att_server_register_packet_handler(&btstack_packet_handler_att_server);
+ 
++    #if MICROPY_BLUETOOTH_BTSTACK_CLASSIC
++    // Let the board's Classic support register its services before the controller powers on, so
++    // a device that pages straight after activation finds it listening.
++    mp_bluetooth_btstack_classic_init();
++    #endif
++
+     // Set a timeout for HCI initialisation.
+     btstack_run_loop_set_timer(&btstack_init_deinit_timeout, BTSTACK_INIT_DEINIT_TIMEOUT_MS);
+     btstack_run_loop_set_timer_handler(&btstack_init_deinit_timeout, btstack_init_deinit_timeout_handler);
+diff --git a/extmod/btstack/modbluetooth_btstack.h b/extmod/btstack/modbluetooth_btstack.h
+index 7f4a18207..5a8a5441d 100644
+--- a/extmod/btstack/modbluetooth_btstack.h
++++ b/extmod/btstack/modbluetooth_btstack.h
+@@ -51,6 +51,12 @@ typedef struct _mp_bluetooth_btstack_root_pointers_t {
+     #endif
+ } mp_bluetooth_btstack_root_pointers_t;
+ 
++#if MICROPY_BLUETOOTH_BTSTACK_CLASSIC
++// Provided by the board's Classic support. Called from mp_bluetooth_init after l2cap_init and
++// before the controller powers on, on every activation.
++void mp_bluetooth_btstack_classic_init(void);
++#endif
++
+ enum {
+     MP_BLUETOOTH_BTSTACK_STATE_OFF,
+     MP_BLUETOOTH_BTSTACK_STATE_STARTING,
 diff --git a/ports/rp2/CMakeLists.txt b/ports/rp2/CMakeLists.txt
 index c3ddadad7..4951eec49 100644
 --- a/ports/rp2/CMakeLists.txt
