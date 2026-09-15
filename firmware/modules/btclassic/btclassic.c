@@ -9,6 +9,7 @@
 
 #include "btstack.h"
 #include "classic/hid_host.h"
+#include "extmod/btstack/modbluetooth_btstack.h"
 
 #define INQUIRY_MAX_RESULTS 8
 #define INQUIRY_NAME_MAX 32
@@ -71,6 +72,10 @@ static bool connect_retry_pending = false;
 // retry, or the cached key answers the next request and fails again.
 static hci_con_handle_t connect_handle = HCI_CON_HANDLE_INVALID;
 static bool connect_retry_after_disconnect = false;
+
+// disconnect() closes the HID channels, then the link once they are gone, so the pad is left
+// cleanly disconnected instead of holding a link with nothing on it.
+static bool disconnect_requested = false;
 
 // Link keys live in BTstack's in-memory store and are lost at power off. Python reads them out
 // with link_keys() after a pairing and puts them back with add_link_key() at start, so the file
@@ -209,6 +214,12 @@ static void handle_hid_event(uint8_t *packet) {
             hid_cid = 0;
             hid_state = HID_DISCONNECTED;
             hid_descriptor_available = false;
+            if (disconnect_requested) {
+                disconnect_requested = false;
+                if (connect_handle != HCI_CON_HANDLE_INVALID) {
+                    gap_disconnect(connect_handle);
+                }
+            }
             break;
 
         default:
@@ -226,8 +237,9 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
     switch (hci_event_packet_get_type(packet)) {
         case BTSTACK_EVENT_STATE:
             // The bluetooth module rebuilds the stack on deactivate and soft reset, dropping every
-            // handler and setting, while these statics survive. Hook again on the next use.
-            if (btstack_event_state_get_state(packet) != HCI_STATE_WORKING) {
+            // handler and setting, while these statics survive. Power off is the signal to hook
+            // again on the next activation. Initialising is passed through on the way up.
+            if (btstack_event_state_get_state(packet) == HCI_STATE_OFF) {
                 stack_hooked = false;
                 inquiry_state = INQUIRY_IDLE;
                 names_pending = false;
@@ -258,14 +270,13 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             link_key_notifications++;
             break;
 
-        case HCI_EVENT_CONNECTION_COMPLETE: {
-            bd_addr_t address;
-            hci_event_connection_complete_get_bd_addr(packet, address);
-            if (hci_event_connection_complete_get_status(packet) == ERROR_CODE_SUCCESS && bd_addr_cmp(address, connect_address) == 0) {
+        case HCI_EVENT_CONNECTION_COMPLETE:
+            // The stack allows one connection, so this is the pad's link whichever side opened it.
+            if (hci_event_connection_complete_get_status(packet) == ERROR_CODE_SUCCESS) {
                 connect_handle = hci_event_connection_complete_get_connection_handle(packet);
+                hci_event_connection_complete_get_bd_addr(packet, connect_address);
             }
             break;
-        }
 
         case HCI_EVENT_DISCONNECTION_COMPLETE:
             if (hci_event_disconnection_complete_get_connection_handle(packet) == connect_handle) {
@@ -400,20 +411,21 @@ static const btstack_link_key_db_t link_key_store = {
     &link_key_store_iterator_done,
 };
 
-// Hook the running stack on first use. l2cap_init and sm_init are already done by the bluetooth module.
-static void require_stack_working(void) {
-    if (hci_get_state() != HCI_STATE_WORKING) {
-        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Bluetooth is not active"));
-    }
-    if (stack_hooked) {
-        return;
-    }
+// Hook the stack. The bluetooth module calls this on every activation, after l2cap_init and before
+// the controller powers on, so the HID service and page scan are up from the start. It also runs
+// from the first Python call if that path was somehow missed.
+void mp_bluetooth_btstack_classic_init(void) {
     stack_hooked = true;
 
-    // Results then carry RSSI and the extended inquiry response, which usually holds the name. Sent
-    // first, while the stack is idle, since the settings below each take the single command credit.
-    // Refused only if a command is in flight, and then inquiry_start retries.
-    inquiry_mode_pending = hci_send_cmd(&hci_write_inquiry_mode, INQUIRY_MODE_RSSI_AND_EIR) != ERROR_CODE_SUCCESS;
+    // Results then carry RSSI and the extended inquiry response, which usually holds the name.
+    // Before power on this goes out with the init sequence. On a running stack it needs the single
+    // command credit, so it is sent when free, from inquiry_start.
+    if (hci_get_state() == HCI_STATE_WORKING) {
+        inquiry_mode_pending = hci_send_cmd(&hci_write_inquiry_mode, INQUIRY_MODE_RSSI_AND_EIR) != ERROR_CODE_SUCCESS;
+    } else {
+        hci_set_inquiry_mode(INQUIRY_MODE_RSSI_AND_EIR);
+        inquiry_mode_pending = false;
+    }
 
     hci_set_link_key_db(&link_key_store);
     gap_ssp_set_io_capability(SSP_IO_CAPABILITY_NO_INPUT_NO_OUTPUT);
@@ -423,12 +435,25 @@ static void require_stack_working(void) {
     hid_host_init(hid_descriptor_storage, sizeof(hid_descriptor_storage));
     hid_host_register_packet_handler(&hci_event_handler);
 
+    // Registering the service turns page scan on. Stay unreachable until Python has loaded the
+    // link keys and calls connectable(True), or a pad reconnecting early finds no key and re-pairs.
+    gap_connectable_control(0);
+
     // Pads ask for sniff mode and may want to be master.
     gap_set_default_link_policy_settings(LM_LINK_POLICY_ENABLE_SNIFF_MODE | LM_LINK_POLICY_ENABLE_ROLE_SWITCH);
     hci_set_master_slave_policy(HCI_ROLE_MASTER);
 
     hci_event_callback.callback = &hci_event_handler;
     hci_add_event_handler(&hci_event_callback);
+}
+
+static void require_stack_working(void) {
+    if (hci_get_state() != HCI_STATE_WORKING) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("Bluetooth is not active"));
+    }
+    if (!stack_hooked) {
+        mp_bluetooth_btstack_classic_init();
+    }
 }
 
 static void address_from_obj(mp_obj_t obj, bd_addr_t address) {
@@ -531,9 +556,13 @@ static mp_obj_t btclassic_connect(mp_obj_t address_obj) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_1(btclassic_connect_obj, btclassic_connect);
 
+// Close the HID connection and then the link beneath it.
 static mp_obj_t btclassic_disconnect(void) {
     if (hid_cid != 0) {
+        disconnect_requested = true;
         hid_host_disconnect(hid_cid);
+    } else if (connect_handle != HCI_CON_HANDLE_INVALID) {
+        gap_disconnect(connect_handle);
     }
     return mp_const_none;
 }
@@ -574,6 +603,14 @@ static mp_obj_t btclassic_descriptor(void) {
     return mp_obj_new_bytes(hid_descriptor_storage_get_descriptor_data(hid_cid), hid_descriptor_storage_get_descriptor_len(hid_cid));
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_descriptor_obj, btclassic_descriptor);
+
+// Whether pads may connect to this board. Off until called, so keys can be loaded first.
+static mp_obj_t btclassic_connectable(mp_obj_t enable_obj) {
+    require_stack_working();
+    gap_connectable_control(mp_obj_is_true(enable_obj));
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(btclassic_connectable_obj, btclassic_connectable);
 
 // The stored link keys as (address, key, type) tuples, and a count of keys received since power on.
 static mp_obj_t btclassic_link_keys(void) {
@@ -627,6 +664,7 @@ static mp_obj_t btclassic_drop_link_key(mp_obj_t address_obj) {
 static MP_DEFINE_CONST_FUN_OBJ_1(btclassic_drop_link_key_obj, btclassic_drop_link_key);
 
 static const mp_rom_map_elem_t btclassic_module_globals_table[] = {
+    { MP_ROM_QSTR(MP_QSTR_connectable), MP_ROM_PTR(&btclassic_connectable_obj) },
     { MP_ROM_QSTR(MP_QSTR_link_keys), MP_ROM_PTR(&btclassic_link_keys_obj) },
     { MP_ROM_QSTR(MP_QSTR_add_link_key), MP_ROM_PTR(&btclassic_add_link_key_obj) },
     { MP_ROM_QSTR(MP_QSTR_drop_link_key), MP_ROM_PTR(&btclassic_drop_link_key_obj) },
