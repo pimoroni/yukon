@@ -21,6 +21,8 @@ set(MICROPY_PY_BLUETOOTH ON)
 set(MICROPY_BLUETOOTH_BTSTACK ON)
 set(MICROPY_PY_BLUETOOTH_CYW43 ON)
 set(MICROPY_BLUETOOTH_BTSTACK_CLASSIC ON)
+# Pairing so BLE HID devices, which insist on an encrypted link, can be used from Python.
+list(APPEND MICROPY_DEF_BOARD MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING=1)
 
 # Board specific version of the frozen manifest
 set(MICROPY_FROZEN_MANIFEST ${CMAKE_CURRENT_LIST_DIR}/manifest.py)
