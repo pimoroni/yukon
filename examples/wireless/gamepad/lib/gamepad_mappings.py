@@ -54,12 +54,11 @@ def __register_8bitdo_switch_buttons(pad):
     pad.register_button("Star", 3, 5, alt_name="Capture", report_id=0x3F)
 
 
-def create_8bitdo_lite(stick_deadzone=0.1):
+def create_8bitdo_lite_xinput(stick_deadzone=0.1):
     """The 8BitDo Lite in its X-input mode.
 
-    The pad has two direction pads and no sticks. The left one reports as the hat, the right one
-    as the left stick, and the star button swaps which stick that is without sending anything
-    itself. The stick clicks never press.
+    The left direction pad arrives as the left stick, the right one as the right stick, and the
+    four direction buttons as the hat. Star sends nothing. The stick clicks never press.
     """
     pad = Gamepad("8BitDo Lite gamepad")
     __register_8bitdo_xinput(pad, stick_deadzone)
@@ -135,6 +134,23 @@ def create_8bitdo_sn30_pro_plus_switch(stick_deadzone=0.1):
     __register_8bitdo_switch_buttons(pad)
 
     # Direction pad as a hat nibble, then four 16 bit stick axes.
+    pad.register_hat(32, first=0, report_id=0x3F)
+    pad.register_axis("LX", 40, 16, deadzone=stick_deadzone, report_id=0x3F)
+    pad.register_axis("LY", 56, 16, deadzone=stick_deadzone, invert=True, report_id=0x3F)
+    pad.register_axis("RX", 72, 16, deadzone=stick_deadzone, report_id=0x3F)
+    pad.register_axis("RY", 88, 16, deadzone=stick_deadzone, invert=True, report_id=0x3F)
+    return pad
+
+
+def create_8bitdo_lite_switch(stick_deadzone=0.1):
+    """The 8BitDo Lite in its Switch mode.
+
+    The left direction pad arrives on the left stick fields and the right one on the right stick
+    fields, so both read as stick axes, and the four direction buttons arrive as the hat. Star is
+    the Capture button. The stick clicks never press.
+    """
+    pad = Gamepad("8BitDo Lite gamepad")
+    __register_8bitdo_switch_buttons(pad)
     pad.register_hat(32, first=0, report_id=0x3F)
     pad.register_axis("LX", 40, 16, deadzone=stick_deadzone, report_id=0x3F)
     pad.register_axis("LY", 56, 16, deadzone=stick_deadzone, invert=True, report_id=0x3F)

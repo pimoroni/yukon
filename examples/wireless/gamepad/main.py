@@ -3,7 +3,7 @@ import bluetooth
 import btclassic
 import pad_keys
 from pimoroni_yukon import Yukon
-from gamepad_mappings import create_8bitdo_lite
+from gamepad_mappings import create_8bitdo_lite_xinput
 
 """
 Drive Yukon from a Bluetooth game pad paired straight to the board, using the RM2 Wireless Module.
@@ -19,7 +19,7 @@ Press "Boot/User" to exit the program.
 """
 
 # Constants
-PAD_MAPPING = create_8bitdo_lite    # The mapping function for the pad in use, see gamepad_mappings.py
+PAD_MAPPING = create_8bitdo_lite_xinput     # The mapping function for the pad in use, see gamepad_mappings.py
 INQUIRY_SECONDS = 8                 # How long to look for a pad in pairing mode when none is stored
 CONNECT_TIMEOUT_MS = 20000          # How long to give a connection attempt before trying again
 RETRY_INTERVAL_MS = 5000            # How long to wait between attempts to reach a stored pad
