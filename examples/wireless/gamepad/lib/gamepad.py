@@ -8,10 +8,11 @@
 # decoded state, and update() has to be called regularly to pull new reports in.
 import btclassic
 
-HAT_DIRECTIONS = {
-    1: ("Up",), 2: ("Up", "Right"), 3: ("Right",), 4: ("Down", "Right"),
-    5: ("Down",), 6: ("Down", "Left"), 7: ("Left",), 8: ("Up", "Left"),
-}
+# Hat switch positions clockwise from Up. Any other value is centred.
+HAT_DIRECTIONS = (
+    ("Up",), ("Up", "Right"), ("Right",), ("Down", "Right"),
+    ("Down",), ("Down", "Left"), ("Left",), ("Up", "Left"),
+)
 
 
 def _map(x, in_min, in_max, out_min, out_max):
@@ -118,8 +119,11 @@ class Gamepad:
         self.__add_decoder(report_id, bit_offset + width - 1,
                            lambda r: axis.set(_field(r, bit_offset, width) / full))
 
-    def register_hat(self, bit_offset, width=4, report_id=1):
-        """A direction pad reported as a hat switch, exposed as Up, Down, Left and Right buttons."""
+    def register_hat(self, bit_offset, width=4, first=1, report_id=1):
+        """A direction pad reported as a hat switch, exposed as Up, Down, Left and Right buttons.
+
+        first is the value that means Up, the hat's logical minimum in its report descriptor.
+        """
         directions = {}
         for direction in ("Up", "Down", "Left", "Right"):
             self.__check_free(self.buttons, direction, None)
@@ -127,7 +131,8 @@ class Gamepad:
             self.buttons.append(directions[direction])
 
         def decode(r):
-            active = HAT_DIRECTIONS.get(_field(r, bit_offset, width), ())
+            position = _field(r, bit_offset, width) - first
+            active = HAT_DIRECTIONS[position] if 0 <= position < len(HAT_DIRECTIONS) else ()
             for direction, button in directions.items():
                 button.set(direction in active)
 

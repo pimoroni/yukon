@@ -32,6 +32,7 @@ yukon = Yukon()                     # A new Yukon object
 ble = bluetooth.BLE()               # The Bluetooth stack, which must be active before btclassic is used
 pad = PAD_MAPPING()                 # The pad's controls, decoded from its reports
 last_attempt = None                 # When a stored pad was last paged
+next_pad = 0                        # Which stored pad to page next, when more than one is stored
 blink_until = time.ticks_ms()       # When LED B comes back on after a press
 
 
@@ -87,7 +88,7 @@ try:
     known = pad_keys.load()         # Put any saved link keys back into the stack
     btclassic.connectable(True)     # Now let pads connect to us
     if known:
-        print("Stored pad:", address_text(known[0]))
+        print("Stored pads:", ", ".join(address_text(address) for address in known))
 
     # Loop until the BOOT/USER button is pressed
     while not yukon.is_boot_pressed():
@@ -105,11 +106,13 @@ try:
         pad.reset()
 
         if known:
-            # A pad switched on pages us by itself. One that lost us is waiting to be paged.
+            # A pad switched on pages us by itself. One that lost us is waiting to be paged, so
+            # page each stored pad in turn.
             if state != btclassic.STATE_CONNECTING:
                 if last_attempt is None or time.ticks_diff(time.ticks_ms(), last_attempt) > RETRY_INTERVAL_MS:
                     last_attempt = time.ticks_ms()
-                    btclassic.connect(known[0])
+                    btclassic.connect(known[next_pad])
+                    next_pad = (next_pad + 1) % len(known)
             time.sleep_ms(50)
         else:
             address = find_pad_in_pairing_mode()
