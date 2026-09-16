@@ -72,6 +72,10 @@ static bool connect_retry_pending = false;
 // retry, or the cached key answers the next request and fails again.
 static hci_con_handle_t connect_handle = HCI_CON_HANDLE_INVALID;
 static bool connect_retry_after_disconnect = false;
+// Every open link by address, so the pad's handle is known when it reached us before being paged.
+// The stack allows two links, one for a page in progress and one for a pad connecting to us.
+#define LINK_SLOTS 2
+static struct { hci_con_handle_t handle; bd_addr_t address; } links[LINK_SLOTS];
 
 // disconnect() closes the HID channels, then the link once they are gone, so the pad is left
 // cleanly disconnected instead of holding a link with nothing on it.
@@ -159,18 +163,72 @@ static void handle_remote_name(uint8_t *packet) {
     names_pending = true;
 }
 
+static hci_con_handle_t link_handle_for(const bd_addr_t address) {
+    for (int i = 0; i < LINK_SLOTS; i++) {
+        if (links[i].handle != HCI_CON_HANDLE_INVALID && bd_addr_cmp(links[i].address, address) == 0) {
+            return links[i].handle;
+        }
+    }
+    return HCI_CON_HANDLE_INVALID;
+}
+
+static void links_clear(void) {
+    for (int i = 0; i < LINK_SLOTS; i++) {
+        links[i].handle = HCI_CON_HANDLE_INVALID;
+    }
+}
+
+static void link_add(hci_con_handle_t handle, const bd_addr_t address) {
+    for (int i = 0; i < LINK_SLOTS; i++) {
+        if (links[i].handle == HCI_CON_HANDLE_INVALID) {
+            links[i].handle = handle;
+            bd_addr_copy(links[i].address, address);
+            return;
+        }
+    }
+}
+
+static void link_remove(hci_con_handle_t handle) {
+    for (int i = 0; i < LINK_SLOTS; i++) {
+        if (links[i].handle == handle) {
+            links[i].handle = HCI_CON_HANDLE_INVALID;
+        }
+    }
+}
+
 static void handle_hid_event(uint8_t *packet) {
     switch (hci_event_hid_meta_get_subevent_code(packet)) {
-        case HID_SUBEVENT_INCOMING_CONNECTION:
-            hid_cid = hid_subevent_incoming_connection_get_hid_cid(packet);
+        case HID_SUBEVENT_INCOMING_CONNECTION: {
+            uint16_t incoming_cid = hid_subevent_incoming_connection_get_hid_cid(packet);
+            if (hid_state == HID_CONNECTED) {
+                // One pad at a time.
+                hid_host_decline_connection(incoming_cid);
+                break;
+            }
+            // A pad reaching us takes over from any page in progress, whose outcome is then ignored.
+            hid_cid = incoming_cid;
+            hid_subevent_incoming_connection_get_address(packet, connect_address);
+            connect_handle = link_handle_for(connect_address);
+            connect_retried = false;
+            connect_retry_pending = false;
+            connect_retry_after_disconnect = false;
             hid_state = HID_CONNECTING;
             hid_host_accept_connection(hid_cid, HID_PROTOCOL_MODE_REPORT);
             break;
+        }
 
-        case HID_SUBEVENT_CONNECTION_OPENED:
-            hid_status = hid_subevent_connection_opened_get_status(packet);
+        case HID_SUBEVENT_CONNECTION_OPENED: {
+            uint16_t opened_cid = hid_subevent_connection_opened_get_hid_cid(packet);
+            uint8_t status = hid_subevent_connection_opened_get_status(packet);
+            if (opened_cid != hid_cid) {
+                // The page a pad took over from. Close it if it got through.
+                if (status == ERROR_CODE_SUCCESS) {
+                    hid_host_disconnect(opened_cid);
+                }
+                break;
+            }
+            hid_status = status;
             if (hid_status == ERROR_CODE_SUCCESS) {
-                hid_cid = hid_subevent_connection_opened_get_hid_cid(packet);
                 hid_state = HID_CONNECTED;
                 // A fresh queue for each connection, whichever side opened it.
                 hid_report_count = 0;
@@ -190,12 +248,19 @@ static void handle_hid_event(uint8_t *packet) {
                 hid_state = HID_FAILED;
             }
             break;
+        }
 
         case HID_SUBEVENT_DESCRIPTOR_AVAILABLE:
+            if (hid_subevent_descriptor_available_get_hid_cid(packet) != hid_cid) {
+                break;
+            }
             hid_descriptor_available = hid_subevent_descriptor_available_get_status(packet) == ERROR_CODE_SUCCESS;
             break;
 
         case HID_SUBEVENT_REPORT: {
+            if (hid_subevent_report_get_hid_cid(packet) != hid_cid) {
+                break;
+            }
             uint16_t length = hid_subevent_report_get_report_len(packet);
             if (length > HID_REPORT_MAX) {
                 length = HID_REPORT_MAX;
@@ -211,6 +276,9 @@ static void handle_hid_event(uint8_t *packet) {
         }
 
         case HID_SUBEVENT_CONNECTION_CLOSED:
+            if (hid_subevent_connection_closed_get_hid_cid(packet) != hid_cid) {
+                break;
+            }
             hid_cid = 0;
             hid_state = HID_DISCONNECTED;
             hid_descriptor_available = false;
@@ -246,6 +314,8 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
                 hid_state = HID_DISCONNECTED;
                 hid_cid = 0;
                 hid_descriptor_available = false;
+                connect_handle = HCI_CON_HANDLE_INVALID;
+                links_clear();
             }
             break;
 
@@ -271,14 +341,19 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             break;
 
         case HCI_EVENT_CONNECTION_COMPLETE:
-            // The stack allows one connection, so this is the pad's link whichever side opened it.
             if (hci_event_connection_complete_get_status(packet) == ERROR_CODE_SUCCESS) {
-                connect_handle = hci_event_connection_complete_get_connection_handle(packet);
-                hci_event_connection_complete_get_bd_addr(packet, connect_address);
+                hci_con_handle_t handle = hci_event_connection_complete_get_connection_handle(packet);
+                bd_addr_t address;
+                hci_event_connection_complete_get_bd_addr(packet, address);
+                link_add(handle, address);
+                if (bd_addr_cmp(address, connect_address) == 0) {
+                    connect_handle = handle;
+                }
             }
             break;
 
         case HCI_EVENT_DISCONNECTION_COMPLETE:
+            link_remove(hci_event_disconnection_complete_get_connection_handle(packet));
             if (hci_event_disconnection_complete_get_connection_handle(packet) == connect_handle) {
                 connect_handle = HCI_CON_HANDLE_INVALID;
                 if (connect_retry_after_disconnect) {

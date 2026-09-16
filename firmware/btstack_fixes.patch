@@ -22,7 +22,7 @@ index 5b4c2846d..130ba4466 100644
                  break;
              }
 diff --git a/src/hci.c b/src/hci.c
-index e541e4c88..13f72d7ce 100644
+index e541e4c88..4ae9cd6be 100644
 --- a/src/hci.c
 +++ b/src/hci.c
 @@ -1635,7 +1635,11 @@ static void gap_run_set_local_name(void){
@@ -51,3 +51,65 @@ index e541e4c88..13f72d7ce 100644
  }
  
  static void hci_run_gap_tasks_classic(void){
+@@ -2616,6 +2624,7 @@ static void hci_handle_mutual_authentication_completed(hci_connection_t * conn){
+ }
+ 
+ static void hci_handle_read_encryption_key_size_complete(hci_connection_t * conn, uint8_t encryption_key_size) {
++    conn->authentication_flags &= ~AUTH_FLAG_CONNECTION_ENCRYPTION_KEY_SIZE_PENDING;
+     conn->authentication_flags |= AUTH_FLAG_CONNECTION_ENCRYPTED;
+     conn->encryption_key_size = encryption_key_size;
+ 
+@@ -3871,6 +3880,12 @@ static void event_handler(uint8_t *packet, uint16_t size){
+                             conn->authentication_flags |= AUTH_FLAG_CONNECTION_AUTHENTICATED;
+                         }
+ 
++#ifdef ENABLE_CLASSIC_ENCRYPTION_IMPLIES_AUTHENTICATION
++                        // Encryption needs the link key on both sides, so a remote that encrypted the link
++                        // holds it. Some HID devices drop the link if authenticated after encrypting.
++                        conn->authentication_flags |= AUTH_FLAG_CONNECTION_AUTHENTICATED;
++#endif
++
+ #ifdef ENABLE_TESTING_SUPPORT
+                         // work around for issue with PTS dongle
+                         conn->authentication_flags |= AUTH_FLAG_CONNECTION_AUTHENTICATED;
+@@ -3884,6 +3899,7 @@ static void event_handler(uint8_t *packet, uint16_t size){
+                             if (hci_command_supported(SUPPORTED_HCI_COMMAND_READ_ENCRYPTION_KEY_SIZE)) {
+                                 // For Classic, we need to validate encryption key size first, if possible (== supported by Controller)
+                                 conn->bonding_flags |= BONDING_SEND_READ_ENCRYPTION_KEY_SIZE;
++                                conn->authentication_flags |= AUTH_FLAG_CONNECTION_ENCRYPTION_KEY_SIZE_PENDING;
+                             } else {
+                                 // if not, pretend everything is perfect
+                                 hci_handle_read_encryption_key_size_complete(conn, 16);
+diff --git a/src/hci.h b/src/hci.h
+index 8b34ff199..106668c22 100644
+--- a/src/hci.h
++++ b/src/hci.h
+@@ -227,6 +227,8 @@ typedef enum {
+     // connection status
+     AUTH_FLAG_CONNECTION_AUTHENTICATED            = 0x1000,
+     AUTH_FLAG_CONNECTION_ENCRYPTED                = 0x2000,
++    // encryption is on but the key size has not been read yet
++    AUTH_FLAG_CONNECTION_ENCRYPTION_KEY_SIZE_PENDING = 0x4000,
+ 
+ } hci_authentication_flags_t;
+ 
+diff --git a/src/l2cap.c b/src/l2cap.c
+index 71e0733fd..0999b93e2 100644
+--- a/src/l2cap.c
++++ b/src/l2cap.c
+@@ -2402,10 +2402,14 @@ static void l2cap_handle_remote_supported_features_received(l2cap_channel_t * ch
+         //   disconnect the ACL link with error code 0x05 - Authentication Failure.
+ 
+         // => Disconnect if l2cap request received in mode 4 and ssp supported, non-sdp psm, not encrypted, no link key available
++        // A link whose key size read is still outstanding is encrypted, so it waits for the level update below instead.
++        hci_connection_t * hci_connection = hci_connection_for_handle(channel->con_handle);
++        bool key_size_pending = (hci_connection != NULL) && ((hci_connection->authentication_flags & AUTH_FLAG_CONNECTION_ENCRYPTION_KEY_SIZE_PENDING) != 0);
+         if ((gap_get_security_mode() == GAP_SECURITY_MODE_4)
+         && gap_ssp_supported_on_both_sides(channel->con_handle)
+         && (channel->psm != PSM_SDP)
+-        && (gap_encryption_key_size(channel->con_handle) == 0)){
++        && (gap_encryption_key_size(channel->con_handle) == 0)
++        && !key_size_pending){
+             hci_disconnect_security_block(channel->con_handle);
+             return;
+         }
