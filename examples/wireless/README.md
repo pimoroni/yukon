@@ -20,7 +20,7 @@ Copy the three modules in [gamepad/lib](gamepad/lib) to the board's `lib` direct
 - `gamepad.py` turns the pad's raw reports into named buttons and axes, with callbacks.
 - `gamepad_mappings.py` holds the report layout of each known pad and mode, one function each: the
   8BitDo Lite in its X-input and Switch modes, the 8BitDo SN30 Pro+ in each of its four modes, and
-  the 8BitDo SN30 in its Switch mode. Set `PAD_MAPPING` in `main.py` to the one in use. 8BitDo pads pick their mode by the button
+  the 8BitDo SN30 in its X-input and Switch modes. Set `PAD_MAPPING` in `main.py` to the one in use. 8BitDo pads pick their mode by the button
   held at power on, X for X-input, Y for Switch, B for Android and A for macOS.
 - `pad_keys.py` saves and loads link keys.
 

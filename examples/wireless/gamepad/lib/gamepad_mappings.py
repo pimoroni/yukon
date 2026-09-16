@@ -11,18 +11,8 @@
 from gamepad import Gamepad
 
 
-def __register_8bitdo_xinput(pad, stick_deadzone):
-    """The X-input layout, report id 1 with Home alone in report id 2."""
-    # Four 16 bit stick axes, then two 10 bit triggers each padded to 16.
-    pad.register_axis("LX", 16, 16, deadzone=stick_deadzone)
-    pad.register_axis("LY", 32, 16, deadzone=stick_deadzone, invert=True)
-    pad.register_axis("RX", 48, 16, deadzone=stick_deadzone)
-    pad.register_axis("RY", 64, 16, deadzone=stick_deadzone, invert=True)
-    pad.register_trigger("L2", 80, 10, alt_name="LT")
-    pad.register_trigger("R2", 96, 10, alt_name="RT")
-
-    # Direction pad as a hat nibble, then the buttons in HID order.
-    pad.register_hat(112)
+def __register_8bitdo_xinput_buttons(pad):
+    """The buttons of the X-input layout, in HID order, with Home alone in report id 2."""
     pad.register_button("B", 15, 0)
     pad.register_button("A", 15, 1)
     pad.register_button("Y", 15, 2)
@@ -34,6 +24,19 @@ def __register_8bitdo_xinput(pad, stick_deadzone):
     pad.register_button("LStick", 16, 0)
     pad.register_button("RStick", 16, 1)
     pad.register_button("Home", 2, 0, report_id=2)
+
+
+def __register_8bitdo_xinput(pad, stick_deadzone):
+    """The X-input layout, report id 1: four 16 bit stick axes, two 10 bit triggers each padded to
+    16, the direction pad as a hat nibble, then the buttons."""
+    pad.register_axis("LX", 16, 16, deadzone=stick_deadzone)
+    pad.register_axis("LY", 32, 16, deadzone=stick_deadzone, invert=True)
+    pad.register_axis("RX", 48, 16, deadzone=stick_deadzone)
+    pad.register_axis("RY", 64, 16, deadzone=stick_deadzone, invert=True)
+    pad.register_trigger("L2", 80, 10, alt_name="LT")
+    pad.register_trigger("R2", 96, 10, alt_name="RT")
+    pad.register_hat(112)
+    __register_8bitdo_xinput_buttons(pad)
 
 
 def __register_8bitdo_switch_buttons(pad):
@@ -159,11 +162,25 @@ def create_8bitdo_lite_switch(stick_deadzone=0.1):
     return pad
 
 
+def create_8bitdo_sn30_xinput():
+    """The 8BitDo SN30 in its X-input mode.
+
+    The direction pad arrives on the left stick fields. The controls the pad lacks, L2, R2, the
+    stick clicks and Home, never press.
+    """
+    pad = Gamepad("8BitDo SN30 gamepad")
+    __register_8bitdo_xinput_buttons(pad)
+    pad.register_axis_buttons("Left", "Right", 16, 16)
+    pad.register_axis_buttons("Up", "Down", 32, 16)
+    return pad
+
+
 def create_8bitdo_sn30_switch():
     """The 8BitDo SN30 in its Switch mode.
 
     The direction pad arrives on the left stick fields. The buttons the pad lacks, L2, R2, the
-    stick clicks, Home and Star, never press.
+    stick clicks, Home and Star, never press. This pad switches itself off about 20 seconds after
+    connecting in this mode, since no console handshake follows, so X-input mode is the one to use.
     """
     pad = Gamepad("8BitDo SN30 gamepad")
     __register_8bitdo_switch_buttons(pad)
