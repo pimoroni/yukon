@@ -15,6 +15,24 @@ index dd416fcbf..7a45b4251 100644
 +        ${BTSTACK_LIB_DIR}/src/classic/sdp_util.c
 +    )
 +endif()
+diff --git a/extmod/btstack/btstack_config_common.h b/extmod/btstack/btstack_config_common.h
+index 0f616f750..79fa43b7a 100644
+--- a/extmod/btstack/btstack_config_common.h
++++ b/extmod/btstack/btstack_config_common.h
+@@ -15,9 +15,13 @@
+ // BTstack configuration. buffers, sizes, ...
+ #define HCI_ACL_PAYLOAD_SIZE 1021
+ #define MAX_NR_GATT_CLIENTS 1
++#ifndef MAX_NR_HCI_CONNECTIONS
+ #define MAX_NR_HCI_CONNECTIONS 1
++#endif
+ #define MAX_NR_L2CAP_SERVICES  3
++#ifndef MAX_NR_L2CAP_CHANNELS
+ #define MAX_NR_L2CAP_CHANNELS  3
++#endif
+ #define MAX_NR_RFCOMM_MULTIPLEXERS 1
+ #define MAX_NR_RFCOMM_SERVICES 1
+ #define MAX_NR_RFCOMM_CHANNELS 1
 diff --git a/extmod/btstack/modbluetooth_btstack.c b/extmod/btstack/modbluetooth_btstack.c
 index 7694a1874..761eb10bc 100644
 --- a/extmod/btstack/modbluetooth_btstack.c
@@ -67,16 +85,21 @@ index c3ddadad7..4951eec49 100644
      get_target_property(BTSTACK_INCLUDE micropy_extmod_btstack INTERFACE_INCLUDE_DIRECTORIES)
      list(APPEND MICROPY_INC_CORE ${BTSTACK_INCLUDE})
 diff --git a/ports/rp2/btstack_inc/btstack_config.h b/ports/rp2/btstack_inc/btstack_config.h
-index ec7cd7fb7..6bf0445e2 100644
+index ec7cd7fb7..9e6d88a28 100644
 --- a/ports/rp2/btstack_inc/btstack_config.h
 +++ b/ports/rp2/btstack_inc/btstack_config.h
-@@ -4,6 +4,13 @@
+@@ -4,6 +4,18 @@
  #define HCI_OUTGOING_PRE_BUFFER_SIZE 4
  #define HCI_ACL_CHUNK_SIZE_ALIGNMENT 4
  
 +#if MICROPY_BLUETOOTH_BTSTACK_CLASSIC
 +#define ENABLE_CLASSIC
-+#define MAX_NR_HID_HOST_CONNECTIONS 1
++// Two of each so a pad connecting to us is accepted while a page to an absent pad is out.
++#define MAX_NR_HCI_CONNECTIONS 2
++#define MAX_NR_HID_HOST_CONNECTIONS 2
++#define MAX_NR_L2CAP_CHANNELS 6
++// Game pads that encrypt the link themselves may not survive being authenticated afterwards.
++#define ENABLE_CLASSIC_ENCRYPTION_IMPLIES_AUTHENTICATION
 +// Game pad report descriptors run past the HID host's 300 byte default.
 +#define MAX_ATTRIBUTE_VALUE_SIZE 512
 +#endif
