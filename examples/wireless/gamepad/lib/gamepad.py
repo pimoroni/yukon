@@ -138,6 +138,21 @@ class Gamepad:
 
         self.__add_decoder(report_id, bit_offset + width - 1, decode)
 
+    def register_axis_buttons(self, low_name, high_name, bit_offset, width, report_id=1):
+        """A direction pad reported as a centred axis, exposed as a button at each end."""
+        for name in (low_name, high_name):
+            self.__check_free(self.buttons, name, None)
+        low, high = Button(low_name, None), Button(high_name, None)
+        self.buttons.extend((low, high))
+        centre = (1 << width) // 2
+
+        def decode(r):
+            value = _field(r, bit_offset, width)
+            low.set(value < centre // 2)
+            high.set(value >= centre + centre // 2)
+
+        self.__add_decoder(report_id, bit_offset + width - 1, decode)
+
     # Callbacks
 
     def on_button(self, name, pressed=None, released=None):
