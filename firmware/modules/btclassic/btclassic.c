@@ -61,6 +61,10 @@ static uint8_t hid_reports[HID_REPORT_QUEUE][HID_REPORT_MAX];
 static uint16_t hid_report_lens[HID_REPORT_QUEUE];
 static uint32_t hid_report_count = 0;   // reports received since the connection opened
 static uint32_t hid_report_read = 0;    // reports handed to Python
+// BTstack sends an output report from the caller's buffer once the channel is free, so it is
+// copied here first. One send at a time.
+#define HID_OUTPUT_MAX 64
+static uint8_t hid_output[HID_OUTPUT_MAX];
 
 // A pad put back into pairing mode forgets its link key while this side still holds one, so the
 // first connect after that fails on security. The stale key is dropped and the connect retried once,
@@ -670,6 +674,25 @@ static mp_obj_t btclassic_report(void) {
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_report_obj, btclassic_report);
 
+// Send an output report over the interrupt channel, report_id then up to 64 bytes of data.
+static mp_obj_t btclassic_send_report(mp_obj_t report_id_obj, mp_obj_t data_obj) {
+    if (hid_state != HID_CONNECTED) {
+        mp_raise_msg(&mp_type_RuntimeError, MP_ERROR_TEXT("not connected"));
+    }
+    mp_buffer_info_t data;
+    mp_get_buffer_raise(data_obj, &data, MP_BUFFER_READ);
+    if (data.len > HID_OUTPUT_MAX) {
+        mp_raise_ValueError(MP_ERROR_TEXT("report too long"));
+    }
+    memcpy(hid_output, data.buf, data.len);
+    uint8_t status = hid_host_send_report(hid_cid, mp_obj_get_int(report_id_obj), hid_output, data.len);
+    if (status != ERROR_CODE_SUCCESS) {
+        mp_raise_msg_varg(&mp_type_RuntimeError, MP_ERROR_TEXT("send failed, status %d"), status);
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_2(btclassic_send_report_obj, btclassic_send_report);
+
 // The device's HID report descriptor, or None until the connection has fetched it.
 static mp_obj_t btclassic_descriptor(void) {
     if (!hid_descriptor_available || hid_cid == 0) {
@@ -752,6 +775,7 @@ static const mp_rom_map_elem_t btclassic_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_state), MP_ROM_PTR(&btclassic_state_obj) },
     { MP_ROM_QSTR(MP_QSTR_report), MP_ROM_PTR(&btclassic_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_descriptor), MP_ROM_PTR(&btclassic_descriptor_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send_report), MP_ROM_PTR(&btclassic_send_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_STATE_DISCONNECTED), MP_ROM_INT(HID_DISCONNECTED) },
     { MP_ROM_QSTR(MP_QSTR_STATE_CONNECTING), MP_ROM_INT(HID_CONNECTING) },
     { MP_ROM_QSTR(MP_QSTR_STATE_CONNECTED), MP_ROM_INT(HID_CONNECTED) },
