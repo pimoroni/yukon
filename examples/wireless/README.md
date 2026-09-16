@@ -18,8 +18,10 @@ restarts while the pad is on it reconnects by itself. Delete that file to forget
 Copy the three modules in [gamepad/lib](gamepad/lib) to the board's `lib` directory:
 
 - `gamepad.py` turns the pad's raw reports into named buttons and axes, with callbacks.
-- `gamepad_mappings.py` holds the report layout of each known pad: the 8BitDo Lite in its Android
-  mode and the 8BitDo SN30 Pro+ in its Switch mode. Set `PAD_MAPPING` in `main.py` to the one in use.
+- `gamepad_mappings.py` holds the report layout of each known pad and mode, one function each: the
+  8BitDo Lite, the 8BitDo SN30 Pro+ in its X-input and Switch modes, and the 8BitDo SN30 in its
+  Switch mode. Set `PAD_MAPPING` in `main.py` to the one in use. 8BitDo pads pick their mode by the
+  button held at power on, X for X-input and Y for Switch.
 - `pad_keys.py` saves and loads link keys.
 
 The program prints every change of a button or axis, and blinks LED B on each press or movement.
