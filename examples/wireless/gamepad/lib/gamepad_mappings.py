@@ -5,7 +5,9 @@
 # 8BitDo pads choose their layout by the button held at power on, and advertise a different name
 # and address in each mode. In X-input mode (X held, "8BitDo ..." in the inquiry) they send the
 # same 306 byte descriptor whatever the pad. In Switch mode (Y held, "Pro Controller") they send
-# the Pro Controller's simple report.
+# the Pro Controller's simple report. In Android mode (B held, "8BitDo ...") they send a compact
+# report with 8 bit axes and Android's button order. In macOS mode (A held, "Wireless Controller")
+# they send a DualShock 4 style report.
 from gamepad import Gamepad
 
 
@@ -53,7 +55,7 @@ def __register_8bitdo_switch_buttons(pad):
 
 
 def create_8bitdo_lite(stick_deadzone=0.1):
-    """The 8BitDo Lite in its X-input mode, which its manual calls Android mode.
+    """The 8BitDo Lite in its X-input mode.
 
     The pad has two direction pads and no sticks. The left one reports as the hat, the right one
     as the left stick, and the star button swaps which stick that is without sending anything
@@ -65,9 +67,65 @@ def create_8bitdo_lite(stick_deadzone=0.1):
 
 
 def create_8bitdo_sn30_pro_plus_xinput(stick_deadzone=0.1):
-    """The 8BitDo SN30 Pro+ in its X-input mode, with analogue triggers."""
+    """The 8BitDo SN30 Pro+ in its X-input mode, with analogue triggers. Star sends nothing."""
     pad = Gamepad("8BitDo SN30 Pro+ gamepad")
     __register_8bitdo_xinput(pad, stick_deadzone)
+    return pad
+
+
+def create_8bitdo_sn30_pro_plus_android(stick_deadzone=0.1):
+    """The 8BitDo SN30 Pro+ in its Android mode, with analogue triggers. Star sends nothing."""
+    pad = Gamepad("8BitDo SN30 Pro+ gamepad")
+    report_id = 3
+
+    # Direction pad as a hat nibble, then four 8 bit stick axes and two 8 bit triggers.
+    pad.register_hat(16, first=0, report_id=report_id)
+    pad.register_axis("LX", 24, 8, deadzone=stick_deadzone, report_id=report_id)
+    pad.register_axis("LY", 32, 8, deadzone=stick_deadzone, invert=True, report_id=report_id)
+    pad.register_axis("RX", 40, 8, deadzone=stick_deadzone, report_id=report_id)
+    pad.register_axis("RY", 48, 8, deadzone=stick_deadzone, invert=True, report_id=report_id)
+    pad.register_trigger("R2", 56, 8, alt_name="RT", report_id=report_id)
+    pad.register_trigger("L2", 64, 8, alt_name="LT", report_id=report_id)
+
+    # Buttons in Android's order. Bits 0 and 1 of byte 10 repeat the triggers as buttons.
+    pad.register_button("A", 9, 0, report_id=report_id)
+    pad.register_button("B", 9, 1, report_id=report_id)
+    pad.register_button("Home", 9, 2, report_id=report_id)
+    pad.register_button("X", 9, 3, report_id=report_id)
+    pad.register_button("Y", 9, 4, report_id=report_id)
+    pad.register_button("L1", 9, 6, alt_name="LB", report_id=report_id)
+    pad.register_button("R1", 9, 7, alt_name="RB", report_id=report_id)
+    pad.register_button("Minus", 10, 2, alt_name="Select", report_id=report_id)
+    pad.register_button("Plus", 10, 3, alt_name="Start", report_id=report_id)
+    pad.register_button("LStick", 10, 5, report_id=report_id)
+    pad.register_button("RStick", 10, 6, report_id=report_id)
+    return pad
+
+
+def create_8bitdo_sn30_pro_plus_macos(stick_deadzone=0.1):
+    """The 8BitDo SN30 Pro+ in its macOS mode, with analogue triggers. Star sends nothing."""
+    pad = Gamepad("8BitDo SN30 Pro+ gamepad")
+
+    # Four 8 bit stick axes, the direction pad as a hat nibble, the buttons in DualShock order with
+    # bits 2 and 3 of byte 7 repeating the triggers, then two 8 bit triggers.
+    pad.register_axis("LX", 16, 8, deadzone=stick_deadzone)
+    pad.register_axis("LY", 24, 8, deadzone=stick_deadzone, invert=True)
+    pad.register_axis("RX", 32, 8, deadzone=stick_deadzone)
+    pad.register_axis("RY", 40, 8, deadzone=stick_deadzone, invert=True)
+    pad.register_hat(48, first=0)
+    pad.register_button("Y", 6, 4, alt_name="Square")
+    pad.register_button("B", 6, 5, alt_name="Cross")
+    pad.register_button("A", 6, 6, alt_name="Circle")
+    pad.register_button("X", 6, 7, alt_name="Triangle")
+    pad.register_button("L1", 7, 0, alt_name="LB")
+    pad.register_button("R1", 7, 1, alt_name="RB")
+    pad.register_button("Minus", 7, 4, alt_name="Share")
+    pad.register_button("Plus", 7, 5, alt_name="Options")
+    pad.register_button("LStick", 7, 6)
+    pad.register_button("RStick", 7, 7)
+    pad.register_button("Home", 8, 0)
+    pad.register_trigger("L2", 72, 8, alt_name="LT")
+    pad.register_trigger("R2", 80, 8, alt_name="RT")
     return pad
 
 
