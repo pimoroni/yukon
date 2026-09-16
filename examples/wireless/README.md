@@ -4,6 +4,7 @@ This folder contains examples that use the RM2 Wireless Module, and need the wir
 Yukon firmware.
 
 - [Game Pad](#game-pad)
+- [Keyboard](#keyboard)
 
 
 ## Game Pad
@@ -27,3 +28,16 @@ Copy the three modules in [gamepad/lib](gamepad/lib) to the board's `lib` direct
 The program prints every change of a button or axis, and blinks LED B on each press or movement.
 Adding a pad means adding a mapping function, which names where each control sits in the pad's HID
 report.
+
+
+## Keyboard
+
+[keyboard/main.py](keyboard/main.py)
+
+Types into Yukon from a Bluetooth keyboard paired straight to the board. Pairing works as for the
+game pad, and the keyboard's link key goes in the same file. Every key press and release is printed
+by name, each line is printed when Enter is pressed, and LED B blinks on each press.
+
+Copy `keyboard/lib/keyboard.py` and the game pad's `pad_keys.py` to the board's `lib` directory.
+`keyboard.py` decodes the boot protocol report every keyboard sends, six keys at a time plus
+modifiers, into named keys and typed characters for a US layout.
