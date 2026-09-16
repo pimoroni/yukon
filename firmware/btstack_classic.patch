@@ -34,10 +34,55 @@ index 0f616f750..79fa43b7a 100644
  #define MAX_NR_RFCOMM_SERVICES 1
  #define MAX_NR_RFCOMM_CHANNELS 1
 diff --git a/extmod/btstack/modbluetooth_btstack.c b/extmod/btstack/modbluetooth_btstack.c
-index 7694a1874..761eb10bc 100644
+index 7694a1874..875020f76 100644
 --- a/extmod/btstack/modbluetooth_btstack.c
 +++ b/extmod/btstack/modbluetooth_btstack.c
-@@ -646,6 +646,12 @@ int mp_bluetooth_init(void) {
+@@ -376,6 +376,34 @@ static btstack_packet_callback_registration_t hci_event_callback_registration =
+     .callback = &btstack_packet_handler_generic
+ };
+ 
++#if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
++// Security Manager events arrive through their own handler list. Just Works and numeric
++// comparison requests are confirmed, since there is no passkey path, and pairing completion is
++// passed to the generic handler to become an encryption update.
++static void btstack_sm_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
++    if (packet_type != HCI_EVENT_PACKET) {
++        return;
++    }
++    switch (hci_event_packet_get_type(packet)) {
++        case SM_EVENT_JUST_WORKS_REQUEST:
++            sm_just_works_confirm(sm_event_just_works_request_get_handle(packet));
++            break;
++        case SM_EVENT_NUMERIC_COMPARISON_REQUEST:
++            sm_numeric_comparison_confirm(sm_event_numeric_comparison_request_get_handle(packet));
++            break;
++        case SM_EVENT_PAIRING_COMPLETE:
++            btstack_packet_handler_generic(packet_type, channel, packet, size);
++            break;
++        default:
++            break;
++    }
++}
++
++static btstack_packet_callback_registration_t sm_event_callback_registration = {
++    .callback = &btstack_sm_packet_handler
++};
++#endif
++
+ #if MICROPY_PY_BLUETOOTH_ENABLE_GATT_CLIENT
+ // For when the handler is being used for service discovery.
+ static void btstack_packet_handler_discover_services(uint8_t packet_type, uint16_t channel, uint8_t *packet, uint16_t size) {
+@@ -625,6 +653,9 @@ int mp_bluetooth_init(void) {
+     l2cap_init();
+     le_device_db_init();
+     sm_init();
++    #if MICROPY_PY_BLUETOOTH_ENABLE_PAIRING_BONDING
++    sm_add_event_handler(&sm_event_callback_registration);
++    #endif
+ 
+     // Set blank ER/IR keys to suppress BTstack warning.
+     // TODO handle this correctly.
+@@ -646,6 +677,12 @@ int mp_bluetooth_init(void) {
      // Register for ATT server events.
      att_server_register_packet_handler(&btstack_packet_handler_att_server);
  
