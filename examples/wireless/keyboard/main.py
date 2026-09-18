@@ -119,7 +119,8 @@ try:
             time.sleep_ms(50)
         else:
             address = find_keyboard_in_pairing_mode()
-            if address is not None:
+            # An inquiry takes seconds, in which the keyboard may have reached us of its own accord
+            if address is not None and btclassic.state()[0] != btclassic.STATE_CONNECTED:
                 btclassic.connect(address)
                 if wait_for_connection():
                     pad_keys.save()
