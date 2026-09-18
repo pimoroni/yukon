@@ -66,6 +66,15 @@ static uint32_t hid_report_read = 0;    // reports handed to Python
 #define HID_OUTPUT_MAX 64
 static uint8_t hid_output[HID_OUTPUT_MAX];
 
+// A pad only reports when something changes, so a held control looks the same as a dead link to
+// anything watching reports. The baseband knows better, so the link supervision timeout is what
+// tells them apart. The controller only accepts the setting from the master, and a pad that
+// connected to us leaves us the slave, so the role is switched first.
+#define SUPERVISION_SLOT_US 625
+static uint16_t supervision_slots = 0;
+static bool supervision_pending = false;
+static bool role_switch_pending = false;
+
 // A pad put back into pairing mode forgets its link key while this side still holds one, so the
 // first connect after that fails on security. The stale key is dropped and the connect retried once,
 // from Python's polling for the same reason as the name lookups.
@@ -320,6 +329,8 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
                 hid_descriptor_available = false;
                 connect_handle = HCI_CON_HANDLE_INVALID;
                 links_clear();
+                supervision_pending = false;
+                role_switch_pending = false;
             }
             break;
 
@@ -344,6 +355,15 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
             link_key_notifications++;
             break;
 
+        case HCI_EVENT_ROLE_CHANGE:
+            // A pad that accepts the switch lets the supervision timeout be written at last
+            if (hci_event_role_change_get_status(packet) == ERROR_CODE_SUCCESS
+                && hci_event_role_change_get_role(packet) == HCI_ROLE_MASTER
+                && supervision_slots != 0) {
+                supervision_pending = true;
+            }
+            break;
+
         case HCI_EVENT_CONNECTION_COMPLETE:
             if (hci_event_connection_complete_get_status(packet) == ERROR_CODE_SUCCESS) {
                 hci_con_handle_t handle = hci_event_connection_complete_get_connection_handle(packet);
@@ -352,6 +372,13 @@ static void hci_event_handler(uint8_t packet_type, uint16_t channel, uint8_t *pa
                 link_add(handle, address);
                 if (bd_addr_cmp(address, connect_address) == 0) {
                     connect_handle = handle;
+                    if (supervision_slots != 0) {
+                        if (gap_get_role(handle) == HCI_ROLE_MASTER) {
+                            supervision_pending = true;
+                        } else {
+                            role_switch_pending = true;
+                        }
+                    }
                 }
             }
             break;
@@ -649,6 +676,14 @@ static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_disconnect_obj, btclassic_disconnect)
 
 // The connection state, one of the STATE_ constants, and the last BTstack status code.
 static mp_obj_t btclassic_state(void) {
+    if (role_switch_pending && connect_handle != HCI_CON_HANDLE_INVALID && hci_can_send_command_packet_now()) {
+        role_switch_pending = false;
+        gap_request_role(connect_address, HCI_ROLE_MASTER);
+    }
+    if (supervision_pending && connect_handle != HCI_CON_HANDLE_INVALID && hci_can_send_command_packet_now()) {
+        supervision_pending = false;
+        hci_send_cmd(&hci_write_link_supervision_timeout, connect_handle, supervision_slots);
+    }
     if (connect_retry_pending) {
         connect_retry_pending = false;
         uint8_t status = hid_host_connect(connect_address, HID_PROTOCOL_MODE_REPORT, &hid_cid);
@@ -673,6 +708,37 @@ static mp_obj_t btclassic_report(void) {
     return mp_obj_new_tuple(2, items);
 }
 static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_report_obj, btclassic_report);
+
+// How long the controller waits before declaring a silent link lost, in milliseconds, or 0 for the
+// controller's own default of 20 seconds. Applies to this and every later connection.
+static mp_obj_t btclassic_supervision_timeout(mp_obj_t timeout_ms_obj) {
+    mp_int_t timeout_ms = mp_obj_get_int(timeout_ms_obj);
+    if (timeout_ms < 0 || (timeout_ms * 1000) / SUPERVISION_SLOT_US > 0xB000) {
+        mp_raise_ValueError(MP_ERROR_TEXT("timeout out of range"));
+    }
+    supervision_slots = (uint16_t)((timeout_ms * 1000) / SUPERVISION_SLOT_US);
+    gap_set_link_supervision_timeout(supervision_slots);
+
+    // An open connection keeps the controller's default until it is told otherwise
+    if (connect_handle != HCI_CON_HANDLE_INVALID && supervision_slots != 0) {
+        if (gap_get_role(connect_handle) == HCI_ROLE_MASTER) {
+            supervision_pending = true;
+        } else {
+            role_switch_pending = true;
+        }
+    }
+    return mp_const_none;
+}
+static MP_DEFINE_CONST_FUN_OBJ_1(btclassic_supervision_timeout_obj, btclassic_supervision_timeout);
+
+// Whether this side is the master of the link, which decides if the supervision timeout can be set.
+static mp_obj_t btclassic_is_master(void) {
+    if (connect_handle == HCI_CON_HANDLE_INVALID) {
+        return mp_const_none;
+    }
+    return mp_obj_new_bool(gap_get_role(connect_handle) == HCI_ROLE_MASTER);
+}
+static MP_DEFINE_CONST_FUN_OBJ_0(btclassic_is_master_obj, btclassic_is_master);
 
 // Send an output report over the interrupt channel, report_id then up to 64 bytes of data.
 static mp_obj_t btclassic_send_report(mp_obj_t report_id_obj, mp_obj_t data_obj) {
@@ -776,6 +842,8 @@ static const mp_rom_map_elem_t btclassic_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_report), MP_ROM_PTR(&btclassic_report_obj) },
     { MP_ROM_QSTR(MP_QSTR_descriptor), MP_ROM_PTR(&btclassic_descriptor_obj) },
     { MP_ROM_QSTR(MP_QSTR_send_report), MP_ROM_PTR(&btclassic_send_report_obj) },
+    { MP_ROM_QSTR(MP_QSTR_supervision_timeout), MP_ROM_PTR(&btclassic_supervision_timeout_obj) },
+    { MP_ROM_QSTR(MP_QSTR_is_master), MP_ROM_PTR(&btclassic_is_master_obj) },
     { MP_ROM_QSTR(MP_QSTR_STATE_DISCONNECTED), MP_ROM_INT(HID_DISCONNECTED) },
     { MP_ROM_QSTR(MP_QSTR_STATE_CONNECTING), MP_ROM_INT(HID_CONNECTING) },
     { MP_ROM_QSTR(MP_QSTR_STATE_CONNECTED), MP_ROM_INT(HID_CONNECTED) },
