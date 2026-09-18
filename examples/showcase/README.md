@@ -15,9 +15,13 @@ This folder contains a collection of *Showcase* examples, that bring together co
 
 A showcase of Yukon as a differential drive rover. It uses two Big Motor modules, one to control the left side motors, and the other to control the right side motors.
 
-There is a LED Strip module controlling left and right strips that represent each side's speed as a colour from green -> blue -> red. Additionally, there is a proto module wired up to a buzzer to alert the user to the battery voltage getting too low, which also exposes the UART for connection to a bluetooth serial transceiver.
+There is a LED Strip module controlling left and right strips that represent each side's speed as a colour from green -> blue -> red. Additionally, there is a proto module wired up to a buzzer to alert the user to the battery voltage getting too low, and a RM2 Wireless Module for reaching the game pad.
 
-The program receives commands from the JoyBTCommander Android App and converts them to motor speeds. it also sends the voltage, current, and temperature of Yukon back to the App.
+The program is driven by a Bluetooth game pad paired straight to the board, with no phone or computer in between. The first time, put the pad into pairing mode and Yukon finds it, pairs, and saves the link key to a file on the board. From then on switching the pad on is enough. LED A is lit whenever the rover is waiting for the pad, and the motors coast to a stop while it is.
+
+`rover/lib/controls.py` holds the control schemes, one function each, and the mixing that turns them into a speed per side. `triggers` uses the analogue triggers as a throttle and steers with the right stick, and is what the rover starts with. `sticks` drives with the left stick and steers with the right. The pad's Plus button swaps between them while driving. Set `PAD_MAPPING` in `main.py` to suit your pad. The rover steers only while it is moving, since it has too much ground friction to skid steer on the spot.
+
+The wireless module goes in slot 4, though any free slot will do. The LED Strip module keeps slot 5.
 
 
 ## Spider Tank
