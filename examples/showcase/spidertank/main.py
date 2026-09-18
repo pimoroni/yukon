@@ -35,6 +35,7 @@ LOW_VOLTAGE_LEVEL = 6.8             # The voltage below which the program will t
 BUZZER_PERIOD = 0.5                 # The time between each buzz of the low voltage alarm
 BUZZER_DUTY = 0.5                   # The percentage of the time that the buzz will be on for
 PRINT_LEG = 1                       # Which leg to debug print the angles of
+SERVO_ATTEMPTS = 5                  # How many times to ask a servo to identify itself before giving up
 
 # Servo IDs  LF  LM  LR  RF  RM  RR
 COXA_IDS =  ( 6,  5,  4,  1,  2,  3)
@@ -91,6 +92,21 @@ cycle_percent = 0                          # The percent through the walking cyc
 exited_due_to_low_voltage = True           # Record if the program exited due to low voltage (assume true to start)
 
 
+def make_servo(servo_id, module):
+    """Create a servo, retrying the identification read.
+
+    The bus is half duplex, and its timing occasionally garbles the reply, so a servo that is
+    present and healthy can fail to report its ID on any given attempt.
+    """
+    for attempt in range(SERVO_ATTEMPTS):
+        try:
+            return LXServo(servo_id, module.uart, module.duplexer)
+        except RuntimeError:
+            if attempt == SERVO_ATTEMPTS - 1:
+                raise
+            time.sleep_ms(20)
+
+
 # Calculate target displacements from extents and the percent through a walking cycle
 def extent_to_displacements(x_extent, z_extent, percent):
     if percent < 0.5:
@@ -120,9 +136,9 @@ if yukon.read_input_voltage() > LOW_VOLTAGE_LEVEL:
         # Create LXServo objects for each leg and add them to their respective lists
         for i in range(NUM_LEGS):
             module = right_module if LEG_SIDES[i] == 1 else left_module
-            coxa_servos.append(LXServo(COXA_IDS[i], module.uart, module.duplexer))
-            femur_servos.append(LXServo(FEMUR_IDS[i], module.uart, module.duplexer))
-            tibia_servos.append(LXServo(TIBIA_IDS[i], module.uart, module.duplexer))
+            coxa_servos.append(make_servo(COXA_IDS[i], module))
+            femur_servos.append(make_servo(FEMUR_IDS[i], module))
+            tibia_servos.append(make_servo(TIBIA_IDS[i], module))
 
         current_time = ticks_ms()               # Record the start time of the program loop
 
