@@ -4,6 +4,7 @@ This folder contains a collection of *Showcase* examples, that bring together co
 
 - [RC Rover](#rc-rover)
 - [Spider Tank](#spider-tank)
+- [Remote Spider Tank](#remote-spider-tank)
 - [CNC Plotter](#cnc-plotter)
 
 
@@ -35,6 +36,17 @@ A showcase of Yukon as a hexapod robot, with 3 degrees of freedom per leg. It us
 There is also a proto module wired up to a buzzer to alert the user to the battery voltage getting too low.
 
 The program performs inverse kinematics for each leg, with the target points following a tripod walking gait.
+
+
+## Remote Spider Tank
+
+[spidertank_remote/main.py](spidertank_remote/main.py)
+
+The same hexapod, walked by hand from a Bluetooth game pad paired straight to the board. The pad's right trigger sets how fast the gait plays, from standing still at rest to full speed pulled in, so the walk starts, slows and stops under your thumb.
+
+Pairing works as for the RC Rover, and the two share the same link key file format. Copy `gamepad.py`, `gamepad_mappings.py` and `pad_keys.py` from [spidertank_remote/lib](spidertank_remote/lib) to the board's `lib` directory alongside `leg_ik.py`, and set `PAD_MAPPING` in `main.py` to suit your pad.
+
+The wireless module goes in slot 4, though any slot the servo modules and buzzer are not using will do. LED A is lit whenever the spider tank is waiting for the pad, and it stands still while it is.
 
 
 ## CNC Plotter
