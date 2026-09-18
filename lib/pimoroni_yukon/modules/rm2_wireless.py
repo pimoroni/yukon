@@ -2,11 +2,17 @@
 #
 # SPDX-License-Identifier: MIT
 
+from machine import Pin
 from .common import YukonModule, ADC_LOW, ADC_FLOAT, IO_LOW, IO_HIGH
 
 
 class RM2WirelessModule(YukonModule):
     NAME = "RM2 Wireless"
+
+    # The wireless chip starts on these, Slot 5's fast pins, before any module says otherwise.
+    # Moving its bus leaves an interrupt on the host wake pin, which then blocks that slot.
+    DEFAULT_SLOT_ID = 5
+    DEFAULT_PINS = (16, 17, 18, 19)
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
@@ -32,6 +38,13 @@ class RM2WirelessModule(YukonModule):
                            pin_cs=slot.FAST2,
                            pin_clock=slot.FAST3,
                            pin_dat=slot.FAST4)
+
+        # Release the pins the bus has just left, or a module in that slot hangs claiming them
+        if slot.ID != self.DEFAULT_SLOT_ID:
+            for gpio in self.DEFAULT_PINS:
+                pin = Pin(gpio)
+                pin.irq(handler=None)
+                pin.init(Pin.IN)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
