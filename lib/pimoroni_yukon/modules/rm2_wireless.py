@@ -19,13 +19,19 @@ class RM2WirelessModule(YukonModule):
         super().__init__()
 
         try:
+            import cyw43
             import network
         except ImportError:
             raise RuntimeError("This build does not contain wireless networking support. Please flash your Yukon with a build that supports wireless in order to use this module.")
 
+        self.__cyw43 = cyw43
+
     def initialise(self, slot, adc1_func, adc2_func):
-        if slot.ID != 5:
-            raise RuntimeError("Currently the wireless module is only supported in Slot 5. Please relocate your module.")
+        # Move the wireless chip's bus onto this slot's fast pins, and power the chip up
+        self.__cyw43.CYW43(pin_on=slot.FAST1,
+                           pin_cs=slot.FAST2,
+                           pin_clock=slot.FAST3,
+                           pin_dat=slot.FAST4)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)

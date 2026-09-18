@@ -9,7 +9,7 @@ This is the library reference for the [RM2 Wireless Module for Yukon](https://pi
   - [Functions](#functions)
 
 
-**:information-source: Wireless is a baked-in feature of MicroPython, so the normal import and initialisation steps for Yukon modules are not strictly required to get your project online. There are still some advantages to doing these though, so the steps are explained below.**
+**:information-source: Wireless is a baked-in feature of MicroPython, and Slot 5 is where a wireless build expects to find the module, so the normal import and initialisation steps for Yukon modules are not strictly required to get your project online from that slot. Initialising the module is what points the wireless chip at whichever slot it is actually in, so any other slot does need the steps below.**
 
 ## Getting Started
 
@@ -31,7 +31,7 @@ module = RM2WirelessModule()
 As with all Yukon modules, `RM2WirelessModule` must be initialised before it can be used. This is achieved by first registering the module with the `Yukon` class, with the slot it is attached to.
 
 ```python
-from pimoroni_yukon import SLOT5 as SLOT    # Only SLOT5 supports the RM2 Wireless Module at present
+from pimoroni_yukon import SLOT5 as SLOT    # The RM2 Wireless Module works in any slot
 
 # Import and set up Yukon and RM2WirelessModule instances
 
