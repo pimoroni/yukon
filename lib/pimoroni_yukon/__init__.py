@@ -2,6 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import os
 import sys
 import time
 import tca
@@ -144,13 +145,30 @@ class Yukon:
     OUTPUT_DISSIPATE_TIME_US = 10 * 1000
     OUTPUT_DISSIPATE_LEVEL = 2.0                # The voltage below which we can reliably obtain the address of attached modules
 
+    # Identify where this library was imported from, to avoid confusion when an edit doesn't seem to have been taken
+    @staticmethod
+    def __library_source():
+        # Every module carries __file__ unless MICROPY_MODULE___FILE__ is disabled
+        path = globals().get("__file__")
+        if path is None:
+            return "unknown"
+
+        # Frozen and filesystem root both give a __file__ with no leading slash, so they are told apart by the file really being there
+        if not path.startswith("/"):
+            try:
+                os.stat(path)
+            except OSError:
+                return "frozen"
+            return "/"
+        return path.rsplit("/", 2)[0]
+
     def __init__(self, voltage_limit=DEFAULT_VOLTAGE_LIMIT, current_limit=DEFAULT_CURRENT_LIMIT, temperature_limit=DEFAULT_TEMPERATURE_LIMIT, logging_level=logging.LOG_INFO):
         self.__voltage_limit = min(voltage_limit, self.ABSOLUTE_MAX_VOLTAGE_LIMIT)
         self.__current_limit = current_limit
         self.__temperature_limit = temperature_limit
         logging.level = logging_level
 
-        logging.info(f"> Running Yukon {YUKON_VERSION}, {sys.version.split('; ')[1]}")
+        logging.info(f"> Running Yukon {YUKON_VERSION} from {self.__library_source()}, {sys.version.split('; ')[1]}")
 
         self.__slot_assignments = OrderedDict({
             SLOT1: None,
