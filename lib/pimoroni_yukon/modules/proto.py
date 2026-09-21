@@ -9,11 +9,6 @@ from pimoroni_yukon.modules import signatures
 class ProtoPotModule(YukonModule):
     NAME = "Proto Potentiometer"
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
-    # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
-    # | HIGH  | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     SIGNATURE = signatures.PROTO_POT
 
     def __init__(self):
@@ -28,11 +23,6 @@ class ProtoPotModule2(YukonModule):
     NAME = "Proto Potentiometer 2"
     PULLUP = 5100
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
-    # | FLOAT | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
-    # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
     SIGNATURE = signatures.PROTO_POT_2
 
     # ADC2 has a pull-up connected to simplify its use with modules that feature an onboard thermistor.

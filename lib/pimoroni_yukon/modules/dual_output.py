@@ -17,9 +17,6 @@ class DualOutputModule(YukonModule):
     NUM_OUTPUTS = 2
     TEMPERATURE_THRESHOLD = 70.0
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | ALL   | 1     | 0     | 1     | Dual Switched Output |                             |
     SIGNATURE = signatures.DUAL_OUTPUT
 
     def __init__(self, halt_on_not_pgood=False):

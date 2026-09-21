@@ -20,10 +20,6 @@ class QuadServoRegModule(YukonModule):
     NUM_SERVOS = 4
     TEMPERATURE_THRESHOLD = 80.0
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | HIGH  | ALL   | 0     | 1     | 0     | Quad Servo Regulated | Power Not Good              |
-    # | HIGH  | ALL   | 0     | 1     | 1     | Quad Servo Regulated | Power Good                  |
     SIGNATURE = signatures.QUAD_SERVO_REG
 
     def __init__(self, init_servos=True, halt_on_not_pgood=False):

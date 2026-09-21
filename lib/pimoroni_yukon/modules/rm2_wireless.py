@@ -9,9 +9,6 @@ from pimoroni_yukon.modules import signatures
 class RM2WirelessModule(YukonModule):
     NAME = "RM2 Wireless"
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | FLOAT | 1     | 0     | 1     | RM2 Wireless         |                             |
     SIGNATURE = signatures.RM2_WIRELESS
 
     def __init__(self):

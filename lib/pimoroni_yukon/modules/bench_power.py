@@ -24,10 +24,6 @@ class BenchPowerModule(YukonModule):
 
     TEMPERATURE_THRESHOLD = 80.0
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | ALL   | 1     | 0     | 0     | Bench Power          | Output Discharged           |
-    # | FLOAT | ALL   | 1     | 0     | 0     | Bench Power          | Output Discharging          |
     SIGNATURE = signatures.BENCH_POWER
 
     def __init__(self, halt_on_not_pgood=False):

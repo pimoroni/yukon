@@ -15,17 +15,6 @@ class QuadServoDirectModule(YukonModule):
     SERVO_4 = 3
     NUM_SERVOS = 4
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 near 0V    |
-    # | FLOAT | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 near 0V    |
-    # | HIGH  | LOW   | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 near 0V    |
-    # | LOW   | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 between    |
-    # | FLOAT | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 between    |
-    # | HIGH  | FLOAT | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 between    |
-    # | LOW   | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 near 0V.   A2 near 3.3V  |
-    # | FLOAT | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 between.   A2 near 3.3V  |
-    # | HIGH  | HIGH  | 0     | 0     | 0     | Quad Servo Direct    | A1 near 3.3V. A2 near 3.3V  |
     SIGNATURE = signatures.QUAD_SERVO_DIRECT
 
     def __init__(self, init_servos=True):

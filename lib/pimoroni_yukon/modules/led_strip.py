@@ -20,9 +20,6 @@ class LEDStripModule(YukonModule):
     NUM_STRIPS = 1    # Becomes 2 with the DUAL_NEOPIXEL strip_type
     TEMPERATURE_THRESHOLD = 80.0
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | ALL   | 1     | 1     | 1     | LED Strip            |                             |
     SIGNATURE = signatures.LED_STRIP
 
     def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, halt_on_not_pgood=False):

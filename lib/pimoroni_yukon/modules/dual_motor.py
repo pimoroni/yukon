@@ -33,9 +33,6 @@ class DualMotorModule(YukonModule):
     DEFAULT_CURRENT_LIMIT = CURRENT_LIMIT_3
     MAX_CURRENT_LIMIT = CURRENT_LIMIT_9
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | HIGH  | ALL   | 0     | 0     | 1     | Dual Motor           |                             |
     SIGNATURE = signatures.DUAL_MOTOR
 
     def __init__(self, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):

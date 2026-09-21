@@ -130,9 +130,6 @@ class AudioAmpModule(YukonModule):
     AMP_I2C_ADDRESS = 0x38
     TEMPERATURE_THRESHOLD = 50.0
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | FLOAT | ALL   | 0     | 1     | 1     | Audio Amp            |                             |
     SIGNATURE = signatures.AUDIO_AMP
 
     def __init__(self, i2s_id):

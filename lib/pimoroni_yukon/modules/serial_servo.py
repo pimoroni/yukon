@@ -30,9 +30,6 @@ class SerialServoModule(YukonModule):
     NAME = "Serial Bus Servo"
     DEFAULT_BAUDRATE = 115200
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | HIGH  | HIGH  | 1     | 0     | 0     | Serial Servo         |                             |
     SIGNATURE = signatures.SERIAL_SERVO
 
     def __init__(self, baudrate=DEFAULT_BAUDRATE):

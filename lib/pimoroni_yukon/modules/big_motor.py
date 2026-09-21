@@ -21,10 +21,6 @@ class BigMotorModule(YukonModule):
     SHUNT_RESISTOR = 0.001
     GAIN = 80
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | LOW   | ALL   | 0     | 0     | 1     | Big Motor            | Not in fault                |
-    # | LOW   | ALL   | 0     | 1     | 1     | Big Motor            | In fault                    |
     SIGNATURE = signatures.BIG_MOTOR
 
     def __init__(self, frequency=DEFAULT_FREQUENCY,

@@ -25,6 +25,9 @@ This class should do the following:
 The address is held as data so that Yukon can identify a slot without importing every module class. Importing them all keeps each one in memory whether or not that module is attached, using heap a program needs and fragmenting what is left, so a later allocation can fail even when the free total looks sufficient. Add it to `pimoroni_yukon/modules/signatures.py`, listing the values accepted for ADC1, ADC2, SLOW1, SLOW2 and SLOW3, in that order. A reading matches when all five are accepted, and a field listing every value is one the module does not care about:
 
 ```python
+# | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
+# |-------|-------|-------|-------|-------|----------------------|-----------------------------|
+# | ?     | ?     | ?     | ?     | ?     | Custom               |                             |
 CUSTOM = ((?,), (?,), (?,), (?,), (?,))
 ```
 
@@ -37,16 +40,13 @@ from pimoroni_yukon.modules import signatures
 class CustomModule(YukonModule):
     NAME = "Custom"
 
-    # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
-    # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
-    # | ?     | ?     | ?     | ?     | ?     | Custom               |                             |
     SIGNATURE = signatures.CUSTOM
 
     def __init__(self):
         super().__init__()
 ```
 
-The signature above is intentionally missing ADC and IO states (as noted by `?`). To understand more about module addresses, refer to the [Module Detection](../module_detection.md) page.
+The signature is intentionally missing ADC and IO states (as noted by `?`). To understand more about module addresses, refer to the [Module Detection](../module_detection.md) page.
 
 Finally, give `KNOWN_MODULES` a row naming the class, the file it lives in and its signature. Order matters, because the first signature to match wins:
 
