@@ -111,15 +111,16 @@ class DualOutputModule(YukonModule):
         if temperature > self.TEMPERATURE_THRESHOLD:
             raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the limit of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
 
-        if self.__last_pgood1 is True and pgood1 is not True:
-            logging.warn(self.__message_header() + "Power1 is not good")
-        elif self.__last_pgood1 is not True and pgood1 is True:
-            logging.warn(self.__message_header() + "Power1 is good")
+        if logging.level >= logging.LOG_WARN:
+            if self.__last_pgood1 is True and pgood1 is not True:
+                print(self.__message_header() + "Power1 is not good")
+            elif self.__last_pgood1 is not True and pgood1 is True:
+                print(self.__message_header() + "Power1 is good")
 
-        if self.__last_pgood2 is True and pgood2 is not True:
-            logging.warn(self.__message_header() + "Power2 is not good")
-        elif self.__last_pgood2 is not True and pgood2 is True:
-            logging.warn(self.__message_header() + "Power2 is good")
+            if self.__last_pgood2 is True and pgood2 is not True:
+                print(self.__message_header() + "Power2 is not good")
+            elif self.__last_pgood2 is not True and pgood2 is True:
+                print(self.__message_header() + "Power2 is good")
 
         # Run some user action based on the latest readings
         if self.__monitor_action_callback is not None:

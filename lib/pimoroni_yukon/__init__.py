@@ -150,7 +150,8 @@ class Yukon:
         self.__temperature_limit = temperature_limit
         logging.level = logging_level
 
-        logging.info(f"> Running Yukon {YUKON_VERSION}, {sys.version.split('; ')[1]}")
+        if logging.level >= logging.LOG_INFO:
+            print(f"> Running Yukon {YUKON_VERSION}, {sys.version.split('; ')[1]}")
 
         self.__slot_assignments = OrderedDict({
             SLOT1: None,
@@ -249,7 +250,8 @@ class Yukon:
     def __check_output_dissipated(self, message):
         logging.info("> Checking output voltage ...")
         voltage = self.read_output_voltage()
-        logging.debug(f"Output Voltage = {voltage} V")
+        if logging.level >= logging.LOG_DEBUG:
+            print(f"Output Voltage = {voltage} V")
         if voltage >= self.OUTPUT_DISSIPATE_LEVEL:
             logging.warn("> Waiting for output voltage to dissipate ...")
 
@@ -257,7 +259,8 @@ class Yukon:
             first_below_time = 0
             while True:
                 new_voltage = self.read_output_voltage()
-                logging.debug(f"Output Voltage = {new_voltage} V")
+                if logging.level >= logging.LOG_DEBUG:
+                    print(f"Output Voltage = {new_voltage} V")
                 new_time = time.ticks_us()
                 if new_voltage < self.OUTPUT_DISSIPATE_LEVEL:
                     if first_below_time == 0:
@@ -276,18 +279,22 @@ class Yukon:
 
         self.__check_output_dissipated("module finding")
 
-        logging.info(f"> Finding slots with '{module_type.NAME}' module")
+        if logging.level >= logging.LOG_INFO:
+            print(f"> Finding slots with '{module_type.NAME}' module")
 
         slots = []
         for slot in self.__slot_assignments.keys():
-            logging.info(f"[Slot{slot.ID}]", end=" ")
+            if logging.level >= logging.LOG_INFO:
+                print(f"[Slot{slot.ID}]", end=" ")
             detected = self.__detect_module(slot)
 
             if detected is module_type:
-                logging.info(f"Found '{detected.NAME}' module")
+                if logging.level >= logging.LOG_INFO:
+                    print(f"Found '{detected.NAME}' module")
                 slots.append(slot.ID)
             else:
-                logging.info(f"No '{module_type.NAME}` module")
+                if logging.level >= logging.LOG_INFO:
+                    print(f"No '{module_type.NAME}` module")
 
         logging.info()  # New line
 
@@ -343,7 +350,8 @@ class Yukon:
         adc1_val = self.read_slot_adc1(slot, self.DETECTION_SAMPLES)
         adc2_val = self.read_slot_adc2(slot, self.DETECTION_SAMPLES)
 
-        logging.debug(f"ADC1 = {adc1_val}, ADC2 = {adc2_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
+        if logging.level >= logging.LOG_DEBUG:
+            print(f"ADC1 = {adc1_val}, ADC2 = {adc2_val}, SLOW1 = {slow1.value()}, SLOW2 = {slow2.value()}, SLOW3 = {slow3.value()}", end=", ")
 
         # Convert the ADC voltage to a LOW, FLOAT, or HIGH level
         adc1_level = ADC_LOW if adc1_val <= self.DETECTION_ADC_LOW else ADC_HIGH if adc1_val >= self.DETECTION_ADC_HIGH else ADC_FLOAT
@@ -392,12 +400,14 @@ class Yukon:
         unregistered_slots = 0
 
         for slot, module in self.__slot_assignments.items():
-            logging.info(f"[Slot{slot.ID}]", end=" ")
+            if logging.level >= logging.LOG_INFO:
+                print(f"[Slot{slot.ID}]", end=" ")
             detected = self.__detect_module(slot)
 
             if detected is None:
                 if module is not None:
-                    logging.info(f"No module detected! Expected a '{module.NAME}' module.")
+                    if logging.level >= logging.LOG_INFO:
+                        print(f"No module detected! Expected a '{module.NAME}' module.")
                     if slot not in allow_undetected:
                         raise_undetected = True
                 else:
@@ -406,13 +416,16 @@ class Yukon:
             else:
                 if module is not None:
                     if type(module) is detected:
-                        logging.info(f"'{module.NAME}' module detected and registered.")
+                        if logging.level >= logging.LOG_INFO:
+                            print(f"'{module.NAME}' module detected and registered.")
                     else:
-                        logging.info(f"Module discrepency! Expected a '{module.NAME}' module, but detected a '{detected.NAME}' module.")
+                        if logging.level >= logging.LOG_INFO:
+                            print(f"Module discrepency! Expected a '{module.NAME}' module, but detected a '{detected.NAME}' module.")
                         if slot not in allow_discrepencies:
                             raise_discrepency = True
                 else:
-                    logging.info(f"'{detected.NAME}' module detected but not registered.")
+                    if logging.level >= logging.LOG_INFO:
+                        print(f"'{detected.NAME}' module detected but not registered.")
                     if slot not in allow_unregistered:
                         raise_unregistered = True
                     unregistered_slots += 1
@@ -445,7 +458,8 @@ class Yukon:
 
         for slot, module in self.__slot_assignments.items():
             if module is not None:
-                logging.info(f"[Slot{slot.ID} '{module.NAME}'] Initialising ... ", end="")
+                if logging.level >= logging.LOG_INFO:
+                    print(f"[Slot{slot.ID} '{module.NAME}'] Initialising ... ", end="")
                 module.initialise(slot, self.read_slot_adc1, self.read_slot_adc2)
                 logging.info("done")
 

@@ -223,7 +223,8 @@ class LXServo:
             self.__debug_pin.init(Pin.OUT)
 
         if self.__id != self.BROADCAST_ID:
-            logging.info(f"> Searching for Serial Servo #{self.__id} ... ", end="")
+            if logging.level >= logging.LOG_INFO:
+                print(f"> Searching for Serial Servo #{self.__id} ... ", end="")
 
             self.verify_id()
 
@@ -268,7 +269,8 @@ class LXServo:
         if new_id < 0 or new_id >= self.BROADCAST_ID:
             raise ValueError(f"id out of range. Expected 0 to {self.BROADCAST_ID - 1}")
 
-        logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
+        if logging.level >= logging.LOG_INFO:
+            print(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
 
         self.__send(SERVO_ID_WRITE, "B", new_id)
         self.__id = new_id
@@ -311,7 +313,8 @@ class LXServo:
 
         self.__send(SERVO_MOVE_TIME_WRITE, "HH", position, ms)
 
-        logging.info(self.__message_header() + f"Moving to {(position - 500) * 90 / 360}° in {duration}s")
+        if logging.level >= logging.LOG_INFO:
+            print(self.__message_header() + f"Moving to {(position - 500) * 90 / 360}° in {duration}s")
 
     def queue_move(self, angle, duration):
         position = int(((angle / 90) * 360) + 500)
@@ -323,7 +326,8 @@ class LXServo:
 
         self.__send(SERVO_MOVE_TIME_WAIT_WRITE, "HH", position, ms)
 
-        logging.info(self.__message_header() + f"Queued movement to {(position - 500) * 90 / 360}° in {duration}s")
+        if logging.level >= logging.LOG_INFO:
+            print(self.__message_header() + f"Queued movement to {(position - 500) * 90 / 360}° in {duration}s")
 
     def start_queued(self):
         if self.__id == self.BROADCAST_ID or self.__mode != LXServo.SERVO_MODE:
@@ -339,10 +343,11 @@ class LXServo:
         if self.__id != self.BROADCAST_ID:
             self.__mode = LXServo.MOTOR_MODE
 
-        if value == 0:
-            logging.info(self.__message_header() + "Stop driving")
-        else:
-            logging.info(self.__message_header() + f"Driving at {value / 1000}")
+        if logging.level >= logging.LOG_INFO:
+            if value == 0:
+                print(self.__message_header() + "Stop driving")
+            else:
+                print(self.__message_header() + f"Driving at {value / 1000}")
 
     def last_move(self):
         if self.__id == self.BROADCAST_ID:
@@ -366,12 +371,14 @@ class LXServo:
     def stop(self):
         if self.__id == self.BROADCAST_ID:
             self.__send(SERVO_MOVE_STOP)
-            logging.info(self.__message_header() + "Stop moving")
+            if logging.level >= logging.LOG_INFO:
+                print(self.__message_header() + "Stop moving")
             self.drive_at(0.0)
         else:
             if self.__mode == LXServo.SERVO_MODE:
                 self.__send(SERVO_MOVE_STOP)
-                logging.info(self.__message_header() + "Stop moving")
+                if logging.level >= logging.LOG_INFO:
+                    print(self.__message_header() + "Stop moving")
             else:
                 self.drive_at(0.0)
 

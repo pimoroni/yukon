@@ -131,7 +131,8 @@ class DualMotorModule(YukonModule):
 
         self.__current_limit = chosen_limit
 
-        logging.info(self.__message_header() + f"Current limit set to {self.__current_limit}A")
+        if logging.level >= logging.LOG_INFO:
+            print(self.__message_header() + f"Current limit set to {self.__current_limit}A")
 
     @property
     def motor1(self):

@@ -176,7 +176,8 @@ class AXServo:
             self.__debug_pin.init(Pin.OUT)
 
         if self.__id != self.BROADCAST_ID:
-            logging.info(f"> Searching for Serial Servo #{self.__id} ... ", end="")
+            if logging.level >= logging.LOG_INFO:
+                print(f"> Searching for Serial Servo #{self.__id} ... ", end="")
 
             self.verify_id()
 
@@ -239,7 +240,8 @@ class AXServo:
         if new_id < 0 or new_id >= self.BROADCAST_ID:
             raise ValueError(f"id out of range. Expected 0 to {self.BROADCAST_ID - 1}")
 
-        logging.info(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
+        if logging.level >= logging.LOG_INFO:
+            print(self.__message_header() + f"Changing ID to {new_id} ... ", end="")
 
         params = [self.REG_ID, new_id]
         self.__send(self.INST_WRITE, params)
@@ -309,10 +311,12 @@ class AXServo:
             self.__send(self.INST_WRITE, params)
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
-        if queued:
-            logging.debug(self.__message_header() + f"Queued move to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
-        else:
-            logging.debug(self.__message_header() + f"Moving to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
+
+        if logging.level >= logging.LOG_DEBUG:
+            if queued:
+                print(self.__message_header() + f"Queued move to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
+            else:
+                print(self.__message_header() + f"Moving to {((raw_goal / 1023.0) * 300) - 150}° at {raw_speed * 0.666} °/s")
 
     def move_to(self, angle, deg_per_sec):
         """
@@ -363,10 +367,11 @@ class AXServo:
         if self.__id != self.BROADCAST_ID:
             self.__check_response(self.__receive())
 
-        if raw_speed == 0:
-            logging.info(self.__message_header() + "Stop driving")
-        else:
-            logging.info(self.__message_header() + f"Driving at {(raw_speed / 1023)}")
+        if logging.level >= logging.LOG_INFO:
+            if raw_speed == 0:
+                print(self.__message_header() + "Stop driving")
+            else:
+                print(self.__message_header() + f"Driving at {(raw_speed / 1023)}")
 
     def last_move(self):
         """
@@ -413,7 +418,8 @@ class AXServo:
             if self.__mode == AXServo.SERVO_MODE:
                 # Make the target position be the current position
                 self.move_to(self.read_angle(), 0)
-                logging.info(self.__message_header() + "Stop moving")
+                if logging.level >= logging.LOG_INFO:
+                    print(self.__message_header() + "Stop moving")
             else:
                 # Stop the wheels from moving
                 self.drive_at(0.0)

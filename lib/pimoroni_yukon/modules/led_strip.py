@@ -137,10 +137,11 @@ class LEDStripModule(YukonModule):
         if temperature > self.TEMPERATURE_THRESHOLD:
             raise OverTemperatureError(self.__message_header() + f"Temperature of {temperature}°C exceeded the limit of {self.TEMPERATURE_THRESHOLD}°C! Turning off output")
 
-        if self.__last_pgood is True and pgood is not True:
-            logging.warn(self.__message_header() + "Power is not good")
-        elif self.__last_pgood is not True and pgood is True:
-            logging.warn(self.__message_header() + "Power is good")
+        if logging.level >= logging.LOG_WARN:
+            if self.__last_pgood is True and pgood is not True:
+                print(self.__message_header() + "Power is not good")
+            elif self.__last_pgood is not True and pgood is True:
+                print(self.__message_header() + "Power is good")
 
         # Run some user action based on the latest readings
         if self.__monitor_action_callback is not None:
