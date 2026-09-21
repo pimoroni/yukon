@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -19,9 +20,7 @@ class DualOutputModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | FLOAT | ALL   | 1     | 0     | 1     | Dual Switched Output |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_FLOAT and slow1 is IO_HIGH and slow2 is IO_LOW and slow3 is IO_HIGH
+    SIGNATURE = signatures.DUAL_OUTPUT
 
     def __init__(self, halt_on_not_pgood=False):
         super().__init__()

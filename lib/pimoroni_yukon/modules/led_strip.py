@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -22,9 +23,7 @@ class LEDStripModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | ALL   | 1     | 1     | 1     | LED Strip            |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_LOW and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_HIGH
+    SIGNATURE = signatures.LED_STRIP
 
     def __init__(self, strip_type, pio, sm, num_leds, brightness=1.0, halt_on_not_pgood=False):
         super().__init__()

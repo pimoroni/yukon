@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_LOW, ADC_FLOAT, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 
 
 class RM2WirelessModule(YukonModule):
@@ -11,9 +12,7 @@ class RM2WirelessModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | FLOAT | 1     | 0     | 1     | RM2 Wireless         |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_LOW and adc2_level == ADC_FLOAT and slow1 is IO_HIGH and slow2 is IO_LOW and slow3 is IO_HIGH
+    SIGNATURE = signatures.RM2_WIRELESS
 
     def __init__(self):
         super().__init__()

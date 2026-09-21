@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_FLOAT, ADC_HIGH, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 
 
 class ProtoPotModule(YukonModule):
@@ -13,9 +14,7 @@ class ProtoPotModule(YukonModule):
     # | LOW   | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
     # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
     # | HIGH  | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc2_level is ADC_HIGH and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_LOW
+    SIGNATURE = signatures.PROTO_POT
 
     def __init__(self):
         super().__init__()
@@ -34,9 +33,7 @@ class ProtoPotModule2(YukonModule):
     # | FLOAT | LOW   | 1     | 1     | 0     | Proto Potentiometer  | Pot in low position         |
     # | FLOAT | FLOAT | 1     | 1     | 0     | Proto Potentiometer  | Pot in middle position      |
     # | FLOAT | HIGH  | 1     | 1     | 0     | Proto Potentiometer  | Pot in high position        |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level is ADC_FLOAT and slow1 is IO_HIGH and slow2 is IO_HIGH and slow3 is IO_LOW
+    SIGNATURE = signatures.PROTO_POT_2
 
     # ADC2 has a pull-up connected to simplify its use with modules that feature an onboard thermistor.
     # Unfortunately, when connecting up a potentiometer, creating the below circuit, this has the

@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from machine import Pin
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -35,9 +36,7 @@ class DualMotorModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | HIGH  | ALL   | 0     | 0     | 1     | Dual Motor           |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_HIGH and slow1 is IO_LOW and slow2 is IO_LOW and slow3 is IO_HIGH
+    SIGNATURE = signatures.DUAL_MOTOR
 
     def __init__(self, frequency=DEFAULT_FREQUENCY, current_limit=DEFAULT_CURRENT_LIMIT, init_motors=True):
         super().__init__()

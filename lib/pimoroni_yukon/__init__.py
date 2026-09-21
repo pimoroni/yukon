@@ -6,7 +6,7 @@ import sys
 import time
 import tca
 from machine import ADC, Pin, I2C
-from pimoroni_yukon.modules import KNOWN_MODULES
+import pimoroni_yukon.modules as modules
 from pimoroni_yukon.modules.common import ADC_FLOAT, ADC_LOW, ADC_HIGH, YukonModule
 import pimoroni_yukon.logging as logging
 from pimoroni_yukon.errors import OverVoltageError, UnderVoltageError, OverCurrentError, OverTemperatureError, FaultError, VerificationError
@@ -303,7 +303,7 @@ class Yukon:
         if module_type is YukonModule:
             raise ValueError("Cannot register YukonModule")
 
-        if module_type not in KNOWN_MODULES:
+        if not modules.is_known(module_type):
             raise ValueError(f"{module_type} is not a known module. If this is custom module, be sure to include it in the KNOWN_MODULES list.")
 
         if self.__slot_assignments[slot] is None:
@@ -323,9 +323,10 @@ class Yukon:
             self.__slot_assignments[slot] = None
 
     def __match_module(self, adc1_level, adc2_level, slow1, slow2, slow3):
-        for m in KNOWN_MODULES:
-            if m.is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-                return m
+        # Match against the signature table, prior to any module being imported
+        detected = modules.match(adc1_level, adc2_level, slow1, slow2, slow3)
+        if detected is not None:
+            return detected
         if YukonModule.is_module(adc1_level, adc2_level, slow1, slow2, slow3):
             return YukonModule
         return None

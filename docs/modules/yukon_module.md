@@ -26,8 +26,8 @@ slot: SLOT
 
 ```python
 # Address Checking
-@staticmethod
-is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool  # Override in child Module class
+@classmethod
+is_module(adc1_level: int, adc2_level: int, slow1: bool, slow2: bool, slow3: bool) -> bool  # Matches SIGNATURE, or reports the slot occupied when there is none
 
 # Initialisation
 YukonModule()

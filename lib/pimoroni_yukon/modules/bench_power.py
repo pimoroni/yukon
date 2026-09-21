@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_HIGH, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from machine import Pin, PWM
 from ucollections import OrderedDict
 from pimoroni_yukon.errors import FaultError, OverTemperatureError
@@ -27,9 +28,7 @@ class BenchPowerModule(YukonModule):
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | ALL   | 1     | 0     | 0     | Bench Power          | Output Discharged           |
     # | FLOAT | ALL   | 1     | 0     | 0     | Bench Power          | Output Discharging          |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level is not ADC_HIGH and slow1 is IO_HIGH and slow2 is IO_LOW and slow3 is IO_LOW
+    SIGNATURE = signatures.BENCH_POWER
 
     def __init__(self, halt_on_not_pgood=False):
         super().__init__()

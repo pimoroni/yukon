@@ -3,6 +3,7 @@
 This is instructions for defining a custom module for the [Pimoroni Yukon](https://pimoroni.com/yukon), a high-power modular robotics and engineering platform, powered by the Raspberry Pi RP2040.
 
 - [Creating the Class](#creating-the-class)
+  - [Updating an Existing Custom Module](#updating-an-existing-custom-module)
 - [Expanding the Class](#expanding-the-class)
 - [Adding Monitoring](#adding-monitoring)
   - [Analog](#analog)
@@ -17,14 +18,21 @@ This class should do the following:
 
 * Inherit from `YukonModule` e.g. `class CustomModule(YukonModule):`
 * Have a constant within it called `NAME` with a user friendly name to describe the module, e.g. `Custom`
-* Implement the static method `def is_module(adc1_level, adc2_level, slow1, slow2, slow3):` and have a unique address.
+* Have a constant within it called `SIGNATURE`, naming the unique address the module reports as.
 * Implement `def __init__(self):` and immediately call `super().__init__()` on the line below.
 * Be included in the `KNOWN_MODULES` list within `pimoroni_yukon/modules/__init__.py`
+
+The address is held as data so that Yukon can identify a slot without importing every module class. Importing them all keeps each one in memory whether or not that module is attached, using heap a program needs and fragmenting what is left, so a later allocation can fail even when the free total looks sufficient. Add it to `pimoroni_yukon/modules/signatures.py`, listing the values accepted for ADC1, ADC2, SLOW1, SLOW2 and SLOW3, in that order. A reading matches when all five are accepted, and a field listing every value is one the module does not care about:
+
+```python
+CUSTOM = ((?,), (?,), (?,), (?,), (?,))
+```
 
 Below is an example of a minimal viable module class, that will be recognised by Yukon but not perform any function:
 
 ```python
-from .common import YukonModule, ADC_LOW, ADC_FLOAT, ADC_HIGH, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 
 class CustomModule(YukonModule):
     NAME = "Custom"
@@ -32,15 +40,25 @@ class CustomModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | ?     | ?     | ?     | ?     | ?     | Custom               |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level is ? and adc2_level is ? and slow1 is ? and slow2 is ? and slow3 is ?
+    SIGNATURE = signatures.CUSTOM
 
     def __init__(self):
         super().__init__()
 ```
 
-The above `is_module` static method is intentionally missing ADC and IO states (as noted by `?`). To understand more about module addresses, refer to the [Module Detection](../module_detection.md) page.
+The signature above is intentionally missing ADC and IO states (as noted by `?`). To understand more about module addresses, refer to the [Module Detection](../module_detection.md) page.
+
+Finally, give `KNOWN_MODULES` a row naming the class, the file it lives in and its signature. Order matters, because the first signature to match wins:
+
+```python
+("CustomModule", "custom", signatures.CUSTOM),
+```
+
+A signature accepts every combination of the values it lists. Where that would claim addresses the module does not have, give it a row per address instead, all naming the same class.
+
+### Updating an Existing Custom Module
+
+Detection reads `KNOWN_MODULES`, so a class that supplies only an `is_module()` of its own is never matched. Move its address into `signatures.py`, name that in `SIGNATURE`, and extend its `KNOWN_MODULES` entry to the three part row above. The `is_module()` can then be deleted, being inherited from `YukonModule` and answered from `SIGNATURE`.
 
 
 ## Expanding the Class

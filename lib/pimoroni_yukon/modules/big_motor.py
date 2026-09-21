@@ -2,7 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from .common import YukonModule, ADC_LOW, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from machine import Pin
 from motor import Motor, SLOW_DECAY
 from encoder import Encoder, MMME_CPR
@@ -24,9 +25,7 @@ class BigMotorModule(YukonModule):
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | LOW   | ALL   | 0     | 0     | 1     | Big Motor            | Not in fault                |
     # | LOW   | ALL   | 0     | 1     | 1     | Big Motor            | In fault                    |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_LOW and slow1 is IO_LOW and slow3 is IO_HIGH
+    SIGNATURE = signatures.BIG_MOTOR
 
     def __init__(self, frequency=DEFAULT_FREQUENCY,
                  encoder_pio=0, encoder_sm=0, counts_per_rev=DEFAULT_COUNTS_PER_REV,

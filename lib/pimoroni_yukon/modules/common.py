@@ -6,22 +6,25 @@ from collections import OrderedDict
 from pimoroni_yukon.conversion import analog_to_temp
 import pimoroni_yukon.logging as logging
 
-ADC_LOW = 0
-ADC_HIGH = 1
-ADC_FLOAT = 2
-IO_LOW = False
-IO_HIGH = True
+from pimoroni_yukon.modules.signatures import ADC_LOW, ADC_HIGH, ADC_FLOAT  # noqa: F401
+from pimoroni_yukon.modules.signatures import IO_LOW, IO_HIGH  # noqa: F401
+from pimoroni_yukon.modules.signatures import matches
 
 
 class YukonModule:
     NAME = "Unknown"
+    SIGNATURE = None        # The reading that identifies this module, from signatures.py
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | FLOAT | HIGH  | 1     | 1     | 1     | Empty                |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        # This will return true if a slot is detected as not being empty, so as to give useful error information
+    @classmethod
+    def is_module(cls, adc1_level, adc2_level, slow1, slow2, slow3):
+        if cls.SIGNATURE is not None:
+            return matches(cls.SIGNATURE, adc1_level, adc2_level, slow1, slow2, slow3)
+
+        # This base carries no signature, so it reports only whether the slot is occupied. That is
+        # what lets an unrecognised module be reported instead of passing as empty
         return adc1_level is not ADC_FLOAT or adc2_level is not ADC_HIGH or slow1 is not IO_HIGH or slow2 is not IO_HIGH or slow3 is not IO_HIGH
 
     def __init__(self):

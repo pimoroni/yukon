@@ -5,7 +5,8 @@
 import tca
 from machine import Pin
 from ucollections import OrderedDict
-from .common import YukonModule, ADC_FLOAT, IO_LOW, IO_HIGH
+from .common import YukonModule
+from pimoroni_yukon.modules import signatures
 from pimoroni_yukon.errors import OverTemperatureError
 from pimoroni_yukon.devices.audio import WavPlayer
 
@@ -132,9 +133,7 @@ class AudioAmpModule(YukonModule):
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
     # | FLOAT | ALL   | 0     | 1     | 1     | Audio Amp            |                             |
-    @staticmethod
-    def is_module(adc1_level, adc2_level, slow1, slow2, slow3):
-        return adc1_level == ADC_FLOAT and slow1 is IO_LOW and slow2 is IO_HIGH and slow3 is IO_HIGH
+    SIGNATURE = signatures.AUDIO_AMP
 
     def __init__(self, i2s_id):
         super().__init__()
