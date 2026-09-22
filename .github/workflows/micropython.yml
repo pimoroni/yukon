@@ -7,8 +7,10 @@ on:
     types: [created]
 
 env:
-  MICROPYTHON_VERSION: v1.26.1
-  PIMORONI_PICO_VERSION: 6acbcb82f42526f4f6fcf77ab60aaa6ea30ffd9c
+  # pimoroni/micropython cyw43-dynamic-pins, v1.29.0 plus the dynamic cyw43 pin commits, matching pimoroni-pico
+  MICROPYTHON_VERSION: cd1df9d9cb3c96206eb4bc03e90af63bb0afd841
+  # pimoroni-pico patch/plasma-num-leds: main plus Pin object support in Servo, Motor and Encoder (PR #1157) and num_leds() on Plasma
+  PIMORONI_PICO_VERSION: 69e0d5f185331f5e29aaad8821d376de33ad4713
   WORKFLOW_VERSION: v2
 
 jobs:
@@ -30,7 +32,7 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v4
       with:
-        repository: micropython/micropython
+        repository: pimoroni/micropython
         ref: ${{env.MICROPYTHON_VERSION}}
         submodules: false  # MicroPython submodules are hideously broken
         path: micropython
@@ -141,7 +143,7 @@ jobs:
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
-        release: '9-2020-q2'
+        release: '14.2.Rel1'
 
     - name: Install CCache
       run: |
