@@ -22,7 +22,8 @@ Press "Boot/User" to exit the program.
 PAD_MAPPING = create_8bitdo_lite_xinput     # The mapping function for the pad in use, see gamepad_mappings.py
 INQUIRY_SECONDS = 8                 # How long to look for a pad in pairing mode when none is stored
 CONNECT_TIMEOUT_MS = 20000          # How long to give a connection attempt before trying again
-RETRY_INTERVAL_MS = 5000            # How long to wait between attempts to reach a stored pad
+RETRY_INTERVAL_MS = 15000           # How long to wait between attempts to reach a stored pad, which
+                                    # must exceed a page, measured at about 9 seconds from cold
 PAGING_WINDOW_MS = 30000            # How long to keep paging stored pads after start up or a lost pad
 GAMEPAD_CLASS = 0x05                # The major device class that game pads report in an inquiry
 UPDATE_MS = 10                      # How often to read the pad
