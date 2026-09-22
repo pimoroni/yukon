@@ -4,12 +4,13 @@ This is the library reference for the [RM2 Wireless Module for Yukon](https://pi
 
 - [Getting Started](#getting-started)
 - [Initialising the Module](#initialising-the-module)
+- [Changing the System Clock](#changing-the-system-clock)
 - [Reference](#reference)
   - [Constants](#constants)
   - [Functions](#functions)
 
 
-**:information-source: Wireless is a baked-in feature of MicroPython, so the normal import and initialisation steps for Yukon modules are not strictly required to get your project online. There are still some advantages to doing these though, so the steps are explained below.**
+**:information-source: Wireless is a baked-in feature of MicroPython, and Slot 5 is where a wireless build expects to find the module, so the normal import and initialisation steps for Yukon modules are not strictly required to get your project online from that slot. Initialising the module is what points the wireless chip at whichever slot it is actually in, so any other slot does need the steps below.**
 
 ## Getting Started
 
@@ -31,7 +32,7 @@ module = RM2WirelessModule()
 As with all Yukon modules, `RM2WirelessModule` must be initialised before it can be used. This is achieved by first registering the module with the `Yukon` class, with the slot it is attached to.
 
 ```python
-from pimoroni_yukon import SLOT5 as SLOT    # Only SLOT5 supports the RM2 Wireless Module at present
+from pimoroni_yukon import SLOT5 as SLOT    # The RM2 Wireless Module works in any slot
 
 # Import and set up Yukon and RM2WirelessModule instances
 
@@ -51,6 +52,21 @@ The RM2 Wireless Module is now ready to use. It can be interacted with using Mic
 From here you can optionally provide power to all your other modules by calling.
 ```python
 yukon.enable_main_output()
+```
+
+
+## Changing the System Clock
+
+The CYW43 wireless chip is communicated with over an SPI bus clocked from the system clock. When this module initialises the chip, it selects a divider that keeps that bus within the rate the chip accepts. This is a one-time action, so raising the clock afterwards leaves the bus running faster than that rate, and wireless stops working until the chip is next initialised. If your program calls `machine.freq()`, do so **before** `verify_and_initialise()`.
+
+```python
+import machine
+
+machine.freq(240_000_000)   # First, so the module picks its divider from this clock
+
+# Import and set up Yukon and RM2WirelessModule instances
+
+yukon.verify_and_initialise()
 ```
 
 

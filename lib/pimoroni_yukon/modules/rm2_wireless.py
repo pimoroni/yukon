@@ -2,11 +2,23 @@
 #
 # SPDX-License-Identifier: MIT
 
+from machine import Pin, freq
 from .common import YukonModule, ADC_LOW, ADC_FLOAT, IO_LOW, IO_HIGH
 
 
 class RM2WirelessModule(YukonModule):
     NAME = "RM2 Wireless"
+
+    # The wireless chip starts on these, Slot 5's fast pins, before any module says otherwise.
+    # Moving its bus leaves an interrupt on the host wake pin, which then blocks that slot.
+    DEFAULT_SLOT_ID = 5
+    DEFAULT_PINS = (16, 17, 18, 19)
+
+    # The chip's rated maximum for its SPI bus, and what it runs at here
+    MAX_BUS_FREQUENCY = 50_000_000
+
+    # The smallest divisor the bus is given, matching the SDK's own default
+    MIN_CLOCK_DIVISOR = 2
 
     # | ADC1  | ADC2  | SLOW1 | SLOW2 | SLOW3 | Module               | Condition (if any)          |
     # |-------|-------|-------|-------|-------|----------------------|-----------------------------|
@@ -19,13 +31,34 @@ class RM2WirelessModule(YukonModule):
         super().__init__()
 
         try:
+            import cyw43
             import network
         except ImportError:
             raise RuntimeError("This build does not contain wireless networking support. Please flash your Yukon with a build that supports wireless in order to use this module.")
 
+        self.__cyw43 = cyw43
+
+    def __bus_divisor(self):
+        # The PIO clocks the bus at the system clock divided by twice the divisor,
+        # so round up to keep the result at or below what the chip accepts
+        step = 2 * self.MAX_BUS_FREQUENCY
+        return max(self.MIN_CLOCK_DIVISOR, (freq() + step - 1) // step)
+
     def initialise(self, slot, adc1_func, adc2_func):
-        if slot.ID != 5:
-            raise RuntimeError("Currently the wireless module is only supported in Slot 5. Please relocate your module.")
+        # Move the wireless chip's bus onto this slot's fast pins, set its rate from the
+        # system clock, and power the chip up
+        self.__cyw43.CYW43(pin_on=slot.FAST1,
+                           pin_cs=slot.FAST2,
+                           pin_clock=slot.FAST3,
+                           pin_dat=slot.FAST4,
+                           div_int=self.__bus_divisor())
+
+        # Release the pins the bus has just left, or a module in that slot hangs claiming them
+        if slot.ID != self.DEFAULT_SLOT_ID:
+            for gpio in self.DEFAULT_PINS:
+                pin = Pin(gpio)
+                pin.irq(handler=None)
+                pin.init(Pin.IN)
 
         # Pass the slot and adc functions up to the parent now that module specific initialisation has finished
         super().initialise(slot, adc1_func, adc2_func)
