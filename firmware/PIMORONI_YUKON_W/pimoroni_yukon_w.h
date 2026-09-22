@@ -84,6 +84,18 @@ pico_board_cmake_set_default(PICO_FLASH_SIZE_BYTES, (16 * 1024 * 1024))
 #define CYW43_PIN_WL_DYNAMIC 1
 #endif
 
+// The PIO clocks the cyw43 SPI at clk_sys / (2 * the divisor), so the RM2 module
+// picks a divisor from the system clock at bringup.
+#ifndef CYW43_PIO_CLOCK_DIV_DYNAMIC
+#define CYW43_PIO_CLOCK_DIV_DYNAMIC 1
+#endif
+
+// The divisor a bringup that goes straight to network.WLAN or bluetooth.BLE gets.
+// 3 covers every clock up to 300MHz, where 2 would only reach 200MHz.
+#ifndef CYW43_PIO_CLOCK_DIV_INT
+#define CYW43_PIO_CLOCK_DIV_INT 3
+#endif
+
 // gpio pin to power up the cyw43 chip
 #ifndef CYW43_DEFAULT_PIN_WL_REG_ON
 #define CYW43_DEFAULT_PIN_WL_REG_ON 16u
