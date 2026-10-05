@@ -1,6 +1,9 @@
 // This is a hack! Need to replace with upstream board definition.
 #define MICROPY_HW_BOARD_NAME          "Pimoroni Yukon (no Wireless)"
 
+// Store floats in the object word (30-bit) to avoid heap allocation
+#define MICROPY_OBJ_REPR (MICROPY_OBJ_REPR_C)
+
 #define MICROPY_HW_USB_VID (0x2E8A)
 #define MICROPY_HW_USB_PID (0x105B)
 

@@ -140,6 +140,11 @@ jobs:
       working-directory: micropython
       run: git apply "${{env.FIRMWARE_DIR}}/yukon_expander.patch"
 
+    - name: "HACK: pimoroni-pico REPR_C Float Constants Patch"
+      shell: bash
+      working-directory: pimoroni-pico
+      run: git apply "${{env.FIRMWARE_DIR}}/pimoroni_pico_repr_c.patch"
+
     - name: Install Arm GNU Toolchain (arm-none-eabi-gcc)
       uses: carlosperate/arm-none-eabi-gcc-action@v1
       with:
